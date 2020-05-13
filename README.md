@@ -505,17 +505,19 @@ Inference and sampling runs can be configured using a text file (see
 23. `step_important_max` - maximum number of importance sampling steps
     (default: 1, i.e.importance sampling disabled)
 24. `coherence_min` - (default=.9999)
-25. `M` - number of sequences to sample for each MCMC replicate (default: 1000)
-26. `count_max` - number of independent MCMC replicates (default: 10)
-27. `init_sample` - flag for whether of not to use seed sequence for
+25. `use_ss` - flag to sample sequences equal to the effective number of
+    sequences in the alignment (default: false)
+26. `M` - number of sequences to sample for each MCMC replicate (default: 1000)
+27. `count_max` - number of independent MCMC replicates (default: 10)
+28. `init_sample` - flag for whether of not to use seed sequence for
     initializing the MCMC (default: false)
-28. `init_sample_file` - file containing the MCMC seed sequences (default: "")
-29. `sampler` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
+29. `init_sample_file` - file containing the MCMC seed sequences (default: "")
+30. `sampler` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
     'z-barker' for Zanella, 2019. 'z-sqrt' corresponds to a balancing function of
     `sqrt(t)`, and 'z-barker' corresponds to `t/(1+t)`. (default: "mh")
-30. `use_pos_reg` - flag to apply position-specific regularization when
+31. `use_pos_reg` - flag to apply position-specific regularization when
     learning J (default: false)
-31. `output_binary` - flag to output data in binary format, which is faster and
+32. `output_binary` - flag to output data in binary format, which is faster and
     more precise (default: true)
 
 ### [sampling]

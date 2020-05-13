@@ -74,6 +74,7 @@ private:
   double coherence_min;    // coherence importance sampling
 
   // MCMC settings
+  bool use_ss = false;          // flag to use stochastic sampling mode
   int step;                     // current step number
   int step_offset = 0;
   int M;                        // number of samples for each MCMC run
