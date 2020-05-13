@@ -82,6 +82,7 @@ private:
                                 // initializing the mcmc from a file
   std::string init_sample_file; // name of file with mcmc initial sample
   std::string sampler = "mh";   // MC sampler type ('mh' or 'z')
+  bool use_pos_reg = false;     // enable for position-specific regularizetion
 
   bool output_binary = true;
 

@@ -113,6 +113,7 @@ Sim::writeParameters(std::string output_file)
   stream << "init_sample=" << init_sample << std::endl;
   stream << "init_sample_file=" << init_sample_file << std::endl;
   stream << "sampler=" << sampler << std::endl;
+  stream << "use_pos_reg=" << use_pos_reg << std::endl;
 
   stream << "output_binary=" << output_binary << std::endl;
 };
@@ -255,6 +256,12 @@ Sim::compareParameter(std::string key, std::string value)
     same = same & (init_sample_file == value);
   } else if (key == "sampler") {
     same = same & (sampler == value);
+  } else if (key == "use_pos_reg") {
+    if (value.size() == 1) {
+      same = same & (use_pos_reg == (std::stoi(value) == 1));
+    } else {
+      same = same & (use_pos_reg == (value == "true"));
+    }
   } else if (key == "output_binary") {
     if (value.size() == 1) {
       same = same & (output_binary == (std::stoi(value) == 1));
@@ -347,6 +354,12 @@ Sim::setParameter(std::string key, std::string value)
     init_sample_file = value;
   } else if (key == "sampler") {
     sampler = value;
+  } else if (key == "use_pos_reg") {
+    if (value.size() == 1) {
+      use_pos_reg = (std::stoi(value) == 1);
+    } else {
+      use_pos_reg = (value == "true");
+    }
   } else if (key == "output_binary") {
     if (value.size() == 1) {
       output_binary = (std::stoi(value) == 1);
@@ -1102,15 +1115,29 @@ Sim::computeErrorReparametrization(void)
       for (int j = i + 1; j < N; j++) {
         for (int aa1 = 0; aa1 < Q; aa1++) {
           for (int aa2 = 0; aa2 < Q; aa2++) {
-            delta = -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
-                      mcmc_stats->frequency_2p(i, j)(aa1, aa2) +
-                      (mcmc_stats->frequency_1p(aa1, i) -
-                       msa_stats.frequency_1p(aa1, i)) *
-                        msa_stats.frequency_1p(aa2, j) +
-                      (mcmc_stats->frequency_1p(aa2, j) -
-                       msa_stats.frequency_1p(aa2, j)) *
-                        msa_stats.frequency_1p(aa1, i) -
-                      lambda_j * model->params.J(i, j)(aa1, aa2));
+            if (use_pos_reg) {
+              delta = -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
+                        mcmc_stats->frequency_2p(i, j)(aa1, aa2) +
+                        (mcmc_stats->frequency_1p(aa1, i) -
+                         msa_stats.frequency_1p(aa1, i)) *
+                          msa_stats.frequency_1p(aa2, j) +
+                        (mcmc_stats->frequency_1p(aa2, j) -
+                         msa_stats.frequency_1p(aa2, j)) *
+                          msa_stats.frequency_1p(aa1, i) -
+                        lambda_j * model->params.J(i, j)(aa1, aa2) * 1. /
+                          (1. + fabs(msa_stats.rel_entropy_grad_1p(aa1, i))) /
+                          (1. + fabs(msa_stats.rel_entropy_grad_1p(aa2, j))));
+            } else {
+              delta = -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
+                        mcmc_stats->frequency_2p(i, j)(aa1, aa2) +
+                        (mcmc_stats->frequency_1p(aa1, i) -
+                         msa_stats.frequency_1p(aa1, i)) *
+                          msa_stats.frequency_1p(aa2, j) +
+                        (mcmc_stats->frequency_1p(aa2, j) -
+                         msa_stats.frequency_1p(aa2, j)) *
+                          msa_stats.frequency_1p(aa1, i) -
+                        lambda_j * model->params.J(i, j)(aa1, aa2));
+            }
             delta_stat =
               (mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
                msa_stats.frequency_2p(i, j)(aa1, aa2)) /
@@ -1147,9 +1174,17 @@ Sim::computeErrorReparametrization(void)
       for (int j = i + 1; j < N; j++) {
         for (int aa1 = 0; aa1 < Q; aa1++) {
           for (int aa2 = 0; aa2 < Q; aa2++) {
-            delta = -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
-                      mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
-                      lambda_j * model->params.J(i, j)(aa1, aa2));
+            if (use_pos_reg) {
+              delta = -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
+                        mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
+                        lambda_j * model->params.J(i, j)(aa1, aa2) * 1. /
+                          (1. + fabs(msa_stats.rel_entropy_grad_1p(aa1, i))) /
+                          (1. + fabs(msa_stats.rel_entropy_grad_1p(aa2, j))));
+            } else {
+              delta = -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
+                        mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
+                        lambda_j * model->params.J(i, j)(aa1, aa2));
+            }
             delta_stat =
               (mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
                msa_stats.frequency_2p(i, j)(aa1, aa2)) /

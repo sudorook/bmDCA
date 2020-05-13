@@ -513,7 +513,9 @@ Inference and sampling runs can be configured using a text file (see
 29. `sampler` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
     'z-barker' for Zanella, 2019. 'z-sqrt' corresponds to a balancing function of
     `sqrt(t)`, and 'z-barker' corresponds to `t/(1+t)`. (default: "mh")
-30. `output_binary` - flag to output data in binary format, which is faster and
+30. `use_pos_reg` - flag to apply position-specific regularization when
+    learning J (default: false)
+31. `output_binary` - flag to output data in binary format, which is faster and
     more precise (default: true)
 
 ### [sampling]
