@@ -41,7 +41,10 @@ Model::Model(std::string parameters_file_h,
   Q = params.h.n_rows;
 }
 
-Model::Model(MSAStats msa_stats, double epsilon_h, double epsilon_J)
+Model::Model(MSAStats msa_stats,
+             double epsilon_h,
+             double epsilon_J,
+             bool init_gradient)
 {
   N = msa_stats.getN();
   Q = msa_stats.getQ();
@@ -59,19 +62,22 @@ Model::Model(MSAStats msa_stats, double epsilon_h, double epsilon_J)
 
   params.h = arma::Mat<double>(Q, N, arma::fill::zeros);
   params_prev.h = arma::Mat<double>(Q, N, arma::fill::zeros);
-  double avg;
-  double* freq_ptr = nullptr;
-  for (int i = 0; i < N; i++) {
-    avg = 0;
-    freq_ptr = msa_stats.frequency_1p.colptr(i);
-    for (int aa = 0; aa < Q; aa++) {
-      avg +=
-        log((1. - pseudocount) * (*(freq_ptr + aa)) + pseudocount * (1. / Q));
-    }
-    for (int aa = 0; aa < Q; aa++) {
-      params.h(aa, i) =
-        log((1. - pseudocount) * (*(freq_ptr + aa)) + pseudocount * (1. / Q)) -
-        avg / Q;
+
+  if (init_gradient) {
+    double avg;
+    double* freq_ptr = nullptr;
+    for (int i = 0; i < N; i++) {
+      avg = 0;
+      freq_ptr = msa_stats.frequency_1p.colptr(i);
+      for (int aa = 0; aa < Q; aa++) {
+        avg +=
+          log((1. - pseudocount) * (*(freq_ptr + aa)) + pseudocount * (1. / Q));
+      }
+      for (int aa = 0; aa < Q; aa++) {
+        params.h(aa, i) =
+          log((1. - pseudocount) * (*(freq_ptr + aa)) + pseudocount * (1. / Q)) -
+          avg / Q;
+      }
     }
   }
 

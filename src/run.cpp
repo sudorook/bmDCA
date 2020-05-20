@@ -879,17 +879,17 @@ Sim::run(void)
         bool flag_twaiting_up = true;
         bool flag_twaiting_down = true;
 
-        if (check_corr - cross_corr < cross_check_err) {
+        if (check_corr - cross_corr <= cross_check_err) {
           flag_deltat_up = false;
         }
-        if (auto_corr - cross_corr > auto_cross_err) {
+        if (auto_corr - cross_corr >= auto_cross_err) {
           flag_deltat_down = false;
         }
 
-        if (e_start - e_end < 2 * e_err) {
+        if (e_start - e_end <= 2 * e_err) {
           flag_twaiting_up = false;
         }
-        if (e_start - e_end > -2 * e_err) {
+        if (e_start - e_end >= -2 * e_err) {
           flag_twaiting_down = false;
         }
 
