@@ -41,6 +41,7 @@ private:
   int save_best_steps; // multiple of iterations at which to save parameters
   int random_seed;
   bool use_reparametrization = true;
+  bool initialize_params = true;
 
   // Learning parameters
   double epsilon_0_h;      // starting learning rate for fields

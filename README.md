@@ -482,42 +482,43 @@ Inference and sampling runs can be configured using a text file (see
 7. `random_seed` - initial seed for the random number generator (default: 1)
 8. `use_reparametrization` - use the re-parametrized model for inference
    (default: true)
-9. `epsilon_0_h` - initial learning rate for fields (default: 0.01)
-10. `epsilon_0_J` - initial learning rate for couplings (default: 0.001)
-11. `adapt_up` - multiple by which to increase Potts (J and h) gradient
+9. `initalize_params` - initialize fields to fit 1p frequencies (default: true)
+10. `epsilon_0_h` - initial learning rate for fields (default: 0.01)
+11. `epsilon_0_J` - initial learning rate for couplings (default: 0.001)
+12. `adapt_up` - multiple by which to increase Potts (J and h) gradient
     (default: 1.5)
-12. `adapt_down` - multiple by which to decrease Potts (J and h) gradient
+13. `adapt_down` - multiple by which to decrease Potts (J and h) gradient
     (default: 0.6)
-13. `min_step_h` - minimum learning rate for h (default: 1e-6)
-14. `max_step_h_N` - maximum learning rate for h (default: 25)
-15. `min_step_J` - minimum learning rate for J (default: 1e-7)
-16. `max_step_J_N` - maximum learning rate for J, scaled by effective number of
+14. `min_step_h` - minimum learning rate for h (default: 1e-6)
+15. `max_step_h_N` - maximum learning rate for h (default: 25)
+16. `min_step_J` - minimum learning rate for J (default: 1e-7)
+17. `max_step_J_N` - maximum learning rate for J, scaled by effective number of
     sequences (default: 2.5)
-17. `error_min_update` - threshold for differences in MSA and MCMC frequencies
+18. `error_min_update` - threshold for differences in MSA and MCMC frequencies
     above which parameters (J and h) are updated (default: -1)
-18. `t_wait_0` - initial burn-in time (default: 10000)
-19. `delta_t_0` - initial wait time between sampling sequences (default: 100)
-20. `check_ergo` - flag to check MCMC sample energies and autocorrelations,
+19. `t_wait_0` - initial burn-in time (default: 10000)
+20. `delta_t_0` - initial wait time between sampling sequences (default: 100)
+21. `check_ergo` - flag to check MCMC sample energies and autocorrelations,
     without which wait and burn-in times are not updated (default: true)
-21. `adapt_up_time` - multiple to increase MCMC wait/burn-in time (default: 1.5)
-22. `adapt_down_time` - multiple to decrease MCMC wait/burn-in time (default
+22. `adapt_up_time` - multiple to increase MCMC wait/burn-in time (default: 1.5)
+23. `adapt_down_time` - multiple to decrease MCMC wait/burn-in time (default
     0.6)
-23. `step_important_max` - maximum number of importance sampling steps
+24. `step_important_max` - maximum number of importance sampling steps
     (default: 1, i.e.importance sampling disabled)
-24. `coherence_min` - (default=.9999)
-25. `use_ss` - flag to sample sequences equal to the effective number of
+25. `coherence_min` - (default=.9999)
+26. `use_ss` - flag to sample sequences equal to the effective number of
     sequences in the alignment (default: false)
-26. `M` - number of sequences to sample for each MCMC replicate (default: 1000)
-27. `count_max` - number of independent MCMC replicates (default: 10)
-28. `init_sample` - flag for whether of not to use seed sequence for
+27. `M` - number of sequences to sample for each MCMC replicate (default: 1000)
+28. `count_max` - number of independent MCMC replicates (default: 10)
+29. `init_sample` - flag for whether of not to use seed sequence for
     initializing the MCMC (default: false)
-29. `init_sample_file` - file containing the MCMC seed sequences (default: "")
-30. `sampler` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
+30. `init_sample_file` - file containing the MCMC seed sequences (default: "")
+31. `sampler` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
     'z-barker' for Zanella, 2019. 'z-sqrt' corresponds to a balancing function of
     `sqrt(t)`, and 'z-barker' corresponds to `t/(1+t)`. (default: "mh")
-31. `use_pos_reg` - flag to apply position-specific regularization when
+32. `use_pos_reg` - flag to apply position-specific regularization when
     learning J (default: false)
-32. `output_binary` - flag to output data in binary format, which is faster and
+33. `output_binary` - flag to output data in binary format, which is faster and
     more precise (default: true)
 
 ### [sampling]

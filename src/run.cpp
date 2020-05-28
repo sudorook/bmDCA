@@ -26,6 +26,7 @@ Sim::initializeParameters(void)
   save_parameters = 20;
   random_seed = 1;
   use_reparametrization = true;
+  initialize_params = true;
 
   // Learning rate settings
   epsilon_0_h = 0.01;
@@ -91,6 +92,7 @@ Sim::writeParameters(std::string output_file)
   stream << "save_best_steps=" << save_best_steps << std::endl;
   stream << "random_seed=" << random_seed << std::endl;
   stream << "use_reparametrization=" << use_reparametrization << std::endl;
+  stream << "initialize_params=" << initialize_params << std::endl;
 
   // Learning rate settings
   stream << "epsilon_0_h=" << epsilon_0_h << std::endl;
@@ -214,6 +216,12 @@ Sim::compareParameter(std::string key, std::string value)
     } else {
       same = same & (use_reparametrization == (value == "true"));
     }
+  } else if (key == "initialize_params") {
+    if (value.size() == 1) {
+      same = same & (initialize_params == (std::stoi(value) == 1));
+    } else {
+      same = same & (initialize_params == (value == "true"));
+    }
   } else if (key == "epsilon_0_h") {
     same = same & (epsilon_0_h == std::stod(value));
   } else if (key == "epsilon_0_J") {
@@ -317,6 +325,12 @@ Sim::setParameter(std::string key, std::string value)
       use_reparametrization = (std::stoi(value) == 1);
     } else {
       use_reparametrization = (value == "true");
+    }
+  } else if (key == "initialize_params") {
+    if (value.size() == 1) {
+      initialize_params = (std::stoi(value) == 1);
+    } else {
+      initialize_params = (value == "true");
     }
   } else if (key == "epsilon_0_h") {
     epsilon_0_h = std::stod(value);
@@ -427,7 +441,7 @@ Sim::Sim(MSAStats msa_stats,
   }
 
   if (step_offset == 0) {
-    model = new Model(msa_stats, epsilon_0_h, epsilon_0_J);
+    model = new Model(msa_stats, epsilon_0_h, epsilon_0_J, initialize_params);
   } else {
     if (output_binary) {
       model =
