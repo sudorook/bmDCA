@@ -32,9 +32,9 @@ Sim::initializeParameters(void)
   epsilon_0_J = 0.001;
   adapt_up = 1.5;
   adapt_down = 0.6;
-  min_step_h = 0.001;
-  max_step_h = 2.5;
-  min_step_J = 0.00001;
+  min_step_h = 0.000001;
+  max_step_h_N = 25; // divide by N later
+  min_step_J = 0.0000001;
   max_step_J_N = 2.5; // divide by N later
   error_min_update = -1;
 
@@ -98,7 +98,7 @@ Sim::writeParameters(std::string output_file)
   stream << "adapt_up=" << adapt_up << std::endl;
   stream << "adapt_down=" << adapt_down << std::endl;
   stream << "min_step_h=" << min_step_h << std::endl;
-  stream << "max_step_h=" << max_step_h << std::endl;
+  stream << "max_step_h_N=" << max_step_h_N << std::endl;
   stream << "min_step_J=" << min_step_J << std::endl;
   stream << "max_step_J_N=" << max_step_J_N << std::endl;
   stream << "error_min_update=" << error_min_update << std::endl;
@@ -224,8 +224,8 @@ Sim::compareParameter(std::string key, std::string value)
     same = same & (adapt_down == std::stod(value));
   } else if (key == "min_step_h") {
     same = same & (min_step_h == std::stod(value));
-  } else if (key == "max_step_h") {
-    same = same & (max_step_h == std::stod(value));
+  } else if (key == "max_step_h_N") {
+    same = same & (max_step_h_N == std::stod(value));
   } else if (key == "min_step_J") {
     same = same & (min_step_J == std::stod(value));
   } else if (key == "max_step_J_N") {
@@ -328,8 +328,8 @@ Sim::setParameter(std::string key, std::string value)
     adapt_down = std::stod(value);
   } else if (key == "min_step_h") {
     min_step_h = std::stod(value);
-  } else if (key == "max_step_h") {
-    max_step_h = std::stod(value);
+  } else if (key == "max_step_h_N") {
+    max_step_h_N = std::stod(value);
   } else if (key == "min_step_J") {
     min_step_J = std::stod(value);
   } else if (key == "max_step_J_N") {
@@ -1295,6 +1295,7 @@ Sim::updateLearningRate(void)
 {
   int N = msa_stats.getN();
   int Q = msa_stats.getQ();
+  double max_step_h = max_step_h_N / N;
   double max_step_J = max_step_J_N / N;
 
   double alfa = 0;

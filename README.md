@@ -488,9 +488,9 @@ Inference and sampling runs can be configured using a text file (see
     (default: 1.5)
 12. `adapt_down` - multiple by which to decrease Potts (J and h) gradient
     (default: 0.6)
-13. `min_step_h` - minimum learning rate for h (default: 0.001)
-14. `max_step_h` - maximum learning rate for h (default: 2.5)
-15. `min_step_J` - minimum learning rate for J (default: 1e-05)
+13. `min_step_h` - minimum learning rate for h (default: 1e-6)
+14. `max_step_h_N` - maximum learning rate for h (default: 25)
+15. `min_step_J` - minimum learning rate for J (default: 1e-7)
 16. `max_step_J_N` - maximum learning rate for J, scaled by effective number of
     sequences (default: 2.5)
 17. `error_min_update` - threshold for differences in MSA and MCMC frequencies

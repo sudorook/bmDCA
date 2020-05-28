@@ -48,7 +48,7 @@ private:
   double adapt_up;         // positive adaptive step for learning rate
   double adapt_down;       // negative sdaptive step for learning rate
   double min_step_h;       // min learning rate for fields
-  double max_step_h;       // maximum learning rate for fields
+  double max_step_h_N;     // maximum learning rate for fields
   double min_step_J;       // minimum learning rate for couplings
   double max_step_J_N;     // maximum learning rate for couplings (to be
                            // divided by N)
