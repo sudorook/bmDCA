@@ -88,6 +88,7 @@ Sim::writeParameters(std::string output_file)
   stream << "lambda_reg2=" << lambda_reg2 << std::endl;
   stream << "step_max=" << step_max << std::endl;
   stream << "error_max=" << error_max << std::endl;
+  stream << "use_error_adj=" << use_error_adj << std::endl;
   stream << "save_parameters=" << save_parameters << std::endl;
   stream << "save_best_steps=" << save_best_steps << std::endl;
   stream << "random_seed=" << random_seed << std::endl;
@@ -206,6 +207,7 @@ Sim::compareParameter(std::string key, std::string value)
     same = same & (lambda_reg2 == std::stod(value));
   } else if (key == "step_max") {
   } else if (key == "error_max") {
+  } else if (key == "use_error_adj") {
   } else if (key == "save_parameters") {
   } else if (key == "save_best_steps") {
   } else if (key == "random_seed") {
@@ -310,6 +312,12 @@ Sim::setParameter(std::string key, std::string value)
     step_max = std::stoi(value);
   } else if (key == "error_max") {
     error_max = std::stod(value);
+  } else if (key == "use_error_adj") {
+    if (value.size() == 1) {
+      use_error_adj = (std::stoi(value) == 1);
+    } else {
+      use_error_adj = (value == "true");
+    }
   } else if (key == "save_parameters") {
     save_parameters = std::stoi(value);
   } else if (key == "save_best_steps") {
@@ -987,6 +995,16 @@ Sim::run(void)
       bool converged = false;
       if (error_tot < error_max) {
         converged = true;
+      } else if (use_error_adj) {
+        double std_err = msa_stats.freq_rms / sqrt(M*count_max);
+        if (check_ergo) {
+          std::vector<double> corr_stats = mcmc_stats->getCorrelationsStats();
+          double cross_corr = corr_stats.at(3);
+          std_err = sqrt((1 + cross_corr) / (1 - cross_corr)) * std_err;
+        }
+        if (error_tot < std_err) {
+          converged = true;
+        }
       }
 
       if (converged) {
@@ -1309,8 +1327,8 @@ Sim::updateLearningRate(void)
 {
   int N = msa_stats.getN();
   int Q = msa_stats.getQ();
-  double max_step_h = max_step_h_N / N;
-  double max_step_J = max_step_J_N / N;
+  double max_step_h = max_step_h_N / (double)N;
+  double max_step_J = max_step_J_N / (double)N;
 
   double alfa = 0;
   for (int i = 0; i < N; i++) {
