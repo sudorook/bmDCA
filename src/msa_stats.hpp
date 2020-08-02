@@ -14,6 +14,9 @@ public:
   double getN();
   double getM();
   double getQ();
+
+  void computeErrorMSA(int=100, long int=0);
+
   void writeRelEntropy(std::string);
   void writeRelEntropyAscii(std::string);
   // void writeRelEntropyPos(std::string);
@@ -32,6 +35,7 @@ public:
   arma::Mat<double> rel_entropy_grad_1p;
 
   double freq_rms;
+  arma::Col<double> msa_rms;
 
 private:
   double pseudocount;
