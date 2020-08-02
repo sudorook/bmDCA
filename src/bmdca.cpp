@@ -108,7 +108,7 @@ main(int argc, char* argv[])
   msa.writeMatrix(dest_dir + "/msa_numerical.txt");
 
   // Compute the statistics of the MSA.
-  MSAStats msa_stats = MSAStats(msa);
+  MSAStats msa_stats = MSAStats(&msa);
   msa_stats.writeFrequency1p(dest_dir + "/stat_align_1p.bin");
   msa_stats.writeFrequency2p(dest_dir + "/stat_align_2p.bin");
   msa_stats.writeRelEntropyGradient(dest_dir + "/rel_entropy_grad_align_1p.bin");
