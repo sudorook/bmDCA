@@ -474,10 +474,14 @@ Inference and sampling runs can be configured using a text file (see
 2. `lambda_reg2` - L2 regularization strength for couplings, J (default: 0.01)
 3. `step_max` - maximum number of iterations for Boltzmann learning process
    (default: 2000)
-4. `error_max` - error convergence criterion for stopping (default: 1e-05)
-5. `use_error_adj` - use multinomial standard error of MSA 1p and 2p stats,
-   with correction factor for signal correlation, as a model convergence
-   threshold (default: false)
+4. `stop_mode` - error criterion for stopping (default: "threshold")
+   * "threshold" - use the value in `error_max` below
+   * "stderr" - use threshold from multinomial standard error of the MSA
+   * "stderr_adj" - use threshold from multinomial standard error of the MSA
+     with correction for correlated probabilities
+   * "msaerr" - estimate threshold from error by bootstrapping separate subsets
+     MSA against one another
+5. `error_max` - manual exit threshold for error convergence (default: 1e-05)
 6. `save_parameters` - save parameters every `save_parameters` number of steps
    (default: 100)
 7. `save_best_steps` - save steps that yield the lowest RMSE of the gradient
