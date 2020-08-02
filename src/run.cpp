@@ -73,6 +73,12 @@ Sim::checkParameters(void)
     check_ergo = false;
     std::cerr << "WARNING: disabling 'check_ergo' when M=1." << std::endl;
   }
+
+  if ((stop_mode == "stderr_adj") & (check_ergo == false)) {
+    std::cerr << "ERROR: enable 'check_ergo' to use adjusted std err."
+              << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
 }
 
 void
