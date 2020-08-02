@@ -93,8 +93,8 @@ Sim::writeParameters(std::string output_file)
   stream << "lambda_reg1=" << lambda_reg1 << std::endl;
   stream << "lambda_reg2=" << lambda_reg2 << std::endl;
   stream << "step_max=" << step_max << std::endl;
-  stream << "error_max=" << error_max << std::endl;
   stream << "stop_mode=" << stop_mode << std::endl;
+  stream << "error_max=" << error_max << std::endl;
   stream << "save_parameters=" << save_parameters << std::endl;
   stream << "save_best_steps=" << save_best_steps << std::endl;
   stream << "random_seed=" << random_seed << std::endl;
@@ -316,10 +316,10 @@ Sim::setParameter(std::string key, std::string value)
     lambda_reg2 = std::stod(value);
   } else if (key == "step_max") {
     step_max = std::stoi(value);
-  } else if (key == "error_max") {
-    error_max = std::stod(value);
   } else if (key == "stop_mode") {
     stop_mode = value;
+  } else if (key == "error_max") {
+    error_max = std::stod(value);
   } else if (key == "save_parameters") {
     save_parameters = std::stoi(value);
   } else if (key == "save_best_steps") {
