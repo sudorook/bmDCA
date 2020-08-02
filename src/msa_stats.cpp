@@ -5,13 +5,16 @@
 #include <fstream>
 #include <iostream>
 
-MSAStats::MSAStats(MSA msa)
+#include "pcg_random.hpp"
+
+MSAStats::MSAStats(MSA* msa)
+  : msa(msa)
 {
   // Initialize
-  N = msa.N;
-  M = msa.M;
-  Q = msa.Q;
-  M_effective = sum(msa.sequence_weights);
+  N = msa->N;
+  M = msa->M;
+  Q = msa->Q;
+  M_effective = sum(msa->sequence_weights);
 
   std::cout << M << " sequences" << std::endl;
   std::cout << N << " positions" << std::endl;
@@ -41,9 +44,9 @@ MSAStats::MSAStats(MSA msa)
   {
 #pragma omp for
     for (int i = 0; i < N; i++) {
-      int* align_ptr = msa.alignment.colptr(i);
+      int* align_ptr = msa->alignment.colptr(i);
       double* freq_ptr = frequency_1p.colptr(i);
-      double* weight_ptr = msa.sequence_weights.memptr();
+      double* weight_ptr = msa->sequence_weights.memptr();
       for (int m = 0; m < M; m++) {
         *(freq_ptr + *(align_ptr + m)) += *(weight_ptr + m);
       }
@@ -61,11 +64,11 @@ MSAStats::MSAStats(MSA msa)
 #pragma omp for schedule(dynamic,1)
     for (int i = 0; i < N; i++) {
       for (int j = i + 1; j < N; j++) {
-        double* weight_ptr = msa.sequence_weights.memptr();
+        double* weight_ptr = msa->sequence_weights.memptr();
         frequency_2p(i, j) = arma::Mat<double>(Q, Q, arma::fill::zeros);
 
-        int* align_ptr1 = msa.alignment.colptr(i);
-        int* align_ptr2 = msa.alignment.colptr(j);
+        int* align_ptr1 = msa->alignment.colptr(i);
+        int* align_ptr2 = msa->alignment.colptr(j);
         for (int m = 0; m < M; m++) {
           frequency_2p(i, j)(*(align_ptr1 + m), *(align_ptr2 + m)) +=
             *(weight_ptr + m);

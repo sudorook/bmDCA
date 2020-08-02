@@ -8,7 +8,8 @@
 class MSAStats
 {
 public:
-  MSAStats(MSA);
+  MSAStats(MSA*);
+
   double getEffectiveM();
   double getN();
   double getM();
@@ -38,6 +39,8 @@ private:
   int N;              // number of positions
   int Q;              // amino acid alphabet size
   double M_effective; // effect number of sequences
+
+  MSA* msa;
 
   arma::Col<double> aa_background_frequencies;
 };
