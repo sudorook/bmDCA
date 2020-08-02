@@ -16,6 +16,8 @@ MSA::MSA(std::string msa_file,
          bool reweight,
          bool is_numeric_msa,
          double threshold)
+  : reweight(reweight)
+  , threshold(threshold)
 {
   if (is_numeric_msa) {
     readInputNumericMSA(msa_file);
