@@ -113,6 +113,14 @@ Graph::sample_mcmc(arma::Mat<int>* ptr,
   }
 
   for (size_t s = 0; s < m; ++s) {
+    // If burn-between is longer than burn-in, just re-randomize the sequence
+    // using the uniform prior.
+    if (mc_iters > mc_iters0) {
+      for (size_t i = 0; i < n; ++i) {
+        conf(i) = size_t(q * uniform(rng));
+        assert(conf(i) < q);
+      }
+    }
     for (size_t k = 0; k < mc_iters; ++k) {
       size_t i = size_t(n * uniform(rng));
       size_t dq = 1 + size_t((q - 1) * uniform(rng));
@@ -187,6 +195,14 @@ Graph::sample_mcmc_init(arma::Mat<int>* ptr,
   }
 
   for (size_t s = 0; s < m; ++s) {
+    // If burn-between is longer than burn-in, just re-randomize the sequence
+    // using the uniform prior.
+    if (mc_iters > mc_iters0) {
+      for (size_t i = 0; i < n; ++i) {
+        conf(i) = size_t(q * uniform(rng));
+        assert(conf(i) < q);
+      }
+    }
     for (size_t k = 0; k < mc_iters; ++k) {
       size_t i = size_t(n * uniform(rng));
       size_t dq = 1 + size_t((q - 1) * uniform(rng));
@@ -230,12 +246,6 @@ Graph::sample_mcmc_zanella(arma::Mat<int>* ptr,
   rng.seed(seed);
   std::uniform_real_distribution<double> uniform(0, 1);
 
-  arma::Col<size_t> conf = arma::Col<size_t>(n);
-  for (size_t i = 0; i < n; ++i) {
-    conf(i) = size_t(q * uniform(rng));
-    assert(conf(i) < q);
-  }
-
   arma::Mat<double> de = arma::Mat<double>(n, q, arma::fill::zeros);
   arma::Mat<double> g = arma::Mat<double>(n, q, arma::fill::zeros);
   double lambda = 0.0;
@@ -243,6 +253,12 @@ Graph::sample_mcmc_zanella(arma::Mat<int>* ptr,
   arma::Mat<double> de_old = arma::Mat<double>(n, q, arma::fill::zeros);
   arma::Mat<double> g_old = arma::Mat<double>(n, q, arma::fill::zeros);
   double lambda_old = 0.0;
+
+  arma::Col<size_t> conf = arma::Col<size_t>(n);
+  for (size_t i = 0; i < n; ++i) {
+    conf(i) = size_t(q * uniform(rng));
+    assert(conf(i) < q);
+  }
 
   // Compute initial neighborhood.
   for (size_t i = 0; i < n; i++) {
@@ -364,6 +380,55 @@ Graph::sample_mcmc_zanella(arma::Mat<int>* ptr,
     }
   }
   for (size_t s = 0; s < m; ++s) {
+
+    if (mc_iters > mc_iters0) {
+      for (size_t i = 0; i < n; ++i) {
+        conf(i) = size_t(q * uniform(rng));
+        assert(conf(i) < q);
+      }
+
+      // Compute initial neighborhood.
+      for (size_t i = 0; i < n; i++) {
+        size_t q0 = conf(i);
+        double e0 = -params->h(q0, i);
+        for (size_t j = 0; j < n; ++j) {
+          if (i > j) {
+            e0 -= params->J(j, i)(conf(j), q0);
+          } else if (i < j) {
+            e0 -= params->J(i, j)(q0, conf(j));
+          }
+        }
+
+        for (size_t q1 = 0; q1 < q; q1++) {
+          if (q0 == q1) {
+            de(i, q1) = 0.0;
+          } else {
+            double e1 = -params->h(q1, i);
+            for (size_t j = 0; j < n; ++j) {
+              if (i > j) {
+                e1 -= params->J(j, i)(conf(j), q1);
+              } else if (i < j) {
+                e1 -= params->J(i, j)(q1, conf(j));
+              }
+            }
+            de(i, q1) = e1 - e0;
+          }
+        }
+      }
+
+      if (mode == "sqrt") {
+        g = arma::exp(de * -0.5 / temperature);
+        lambda = arma::accu(g) - n; // n*exp(0) needs to be subtracted.
+      } else if (mode == "barker") {
+        g = 1.0 / (1.0 + arma::exp(de / temperature));
+        lambda = arma::accu(g) - .5 * n;
+      }
+
+      de_old = de;
+      g_old = g;
+      lambda_old = lambda;
+    }
+
     for (size_t k = 0; k < mc_iters; ++k) {
       double rand = uniform(rng) * lambda;
       double r_sum = 0.0;
