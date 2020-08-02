@@ -37,7 +37,8 @@ private:
   double lambda_reg2;  // L2 regularization strength for 2p statistics (cpling)
   int step_max;        // max number of BM steps
   double error_max;    // exit error
-  bool use_error_adj = false;
+  std::string stop_mode = "threshold";
+  double error_threshold; // placeholder for dyanmic exit error
   int save_parameters; // multiple of iterations at which to save parameters
   int save_best_steps; // multiple of iterations at which to save parameters
   int random_seed;

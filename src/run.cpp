@@ -94,7 +94,7 @@ Sim::writeParameters(std::string output_file)
   stream << "lambda_reg2=" << lambda_reg2 << std::endl;
   stream << "step_max=" << step_max << std::endl;
   stream << "error_max=" << error_max << std::endl;
-  stream << "use_error_adj=" << use_error_adj << std::endl;
+  stream << "stop_mode=" << stop_mode << std::endl;
   stream << "save_parameters=" << save_parameters << std::endl;
   stream << "save_best_steps=" << save_best_steps << std::endl;
   stream << "random_seed=" << random_seed << std::endl;
@@ -213,7 +213,7 @@ Sim::compareParameter(std::string key, std::string value)
     same = same & (lambda_reg2 == std::stod(value));
   } else if (key == "step_max") {
   } else if (key == "error_max") {
-  } else if (key == "use_error_adj") {
+  } else if (key == "stop_mode") {
   } else if (key == "save_parameters") {
   } else if (key == "save_best_steps") {
   } else if (key == "random_seed") {
@@ -318,12 +318,8 @@ Sim::setParameter(std::string key, std::string value)
     step_max = std::stoi(value);
   } else if (key == "error_max") {
     error_max = std::stod(value);
-  } else if (key == "use_error_adj") {
-    if (value.size() == 1) {
-      use_error_adj = (std::stoi(value) == 1);
-    } else {
-      use_error_adj = (value == "true");
-    }
+  } else if (key == "stop_mode") {
+    stop_mode = value;
   } else if (key == "save_parameters") {
     save_parameters = std::stoi(value);
   } else if (key == "save_best_steps") {
@@ -825,6 +821,16 @@ Sim::run(void)
     buffer_offset = (step_offset % save_parameters);
   }
 
+  // Bootstrap MSA to get cutoff error for 'msaerr' stop mode.
+  if (stop_mode == "msaerr") {
+    msa_stats.computeErrorMSA(100);
+    double error_avg = arma::mean(msa_stats.msa_rms);
+    double error_stddev = arma::stddev(msa_stats.msa_rms, 1);
+    error_threshold = error_avg - 2 * error_stddev;
+  } else if ((stop_mode == "stderr") | (stop_mode == "stderr_adj")) {
+    error_threshold = msa_stats.freq_rms / sqrt(M * count_max);
+  }
+
   std::cout << timer.toc() << " sec" << std::endl << std::endl;
 
   // BM sampling loop
@@ -1001,14 +1007,19 @@ Sim::run(void)
       bool converged = false;
       if (error_tot < error_max) {
         converged = true;
-      } else if (use_error_adj) {
-        double std_err = msa_stats.freq_rms / sqrt(M*count_max);
-        if (check_ergo) {
+      } else if ((stop_mode == "stderr") |
+                 (stop_mode == "stderr_adj")) {
+        double std_err = error_threshold;
+        if (stop_mode == "stderr_adj") {
           std::vector<double> corr_stats = mcmc_stats->getCorrelationsStats();
           double cross_corr = corr_stats.at(3);
           std_err = sqrt((1 + cross_corr) / (1 - cross_corr)) * std_err;
         }
         if (error_tot < std_err) {
+          converged = true;
+        }
+      } else if (stop_mode == "msaerr") {
+        if (error_tot < error_threshold) {
           converged = true;
         }
       }
