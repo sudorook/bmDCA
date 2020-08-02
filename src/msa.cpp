@@ -37,6 +37,26 @@ MSA::MSA(std::string msa_file,
   }
 };
 
+MSA::MSA(arma::Mat<int> alignment,
+         int M,
+         int N,
+         int Q,
+         bool reweight,
+         double threshold)
+  : alignment(alignment)
+  , M(M)
+  , N(N)
+  , Q(Q)
+  , reweight(reweight)
+  , threshold(threshold)
+{
+  if (reweight) {
+    computeSequenceWeights(threshold);
+  } else {
+    sequence_weights = arma::Col<double>(M, arma::fill::ones);
+  }
+};
+
 void
 MSA::readInputNumericMSA(std::string numeric_msa_file)
 {
