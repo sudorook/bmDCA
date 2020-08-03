@@ -823,10 +823,11 @@ Sim::run(void)
 
   // Bootstrap MSA to get cutoff error for 'msaerr' stop mode.
   if (stop_mode == "msaerr") {
-    msa_stats.computeErrorMSA(100);
+    msa_stats.computeErrorMSA(10);
     double error_avg = arma::mean(msa_stats.msa_rms);
     double error_stddev = arma::stddev(msa_stats.msa_rms, 1);
-    error_threshold = error_avg - 2 * error_stddev;
+    error_threshold =
+      error_avg / sqrt(M * count_max / msa_stats.getEffectiveM());
   } else if ((stop_mode == "stderr") | (stop_mode == "stderr_adj")) {
     error_threshold = msa_stats.freq_rms / sqrt(M * count_max);
   }
