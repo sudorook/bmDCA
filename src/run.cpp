@@ -842,6 +842,47 @@ Sim::run(void)
     bool flag_mc = true;
     long int seed;
     while (flag_mc) {
+      if (use_ss) {
+        std::cout << "setting burn time to... " << std::flush;
+        timer.tic();
+        bool flag_burn = true;
+        while (flag_burn) {
+          double burn_reps = 10;
+          double burn_count = 5;
+          seed = dist(rng);
+          arma::Mat<double> energy_burn =
+            arma::Mat<double>(burn_count, burn_reps, arma::fill::zeros);
+
+          mcmc->sample_energies(
+            &energy_burn, burn_reps, burn_count, N, t_wait, t_wait, seed);
+
+          double e_start = arma::mean(energy_burn.row(0));
+          double e_start_sigma = arma::stddev(energy_burn.row(0), 1);
+          double e_end = arma::mean(energy_burn.row(burn_count - 1));
+          double e_end_sigma = arma::stddev(energy_burn.row(burn_count - 1), 1);
+          double e_err =
+            sqrt((pow(e_start_sigma, 2) + pow(e_end_sigma, 2)) / burn_reps);
+
+          bool flag_twaiting_up = true;
+          bool flag_twaiting_down = true;
+          if (e_start - e_end <= 2 * e_err) {
+            flag_twaiting_up = false;
+          }
+          if (e_start - e_end >= -2 * e_err) {
+            flag_twaiting_down = false;
+          }
+          if (flag_twaiting_up) {
+            t_wait = (int)(round((double)t_wait * adapt_up_time));
+          } else if (flag_twaiting_down) {
+            t_wait = Max((int)(round((double)t_wait * adapt_down_time)), 1);
+          }
+          if (!flag_twaiting_up) {
+            flag_burn = false;
+          }
+        }
+        std::cout << t_wait << "... " << timer.toc() << " sec" << std::endl;
+      }
+
       // Draw from MCMC
       std::cout << "sampling model with mcmc... " << std::flush;
       timer.tic();
