@@ -17,6 +17,14 @@ public:
   void run(int, int);
   void
   sample(arma::Cube<int>*, int, int, int, int, int, long int, double = 1.0);
+  void sample_energies(arma::Mat<double>*,
+                       int,
+                       int,
+                       int,
+                       int,
+                       int,
+                       long int,
+                       double = 1.0);
   void sample_zanella(arma::Cube<int>*,
                       int,
                       int,

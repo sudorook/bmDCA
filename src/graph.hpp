@@ -36,6 +36,13 @@ public:
                    long int seed,
                    double = 1.0);
 
+  void sample_mcmc_energies(double* ptr,
+                            size_t m,
+                            size_t mc_iters0,
+                            size_t mc_iters,
+                            long int seed,
+                            double = 1.0);
+
   void sample_mcmc_init(arma::Mat<int>* ptr,
                         size_t m,
                         size_t mc_iters0,

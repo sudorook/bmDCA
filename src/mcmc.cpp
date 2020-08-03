@@ -26,6 +26,29 @@ MCMC::MCMC(size_t N, size_t Q, potts_model* params)
 };
 
 void
+MCMC::sample_energies(arma::Mat<double>* ptr,
+                      int reps,
+                      int M,
+                      int N,
+                      int t_wait,
+                      int delta_t,
+                      long int seed,
+                      double temperature){
+#pragma omp parallel
+  {
+#pragma omp for
+    for (int rep = 0; rep < reps;
+         rep++){ graph.sample_mcmc_energies(((*ptr).colptr(rep)),
+                                            M,
+                                            t_wait,
+                                            delta_t,
+                                            seed + rep,
+                                            temperature);
+    }
+  }
+};
+
+void
 MCMC::sample(arma::Cube<int>* ptr,
              int reps,
              int M,

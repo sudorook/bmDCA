@@ -71,6 +71,86 @@ Graph::print_distribution(ostream& os)
 };
 
 void
+Graph::sample_mcmc_energies(double* ptr,
+                            size_t m,
+                            size_t mc_iters0,
+                            size_t mc_iters,
+                            long int seed,
+                            double temperature)
+{
+  pcg32 rng;
+  rng.seed(seed);
+  std::uniform_real_distribution<double> uniform(0, 1);
+
+  arma::Col<size_t> conf = arma::Col<size_t>(n);
+  for (size_t i = 0; i < n; ++i) {
+    conf(i) = size_t(q * uniform(rng));
+  }
+
+  double E = 0;
+  for (size_t i = 0; i < n; i++) {
+    E -= params->h(conf(i), i);
+    for (size_t j = i + 1; j < n; j++) {
+      E -= params->J(i, j)(conf(i), conf(j));
+    }
+  }
+
+  for (size_t k = 0; k < mc_iters0; ++k) {
+    size_t i = size_t(n * uniform(rng));
+    size_t dq = 1 + size_t((q - 1) * uniform(rng));
+
+    size_t q0 = conf(i);
+    size_t q1 = (q0 + dq) % q;
+
+    double e0 = -params->h(q0, i);
+    double e1 = -params->h(q1, i);
+    for (size_t j = 0; j < n; ++j) {
+      if (i > j) {
+        e0 -= params->J(j, i)(conf(j), q0);
+        e1 -= params->J(j, i)(conf(j), q1);
+      } else if (i < j) {
+        e0 -= params->J(i, j)(q0, conf(j));
+        e1 -= params->J(i, j)(q1, conf(j));
+      }
+    }
+    double de = e1 - e0;
+    if ((de < 0) || (uniform(rng) < exp(-de / temperature))) {
+      conf(i) = q1;
+      E += de;
+    }
+  }
+
+  for (size_t s = 0; s < m; ++s) {
+    for (size_t k = 0; k < mc_iters; ++k) {
+      size_t i = size_t(n * uniform(rng));
+      size_t dq = 1 + size_t((q - 1) * uniform(rng));
+
+      size_t q0 = conf(i);
+      size_t q1 = (q0 + dq) % q;
+
+      double e0 = -params->h(q0, i);
+      double e1 = -params->h(q1, i);
+      for (size_t j = 0; j < n; ++j) {
+        if (i > j) {
+          e0 -= params->J(j, i)(conf(j), q0);
+          e1 -= params->J(j, i)(conf(j), q1);
+        } else if (i < j) {
+          e0 -= params->J(i, j)(q0, conf(j));
+          e1 -= params->J(i, j)(q1, conf(j));
+        }
+      }
+      double de = e1 - e0;
+      if ((de < 0) || (uniform(rng) < exp(-de / temperature))) {
+        conf(i) = q1;
+        E += de;
+      }
+    }
+    *(ptr+s) = E;
+  }
+  return;
+};
+
+void
 Graph::sample_mcmc(arma::Mat<int>* ptr,
                    size_t m,
                    size_t mc_iters0,
