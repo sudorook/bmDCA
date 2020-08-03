@@ -65,6 +65,8 @@ Sim::checkParameters(void)
   // sequences.
   if (use_ss) {
     M = 1;
+    delta_t = 0;
+    check_ergo = false;
     count_max = (int)(round(msa_stats.getEffectiveM()));
   }
 
