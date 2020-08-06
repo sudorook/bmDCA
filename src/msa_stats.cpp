@@ -182,8 +182,8 @@ MSAStats::computeErrorMSA(int reps, long int seed)
     MSA msa_1 = MSA(alignment_1.t(), M_1, N, Q, reweight, threshold);
     MSA msa_2 = MSA(alignment_2.t(), M_2, N, Q, reweight, threshold);
 
-    double M_1_effective = sum(msa_1.sequence_weights);
-    double M_2_effective = sum(msa_2.sequence_weights);
+    double M_1_effective = arma::sum(msa_1.sequence_weights);
+    double M_2_effective = arma::sum(msa_2.sequence_weights);
 
     arma::Mat<double> msa_1_frequency_1p =
       arma::Mat<double>(Q, N, arma::fill::zeros);
