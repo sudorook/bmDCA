@@ -822,19 +822,28 @@ Sim::run(void)
     restoreRunState();
     buffer_offset = (step_offset % save_parameters);
   }
+  std::cout << timer.toc() << " sec" << std::endl;
 
   // Bootstrap MSA to get cutoff error for 'msaerr' stop mode.
   if (stop_mode == "msaerr") {
+    std::cout << "bootstrapping msa... " << std::flush;
+    timer.tic();
     msa_stats.computeErrorMSA(10);
+    std::cout << timer.toc() << " sec" << std::endl;
+
     double error_avg = arma::mean(msa_stats.msa_rms);
     double error_stddev = arma::stddev(msa_stats.msa_rms, 1);
+    // error_threshold = (error_avg - 2 * error_stddev) /
+    //                   sqrt(M * count_max / msa_stats.getEffectiveM());
     error_threshold =
       error_avg / sqrt(M * count_max / msa_stats.getEffectiveM());
+    std::cout << "convergence threshold is " << error_threshold << std::endl;
   } else if ((stop_mode == "stderr") | (stop_mode == "stderr_adj")) {
     error_threshold = msa_stats.freq_rms / sqrt(M * count_max);
+    std::cout << "convergence threshold is " << error_threshold << std::endl;
   }
 
-  std::cout << timer.toc() << " sec" << std::endl << std::endl;
+  std::cout << std::endl;
 
   // BM sampling loop
   for (step = 1 + step_offset; step <= step_max; step++) {
