@@ -859,7 +859,7 @@ Sim::run(void)
         timer.tic();
         bool flag_burn = true;
         while (flag_burn) {
-          double burn_reps = 32;
+          double burn_reps = 24;
           double burn_count = 3;
           seed = dist(rng);
           arma::Mat<double> energy_burn =
