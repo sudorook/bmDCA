@@ -26,7 +26,7 @@ private:
   void restoreRunState(void);
   void readInitialSample(int, int);
   void computeErrorReparametrization(void);
-  void updateLearningRate(void);
+  void updateMoments(void);
   void updateReparameterization(void);
   void writeData(std::string);
   void writeData(int);

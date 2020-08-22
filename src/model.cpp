@@ -8,13 +8,13 @@ Model::Model(std::string parameters_file,
              std::string parameters_prev_file,
              std::string gradient_file,
              std::string gradient_prev_file,
-             std::string learning_rate_file)
+             std::string moment1_file,
+             std::string moment2_file)
 {
   params = loadPottsModelAscii(parameters_file);
   params_prev = loadPottsModelAscii(parameters_prev_file);
   gradient = loadPottsModelAscii(gradient_file);
   gradient_prev = loadPottsModelAscii(gradient_prev_file);
-  learning_rates = loadPottsModelAscii(learning_rate_file);
 
   N = params.h.n_cols;
   Q = params.h.n_rows;
@@ -28,14 +28,17 @@ Model::Model(std::string parameters_file_h,
              std::string gradient_file_J,
              std::string gradient_prev_file_h,
              std::string gradient_prev_file_J,
-             std::string learning_rate_file_h,
-             std::string learning_rate_file_J)
+             std::string moment1_file_h,
+             std::string moment1_file_J,
+             std::string moment2_file_h,
+             std::string moment2_file_J)
 {
   params = loadPottsModel(parameters_file_h, parameters_file_J);
   params_prev = loadPottsModel(parameters_prev_file_h, parameters_prev_file_J);
   gradient = loadPottsModel(gradient_file_h, gradient_file_J);
   gradient_prev = loadPottsModel(gradient_prev_file_h, gradient_prev_file_J);
-  learning_rates = loadPottsModel(learning_rate_file_h, learning_rate_file_J);
+  moment1 = loadPottsModel(moment1_file_h, moment1_file_J);
+  moment2 = loadPottsModel(moment2_file_h, moment2_file_J);
 
   N = params.h.n_cols;
   Q = params.h.n_rows;
@@ -81,14 +84,20 @@ Model::Model(MSAStats msa_stats,
     }
   }
 
-  // Initialize the learning rates (epsilon_0_h and epsilon_0_H)
-  learning_rates.h = arma::Mat<double>(Q, N);
-  learning_rates.h.fill(epsilon_h);
-  learning_rates.J = arma::field<arma::Mat<double>>(N, N);
+  // Initialize the moments
+  moment1.h = arma::Mat<double>(Q, N);
+  moment2.h = arma::Mat<double>(Q, N);
+  moment1.h.fill(arma::fill::zeros);
+  moment2.h.fill(arma::fill::zeros);
+
+  moment1.J = arma::field<arma::Mat<double>>(N, N);
+  moment2.J = arma::field<arma::Mat<double>>(N, N);
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
-      learning_rates.J(i, j) = arma::Mat<double>(Q, Q);
-      learning_rates.J(i, j).fill(epsilon_J);
+      moment1.J(i, j) = arma::Mat<double>(Q, Q);
+      moment2.J(i, j) = arma::Mat<double>(Q, Q);
+      moment1.J(i, j).fill(arma::fill::zeros);
+      moment2.J(i, j).fill(arma::fill::zeros);
     }
   }
 
@@ -178,19 +187,26 @@ Model::writeParamsPreviousAscii(std::string output_file)
 };
 
 void
-Model::writeLearningRates(std::string output_file_h, std::string output_file_J)
+Model::writeMoment1(std::string output_file_h, std::string output_file_J)
 {
-  learning_rates.h.save(output_file_h, arma::arma_binary);
-  learning_rates.J.save(output_file_J, arma::arma_binary);
+  moment1.h.save(output_file_h, arma::arma_binary);
+  moment1.J.save(output_file_J, arma::arma_binary);
 };
 
 void
-Model::writeLearningRatesAscii(std::string output_file)
+Model::writeMoment2(std::string output_file_h, std::string output_file_J)
+{
+  moment2.h.save(output_file_h, arma::arma_binary);
+  moment2.J.save(output_file_J, arma::arma_binary);
+};
+
+void
+Model::writeMoment1Ascii(std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
-  int N = learning_rates.h.n_cols;
-  int Q = learning_rates.h.n_rows;
+  int N = moment1.h.n_cols;
+  int Q = moment1.h.n_rows;
 
   // Write J
   for (int i = 0; i < N; i++) {
@@ -198,7 +214,7 @@ Model::writeLearningRatesAscii(std::string output_file)
       for (int aa1 = 0; aa1 < Q; aa1++) {
         for (int aa2 = 0; aa2 < Q; aa2++) {
           output_stream << "J " << i << " " << j << " " << aa1 << " " << aa2
-                        << " " << learning_rates.J(i, j)(aa1, aa2) << std::endl;
+                        << " " << moment1.J(i, j)(aa1, aa2) << std::endl;
         }
       }
     }
@@ -207,7 +223,36 @@ Model::writeLearningRatesAscii(std::string output_file)
   // Write h
   for (int i = 0; i < N; i++) {
     for (int aa = 0; aa < Q; aa++) {
-      output_stream << "h " << i << " " << aa << " " << learning_rates.h(aa, i)
+      output_stream << "h " << i << " " << aa << " " << moment1.h(aa, i)
+                    << std::endl;
+    }
+  }
+};
+
+void
+Model::writeMoment2Ascii(std::string output_file)
+{
+  std::ofstream output_stream(output_file);
+
+  int N = moment1.h.n_cols;
+  int Q = moment1.h.n_rows;
+
+  // Write J
+  for (int i = 0; i < N; i++) {
+    for (int j = i + 1; j < N; j++) {
+      for (int aa1 = 0; aa1 < Q; aa1++) {
+        for (int aa2 = 0; aa2 < Q; aa2++) {
+          output_stream << "J " << i << " " << j << " " << aa1 << " " << aa2
+                        << " " << moment1.J(i, j)(aa1, aa2) << std::endl;
+        }
+      }
+    }
+  }
+
+  // Write h
+  for (int i = 0; i < N; i++) {
+    for (int aa = 0; aa < Q; aa++) {
+      output_stream << "h " << i << " " << aa << " " << moment1.h(aa, i)
                     << std::endl;
     }
   }

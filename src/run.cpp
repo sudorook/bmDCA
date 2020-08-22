@@ -465,15 +465,18 @@ Sim::Sim(MSAStats msa_stats,
                   "gradients_J_" + std::to_string(step_offset) + ".bin",
                   "gradients_h_" + std::to_string(step_offset - 1) + ".bin",
                   "gradients_J_" + std::to_string(step_offset - 1) + ".bin",
-                  "learning_rates_h_" + std::to_string(step_offset) + ".bin",
-                  "learning_rates_J_" + std::to_string(step_offset) + ".bin");
+                  "moment1_h_" + std::to_string(step_offset) + ".bin",
+                  "moment1_J_" + std::to_string(step_offset) + ".bin",
+                  "moment2_h_" + std::to_string(step_offset) + ".bin",
+                  "moment2_J_" + std::to_string(step_offset) + ".bin");
     } else {
       model =
         new Model("parameters_" + std::to_string(step_offset) + ".txt",
                   "parameters_" + std::to_string(step_offset - 1) + ".txt",
                   "gradients_" + std::to_string(step_offset) + ".txt",
                   "gradients_" + std::to_string(step_offset - 1) + ".txt",
-                  "learning_rates_" + std::to_string(step_offset) + ".txt");
+                  "moment1_" + std::to_string(step_offset) + ".txt",
+                  "moment2_" + std::to_string(step_offset) + ".txt");
     }
   }
   mcmc = new MCMC(msa_stats.getN(), msa_stats.getQ());
@@ -497,7 +500,9 @@ Sim::clearFiles(std::string dest_dir)
       files.push_back(fname);
     else if (fname.find("bmdca_"))
       files.push_back(fname);
-    else if (fname.find("learning_rates_"))
+    else if (fname.find("moment1_"))
+      files.push_back(fname);
+    else if (fname.find("moment2_"))
       files.push_back(fname);
     else if (fname.find("MC_energies_"))
       files.push_back(fname);
@@ -567,8 +572,10 @@ Sim::setStepOffset(void)
           checkFileExists("gradients_J_" + std::to_string(idx) + ".bin") &
           checkFileExists("gradients_h_" + std::to_string(idx - 1) + ".bin") &
           checkFileExists("gradients_J_" + std::to_string(idx - 1) + ".bin") &
-          checkFileExists("learning_rates_h_" + std::to_string(idx) + ".bin") &
-          checkFileExists("learning_rates_J_" + std::to_string(idx) + ".bin")) {
+          checkFileExists("moment1_h_" + std::to_string(idx) + ".bin") &
+          checkFileExists("moment1_J_" + std::to_string(idx) + ".bin") &
+          checkFileExists("moment2_h_" + std::to_string(idx) + ".bin") &
+          checkFileExists("moment2_J_" + std::to_string(idx) + ".bin")) {
         steps.push_back(idx);
       } else {
         if (idx > -1) {
@@ -593,7 +600,8 @@ Sim::setStepOffset(void)
       if (checkFileExists("parameters_" + std::to_string(idx - 1) + ".txt") &
           checkFileExists("gradients_" + std::to_string(idx) + ".txt") &
           checkFileExists("gradients_" + std::to_string(idx - 1) + ".txt") &
-          checkFileExists("learning_rates_" + std::to_string(idx) + ".txt")) {
+          checkFileExists("moment1_" + std::to_string(idx) + ".txt") &
+          checkFileExists("moment2_" + std::to_string(idx) + ".txt")) {
         steps.push_back(idx);
       } else {
         invalid_steps.push_back(idx);
@@ -653,11 +661,19 @@ Sim::setStepOffset(void)
         if (checkFileExists(file))
           deleteFile(file);
 
-        file = "learning_rates_h_" + std::to_string(*it_bad) + ".bin";
+        file = "moment1_h_" + std::to_string(*it_bad) + ".bin";
         if (checkFileExists(file))
           deleteFile(file);
 
-        file = "learning_rates_J_" + std::to_string(*it_bad) + ".bin";
+        file = "moment1_J_" + std::to_string(*it_bad) + ".bin";
+        if (checkFileExists(file))
+          deleteFile(file);
+
+        file = "moment2_h_" + std::to_string(*it_bad) + ".bin";
+        if (checkFileExists(file))
+          deleteFile(file);
+
+        file = "moment2_J_" + std::to_string(*it_bad) + ".bin";
         if (checkFileExists(file))
           deleteFile(file);
       } else {
@@ -678,7 +694,11 @@ Sim::setStepOffset(void)
         if (checkFileExists(file))
           deleteFile(file);
 
-        file = "learning_rates_" + std::to_string(*it_bad) + ".txt";
+        file = "moment1_" + std::to_string(*it_bad) + ".txt";
+        if (checkFileExists(file))
+          deleteFile(file);
+
+        file = "moment2_" + std::to_string(*it_bad) + ".txt";
         if (checkFileExists(file))
           deleteFile(file);
       }
@@ -1087,9 +1107,9 @@ Sim::run(void)
       }
 
       // Update learning rate
-      std::cout << "update learning rate... " << std::flush;
+      std::cout << "updating moments rate... " << std::flush;
       timer.tic();
-      updateLearningRate();
+      updateMoments();
       std::cout << timer.toc() << " sec" << std::endl;
 
       // Update parameters
@@ -1392,24 +1412,23 @@ Sim::computeErrorReparametrization(void)
 };
 
 void
-Sim::updateLearningRate(void)
+Sim::updateMoments(void)
 {
   int N = msa_stats.getN();
   int Q = msa_stats.getQ();
 
-  double alfa = 0;
+  double beta1 = 0.9;
+  double beta2 = 0.999;
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
       for (int a = 0; a < Q; a++) {
         for (int b = 0; b < Q; b++) {
-          alfa =
-            model->gradient.J(i, j)(a, b) * model->gradient_prev.J(i, j)(a, b);
-          alfa =
-            Theta(alfa) * adapt_up + Theta(-alfa) * adapt_down + Delta(alfa);
-
-          model->learning_rates.J(i, j)(a, b) =
-            Min(max_step_J,
-                Max(min_step_J, alfa * model->learning_rates.J(i, j)(a, b)));
+          model->moment1.J(i, j)(a, b) =
+            (1 - beta1) * model->gradient.J(i, j)(a, b) +
+            beta1 * model->moment1.J(i, j)(a, b);
+          model->moment2.J(i, j)(a, b) =
+            (1 - beta2) * pow(model->gradient.J(i, j)(a, b), 2) +
+            beta2 * model->moment2.J(i, j)(a, b);
         }
       }
     }
@@ -1417,10 +1436,10 @@ Sim::updateLearningRate(void)
 
   for (int i = 0; i < N; i++) {
     for (int a = 0; a < Q; a++) {
-      alfa = model->gradient.h(a, i) * model->gradient_prev.h(a, i);
-      alfa = Theta(alfa) * adapt_up + Theta(-alfa) * adapt_down + Delta(alfa);
-      model->learning_rates.h(a, i) =
-        Min(max_step_h, Max(min_step_h, alfa * model->learning_rates.h(a, i)));
+      model->moment1.h(a, i) =
+        (1 - beta1) * model->gradient.h(a, i) + beta1 * model->moment1.h(a, i);
+      model->moment2.h(a, i) = (1 - beta2) * pow(model->gradient.h(a, i), 2) +
+                               beta2 * model->moment2.h(a, i);
     }
   }
 };
@@ -1431,12 +1450,15 @@ Sim::updateReparameterization(void)
   int N = msa_stats.getN();
   int Q = msa_stats.getQ();
 
+  double beta1 = 0.9;
+  double beta2 = 0.999;
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
       for (int a = 0; a < Q; a++) {
         for (int b = 0; b < Q; b++) {
           model->params.J(i, j)(a, b) +=
-            model->learning_rates.J(i, j)(a, b) * model->gradient.J(i, j)(a, b);
+            max_step_J * model->moment1.J(i, j)(a, b) / (1 - beta1) /
+            (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2)) + 0.00000001);
         }
       }
     }
@@ -1449,16 +1471,18 @@ Sim::updateReparameterization(void)
         for (int j = 0; j < N; j++) {
           if (i < j) {
             for (int b = 0; b < Q; b++) {
-              Dh(a, i) += msa_stats.frequency_1p(b, j) *
-                          model->learning_rates.J(i, j)(a, b) *
-                          model->gradient.J(i, j)(a, b);
+              Dh(a, i) +=
+                msa_stats.frequency_1p(b, j) * max_step_J *
+                model->moment1.J(i, j)(a, b) / (1 - beta1) /
+                (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2)) + 0.00000001);
             }
           }
           if (i > j) {
             for (int b = 0; b < Q; b++) {
-              Dh(a, i) += msa_stats.frequency_1p(b, j) *
-                          model->learning_rates.J(j, i)(b, a) *
-                          model->gradient.J(j, i)(b, a);
+              Dh(a, i) +=
+                msa_stats.frequency_1p(b, j) * max_step_J *
+                model->moment1.J(j, i)(b, a) / (1 - beta1) /
+                (sqrt(model->moment2.J(j, i)(b, a) / (1 - beta2)) + 0.00000001);
             }
           }
         }
@@ -1468,7 +1492,8 @@ Sim::updateReparameterization(void)
     for (int i = 0; i < N; i++) {
       for (int a = 0; a < Q; a++) {
         model->params.h(a, i) +=
-          model->learning_rates.h(a, i) * model->gradient.h(a, i) +
+          max_step_h * model->moment1.h(a, i) / (1 - beta1) /
+            (sqrt(model->moment2.h(a, i) / (1 - beta2)) + 0.00000001) +
           0.5 * Dh(a, i);
       }
     }
@@ -1476,7 +1501,8 @@ Sim::updateReparameterization(void)
     for (int i = 0; i < N; i++) {
       for (int a = 0; a < Q; a++) {
         model->params.h(a, i) +=
-          model->learning_rates.h(a, i) * model->gradient.h(a, i);
+          max_step_h * model->moment1.h(a, i) / (1 - beta1) /
+            (sqrt(model->moment2.h(a, i) / (1 - beta2)) + 0.00000001);
       }
     }
   }
@@ -1496,9 +1522,10 @@ Sim::writeData(int step)
                        "parameters_J_" + std::to_string(step) + ".bin");
     model->writeGradient("gradients_h_" + std::to_string(step) + ".bin",
                          "gradients_J_" + std::to_string(step) + ".bin");
-    model->writeLearningRates(
-      "learning_rates_h_" + std::to_string(step) + ".bin",
-      "learning_rates_J_" + std::to_string(step) + ".bin");
+    model->writeMoment1("moment1_h_" + std::to_string(step) + ".bin",
+                        "moment1_J_" + std::to_string(step) + ".bin");
+    model->writeMoment2("moment2_h_" + std::to_string(step) + ".bin",
+                        "moment2_J_" + std::to_string(step) + ".bin");
 
     mcmc_stats->writeFrequency1p("stat_MC_1p_" + std::to_string(step) + ".bin",
                                  "stat_MC_1p_sigma_" + std::to_string(step) +
@@ -1514,8 +1541,8 @@ Sim::writeData(int step)
 
     model->writeParamsAscii("parameters_" + std::to_string(step) + ".txt");
     model->writeGradientAscii("gradients_" + std::to_string(step) + ".txt");
-    model->writeLearningRatesAscii("learning_rates_" + std::to_string(step) +
-                                   ".txt");
+    model->writeMoment1Ascii("moment1_" + std::to_string(step) + ".txt");
+    model->writeMoment2Ascii("moment2_" + std::to_string(step) + ".txt");
 
     mcmc_stats->writeFrequency1pAscii(
       "stat_MC_1p_" + std::to_string(step) + ".txt",
@@ -1544,8 +1571,8 @@ Sim::writeData(std::string id)
                        "parameters_J_" + id + ".bin");
     model->writeGradient("gradients_h_" + id + ".bin",
                          "gradients_J_" + id + ".bin");
-    model->writeLearningRates("learning_rates_h_" + id + ".bin",
-                              "learning_rates_J_" + id + ".bin");
+    model->writeMoment1("moment1_h_" + id + ".bin", "moment1_J_" + id + ".bin");
+    model->writeMoment2("moment2_h_" + id + ".bin", "moment2_J_" + id + ".bin");
 
     mcmc_stats->writeFrequency1p("stat_MC_1p_" + id + ".bin",
                                  "stat_MC_1p_sigma_" + id + ".bin");
@@ -1554,7 +1581,8 @@ Sim::writeData(std::string id)
   } else {
     model->writeParamsAscii("parameters_" + id + ".txt");
     model->writeGradientAscii("gradients_" + id + ".txt");
-    model->writeLearningRatesAscii("learning_rates_" + id + ".txt");
+    model->writeMoment1Ascii("moment1_" + id + ".txt");
+    model->writeMoment2Ascii("moment2_" + id + ".txt");
 
     mcmc_stats->writeFrequency1pAscii("stat_MC_1p_" + id + ".txt",
                                       "stat_MC_1p_sigma_" + id + ".txt");
