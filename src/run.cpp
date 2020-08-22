@@ -65,16 +65,16 @@ Sim::checkParameters(void)
   // sequences.
   if (use_ss) {
     M = 1;
-    delta_t = 0;
-    check_ergo = false;
+    delta_t_0 = 1; // use 1 instead of 0 to avoid log(delta_t_0) issues...
+    check_ergo = true;
     count_max = (int)(round(msa_stats.getEffectiveM()));
   }
 
-  // Ensure that the set of ergodiciy checks is disabled if M=1
-  if ((M == 1) && check_ergo) {
-    check_ergo = false;
-    std::cerr << "WARNING: disabling 'check_ergo' when M=1." << std::endl;
-  }
+  // // Ensure that the set of ergodiciy checks is disabled if M=1
+  // if ((M == 1) && check_ergo) {
+  //   check_ergo = false;
+  //   std::cerr << "WARNING: disabling 'check_ergo' when M=1." << std::endl;
+  // }
 
   if ((stop_mode == "stderr_adj") & (check_ergo == false)) {
     std::cerr << "ERROR: enable 'check_ergo' to use adjusted std err."
@@ -732,7 +732,7 @@ Sim::restoreRunState(void)
       delta_t = std::stoi(fields.at(3));
 
       // position of some variables depend on whether some flags are set
-      if (check_ergo) {
+      if (check_ergo & (M > 1)) {
         error_tot_min = std::stod(fields.at(17));
         prev_seed = std::stol(fields.at(18));
       } else {
@@ -854,7 +854,7 @@ Sim::run(void)
     bool flag_mc = true;
     long int seed;
     while (flag_mc) {
-      if (use_ss) {
+      if (check_ergo & (M == 1)) {
         std::cout << "setting burn time to... " << std::flush;
         timer.tic();
         bool flag_burn = true;
@@ -926,7 +926,7 @@ Sim::run(void)
       std::cout << timer.toc() << " sec" << std::endl;
 
       // Run checks and alter burn-in and wait times
-      if (check_ergo) {
+      if (check_ergo & (M > 1)) {
         std::cout << "computing sequence energies and correlations... "
                   << std::flush;
         timer.tic();
@@ -1529,7 +1529,7 @@ Sim::writeData(int step)
   mcmc_stats->writeSampleEnergies("MC_energies_" + std::to_string(step) +
                                   ".txt");
 
-  if (check_ergo) {
+  if (check_ergo & (M > 1)) {
     mcmc_stats->writeCorrelationsStats(
       "overlap_" + std::to_string(step) + ".txt",
       "overlap_inf_" + std::to_string(step) + ".txt",
@@ -1565,7 +1565,7 @@ Sim::writeData(std::string id)
   mcmc_stats->writeSamples("MC_samples_" + id + ".txt");
   mcmc_stats->writeSampleEnergies("MC_energies_" + id + ".txt");
 
-  if (check_ergo) {
+  if (check_ergo & (M > 1)) {
     mcmc_stats->writeCorrelationsStats("overlap_" + id + ".txt",
                                        "overlap_inf_" + id + ".txt",
                                        "ergo_" + id + ".txt");
@@ -1584,7 +1584,7 @@ Sim::initializeRunLog()
          << "\t"
          << "burn-between"
          << "\t";
-  if (check_ergo) {
+  if (check_ergo & (M > 1)) {
     stream << "auto-corr"
            << "\t"
            << "cross-corr"
@@ -1636,7 +1636,7 @@ Sim::writeRunLog(int current_step, int offset, bool keep)
     stream << (int)run_buffer(i, 1) << "\t";
     stream << (int)run_buffer(i, 2) << "\t";
     stream << (int)run_buffer(i, 3) << "\t";
-    if (check_ergo) {
+    if (check_ergo & (M > 1)) {
       stream << run_buffer(i, 4) << "\t";
       stream << run_buffer(i, 5) << "\t";
       stream << run_buffer(i, 6) << "\t";
