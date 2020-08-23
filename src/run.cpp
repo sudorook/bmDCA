@@ -1452,13 +1452,16 @@ Sim::updateReparameterization(void)
 
   double beta1 = 0.9;
   double beta2 = 0.999;
+  double beta1_t = pow(beta1, step);
+  double beta2_t = pow(beta2, step);
+
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
       for (int a = 0; a < Q; a++) {
         for (int b = 0; b < Q; b++) {
           model->params.J(i, j)(a, b) +=
-            max_step_J * model->moment1.J(i, j)(a, b) / (1 - beta1) /
-            (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2)) + 0.00000001);
+            max_step_J * model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
+            (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) + 0.00000001);
         }
       }
     }
@@ -1473,16 +1476,16 @@ Sim::updateReparameterization(void)
             for (int b = 0; b < Q; b++) {
               Dh(a, i) +=
                 msa_stats.frequency_1p(b, j) * max_step_J *
-                model->moment1.J(i, j)(a, b) / (1 - beta1) /
-                (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2)) + 0.00000001);
+                model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
+                (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) + 0.00000001);
             }
           }
           if (i > j) {
             for (int b = 0; b < Q; b++) {
               Dh(a, i) +=
                 msa_stats.frequency_1p(b, j) * max_step_J *
-                model->moment1.J(j, i)(b, a) / (1 - beta1) /
-                (sqrt(model->moment2.J(j, i)(b, a) / (1 - beta2)) + 0.00000001);
+                model->moment1.J(j, i)(b, a) / (1 - beta1_t) /
+                (sqrt(model->moment2.J(j, i)(b, a) / (1 - beta2_t)) + 0.00000001);
             }
           }
         }
@@ -1492,8 +1495,8 @@ Sim::updateReparameterization(void)
     for (int i = 0; i < N; i++) {
       for (int a = 0; a < Q; a++) {
         model->params.h(a, i) +=
-          max_step_h * model->moment1.h(a, i) / (1 - beta1) /
-            (sqrt(model->moment2.h(a, i) / (1 - beta2)) + 0.00000001) +
+          max_step_h * model->moment1.h(a, i) / (1 - beta1_t) /
+            (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) + 0.00000001) +
           0.5 * Dh(a, i);
       }
     }
@@ -1501,8 +1504,8 @@ Sim::updateReparameterization(void)
     for (int i = 0; i < N; i++) {
       for (int a = 0; a < Q; a++) {
         model->params.h(a, i) +=
-          max_step_h * model->moment1.h(a, i) / (1 - beta1) /
-            (sqrt(model->moment2.h(a, i) / (1 - beta2)) + 0.00000001);
+          max_step_h * model->moment1.h(a, i) / (1 - beta1_t) /
+            (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) + 0.00000001);
       }
     }
   }
