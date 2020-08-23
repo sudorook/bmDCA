@@ -1455,6 +1455,120 @@ Sim::updateReparameterization(void)
   double beta1_t = pow(beta1, step);
   double beta2_t = pow(beta2, step);
 
+  // double rho_inf = 2. / (1. - beta2) - 1.;
+  // double rho_t = rho_inf - 2. * (double)step * beta2_t / (1. - beta2_t);
+  //
+  // if (rho_t > 4.) {
+  //   double rectifier = sqrt(((rho_t - 4.) * (rho_t - 2.) * rho_inf) /
+  //                           ((rho_inf - 4.) * (rho_inf - 2.) * rho_t));
+  //   for (int i = 0; i < N; i++) {
+  //     for (int j = i + 1; j < N; j++) {
+  //       for (int a = 0; a < Q; a++) {
+  //         for (int b = 0; b < Q; b++) {
+  //           model->params.J(i, j)(a, b) +=
+  //             rectifier * max_step_J * model->moment1.J(i, j)(a, b) /
+  //             (1. - beta1_t) /
+  //             (sqrt(model->moment2.J(i, j)(a, b) / (1. - beta2_t)) +
+  //              0.00000001);
+  //         }
+  //       }
+  //     }
+  //   }
+  //
+  //   if (use_reparametrization) {
+  //     arma::Mat<double> Dh = arma::Mat<double>(Q, N, arma::fill::zeros);
+  //     for (int i = 0; i < N; i++) {
+  //       for (int a = 0; a < Q; a++) {
+  //         for (int j = 0; j < N; j++) {
+  //           if (i < j) {
+  //             for (int b = 0; b < Q; b++) {
+  //               Dh(a, i) +=
+  //                 msa_stats.frequency_1p(b, j) * max_step_J * rectifier *
+  //                 model->moment1.J(i, j)(a, b) / (1. - beta1_t) /
+  //                 (sqrt(model->moment2.J(i, j)(a, b) / (1. - beta2_t)) +
+  //                  0.00000001);
+  //             }
+  //           }
+  //           if (i > j) {
+  //             for (int b = 0; b < Q; b++) {
+  //               Dh(a, i) +=
+  //                 msa_stats.frequency_1p(b, j) * max_step_J * rectifier *
+  //                 model->moment1.J(j, i)(b, a) / (1. - beta1_t) /
+  //                 (sqrt(model->moment2.J(j, i)(b, a) / (1. - beta2_t)) +
+  //                  0.00000001);
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+  //
+  //     for (int i = 0; i < N; i++) {
+  //       for (int a = 0; a < Q; a++) {
+  //         model->params.h(a, i) +=
+  //           rectifier * max_step_h * model->moment1.h(a, i) / (1. - beta1_t) /
+  //             (sqrt(model->moment2.h(a, i) / (1. - beta2_t)) + 0.00000001) +
+  //           0.5 * Dh(a, i);
+  //       }
+  //     }
+  //   } else {
+  //     for (int i = 0; i < N; i++) {
+  //       for (int a = 0; a < Q; a++) {
+  //         model->params.h(a, i) +=
+  //           rectifier * max_step_h * model->moment1.h(a, i) / (1. - beta1_t) /
+  //           (sqrt(model->moment2.h(a, i) / (1. - beta2_t)) + 0.00000001);
+  //       }
+  //     }
+  //   }
+  // } else {
+  //   for (int i = 0; i < N; i++) {
+  //     for (int j = i + 1; j < N; j++) {
+  //       for (int a = 0; a < Q; a++) {
+  //         for (int b = 0; b < Q; b++) {
+  //           model->params.J(i, j)(a, b) +=
+  //             max_step_J * model->moment1.J(i, j)(a, b) / (1. - beta1_t);
+  //         }
+  //       }
+  //     }
+  //   }
+  //
+  //   if (use_reparametrization) {
+  //     arma::Mat<double> Dh = arma::Mat<double>(Q, N, arma::fill::zeros);
+  //     for (int i = 0; i < N; i++) {
+  //       for (int a = 0; a < Q; a++) {
+  //         for (int j = 0; j < N; j++) {
+  //           if (i < j) {
+  //             for (int b = 0; b < Q; b++) {
+  //               Dh(a, i) += msa_stats.frequency_1p(b, j) * max_step_J *
+  //                           model->moment1.J(i, j)(a, b) / (1. - beta1_t);
+  //             }
+  //           }
+  //           if (i > j) {
+  //             for (int b = 0; b < Q; b++) {
+  //               Dh(a, i) += msa_stats.frequency_1p(b, j) * max_step_J *
+  //                           model->moment1.J(j, i)(b, a) / (1. - beta1_t);
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+  //
+  //     for (int i = 0; i < N; i++) {
+  //       for (int a = 0; a < Q; a++) {
+  //         model->params.h(a, i) +=
+  //           max_step_h * model->moment1.h(a, i) / (1. - beta1_t) +
+  //           0.5 * Dh(a, i);
+  //       }
+  //     }
+  //   } else {
+  //     for (int i = 0; i < N; i++) {
+  //       for (int a = 0; a < Q; a++) {
+  //         model->params.h(a, i) +=
+  //           max_step_h * model->moment1.h(a, i) / (1. - beta1_t);
+  //       }
+  //     }
+  //   }
+  // }
+
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
       for (int a = 0; a < Q; a++) {
