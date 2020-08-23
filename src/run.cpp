@@ -29,14 +29,10 @@ Sim::initializeParameters(void)
   initialize_params = true;
 
   // Learning rate settings
-  epsilon_0_h = 0.01;
-  epsilon_0_J = 0.001;
   adapt_up = 1.5;
   adapt_down = 0.6;
-  min_step_h = 0.000001;
-  max_step_h = 25; // divide by N later
-  min_step_J = 0.0000001;
-  max_step_J = 2.5; // divide by N later
+  step_h = 0.1;
+  step_J = 0.01;
   error_min_update = -1;
 
   // sampling time settings
@@ -104,14 +100,10 @@ Sim::writeParameters(std::string output_file)
   stream << "initialize_params=" << initialize_params << std::endl;
 
   // Learning rate settings
-  stream << "epsilon_0_h=" << epsilon_0_h << std::endl;
-  stream << "epsilon_0_J=" << epsilon_0_J << std::endl;
   stream << "adapt_up=" << adapt_up << std::endl;
   stream << "adapt_down=" << adapt_down << std::endl;
-  stream << "min_step_h=" << min_step_h << std::endl;
-  stream << "max_step_h=" << max_step_h << std::endl;
-  stream << "min_step_J=" << min_step_J << std::endl;
-  stream << "max_step_J=" << max_step_J << std::endl;
+  stream << "step_h=" << step_h << std::endl;
+  stream << "step_J=" << step_J << std::endl;
   stream << "error_min_update=" << error_min_update << std::endl;
 
   // sampling time settings
@@ -232,22 +224,14 @@ Sim::compareParameter(std::string key, std::string value)
     } else {
       same = same & (initialize_params == (value == "true"));
     }
-  } else if (key == "epsilon_0_h") {
-    same = same & (epsilon_0_h == std::stod(value));
-  } else if (key == "epsilon_0_J") {
-    same = same & (epsilon_0_J == std::stod(value));
   } else if (key == "adapt_up") {
     same = same & (adapt_up == std::stod(value));
   } else if (key == "adapt_down") {
     same = same & (adapt_down == std::stod(value));
-  } else if (key == "min_step_h") {
-    same = same & (min_step_h == std::stod(value));
-  } else if (key == "max_step_h") {
-    same = same & (max_step_h == std::stod(value));
-  } else if (key == "min_step_J") {
-    same = same & (min_step_J == std::stod(value));
-  } else if (key == "max_step_J") {
-    same = same & (max_step_J == std::stod(value));
+  } else if (key == "step_h") {
+    same = same & (step_h == std::stod(value));
+  } else if (key == "step_J") {
+    same = same & (step_J == std::stod(value));
   } else if (key == "error_min_update") {
     same = same & (error_min_update == std::stod(value));
   } else if (key == "t_wait_0") {
@@ -344,22 +328,14 @@ Sim::setParameter(std::string key, std::string value)
     } else {
       initialize_params = (value == "true");
     }
-  } else if (key == "epsilon_0_h") {
-    epsilon_0_h = std::stod(value);
-  } else if (key == "epsilon_0_J") {
-    epsilon_0_J = std::stod(value);
   } else if (key == "adapt_up") {
     adapt_up = std::stod(value);
   } else if (key == "adapt_down") {
     adapt_down = std::stod(value);
-  } else if (key == "min_step_h") {
-    min_step_h = std::stod(value);
-  } else if (key == "max_step_h") {
-    max_step_h = std::stod(value);
-  } else if (key == "min_step_J") {
-    min_step_J = std::stod(value);
-  } else if (key == "max_step_J") {
-    max_step_J = std::stod(value);
+  } else if (key == "step_h") {
+    step_h = std::stod(value);
+  } else if (key == "step_J") {
+    step_J = std::stod(value);
   } else if (key == "error_min_update") {
     error_min_update = std::stod(value);
   } else if (key == "t_wait_0") {
@@ -453,7 +429,7 @@ Sim::Sim(MSAStats msa_stats,
   }
 
   if (step_offset == 0) {
-    model = new Model(msa_stats, epsilon_0_h, epsilon_0_J, initialize_params);
+    model = new Model(msa_stats, initialize_params);
   } else {
     if (output_binary) {
       model =
@@ -1466,7 +1442,7 @@ Sim::updateReparameterization(void)
         for (int a = 0; a < Q; a++) {
           for (int b = 0; b < Q; b++) {
             model->params.J(i, j)(a, b) +=
-              rectifier * max_step_J * model->moment1.J(i, j)(a, b) /
+              rectifier * step_J * model->moment1.J(i, j)(a, b) /
               (1. - beta1_t) /
               (sqrt(model->moment2.J(i, j)(a, b) / (1. - beta2_t)) +
                0.00000001);
@@ -1483,7 +1459,7 @@ Sim::updateReparameterization(void)
             if (i < j) {
               for (int b = 0; b < Q; b++) {
                 Dh(a, i) +=
-                  msa_stats.frequency_1p(b, j) * max_step_J * rectifier *
+                  msa_stats.frequency_1p(b, j) * step_J * rectifier *
                   model->moment1.J(i, j)(a, b) / (1. - beta1_t) /
                   (sqrt(model->moment2.J(i, j)(a, b) / (1. - beta2_t)) +
                    0.00000001);
@@ -1492,7 +1468,7 @@ Sim::updateReparameterization(void)
             if (i > j) {
               for (int b = 0; b < Q; b++) {
                 Dh(a, i) +=
-                  msa_stats.frequency_1p(b, j) * max_step_J * rectifier *
+                  msa_stats.frequency_1p(b, j) * step_J * rectifier *
                   model->moment1.J(j, i)(b, a) / (1. - beta1_t) /
                   (sqrt(model->moment2.J(j, i)(b, a) / (1. - beta2_t)) +
                    0.00000001);
@@ -1505,7 +1481,7 @@ Sim::updateReparameterization(void)
       for (int i = 0; i < N; i++) {
         for (int a = 0; a < Q; a++) {
           model->params.h(a, i) +=
-            rectifier * max_step_h * model->moment1.h(a, i) / (1. - beta1_t) /
+            rectifier * step_h * model->moment1.h(a, i) / (1. - beta1_t) /
               (sqrt(model->moment2.h(a, i) / (1. - beta2_t)) + 0.00000001) +
             0.5 * Dh(a, i);
         }
@@ -1514,7 +1490,7 @@ Sim::updateReparameterization(void)
       for (int i = 0; i < N; i++) {
         for (int a = 0; a < Q; a++) {
           model->params.h(a, i) +=
-            rectifier * max_step_h * model->moment1.h(a, i) / (1. - beta1_t) /
+            rectifier * step_h * model->moment1.h(a, i) / (1. - beta1_t) /
             (sqrt(model->moment2.h(a, i) / (1. - beta2_t)) + 0.00000001);
         }
       }
@@ -1525,7 +1501,7 @@ Sim::updateReparameterization(void)
         for (int a = 0; a < Q; a++) {
           for (int b = 0; b < Q; b++) {
             model->params.J(i, j)(a, b) +=
-              max_step_J * model->moment1.J(i, j)(a, b) / (1. - beta1_t);
+              step_J * model->moment1.J(i, j)(a, b) / (1. - beta1_t);
           }
         }
       }
@@ -1538,13 +1514,13 @@ Sim::updateReparameterization(void)
           for (int j = 0; j < N; j++) {
             if (i < j) {
               for (int b = 0; b < Q; b++) {
-                Dh(a, i) += msa_stats.frequency_1p(b, j) * max_step_J *
+                Dh(a, i) += msa_stats.frequency_1p(b, j) * step_J *
                             model->moment1.J(i, j)(a, b) / (1. - beta1_t);
               }
             }
             if (i > j) {
               for (int b = 0; b < Q; b++) {
-                Dh(a, i) += msa_stats.frequency_1p(b, j) * max_step_J *
+                Dh(a, i) += msa_stats.frequency_1p(b, j) * step_J *
                             model->moment1.J(j, i)(b, a) / (1. - beta1_t);
               }
             }
@@ -1555,7 +1531,7 @@ Sim::updateReparameterization(void)
       for (int i = 0; i < N; i++) {
         for (int a = 0; a < Q; a++) {
           model->params.h(a, i) +=
-            max_step_h * model->moment1.h(a, i) / (1. - beta1_t) +
+            step_h * model->moment1.h(a, i) / (1. - beta1_t) +
             0.5 * Dh(a, i);
         }
       }
@@ -1563,7 +1539,7 @@ Sim::updateReparameterization(void)
       for (int i = 0; i < N; i++) {
         for (int a = 0; a < Q; a++) {
           model->params.h(a, i) +=
-            max_step_h * model->moment1.h(a, i) / (1. - beta1_t);
+            step_h * model->moment1.h(a, i) / (1. - beta1_t);
         }
       }
     }
@@ -1574,7 +1550,7 @@ Sim::updateReparameterization(void)
   //     for (int a = 0; a < Q; a++) {
   //       for (int b = 0; b < Q; b++) {
   //         model->params.J(i, j)(a, b) +=
-  //           max_step_J * model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
+  //           step_J * model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
   //           (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) + 0.00000001);
   //       }
   //     }
@@ -1589,7 +1565,7 @@ Sim::updateReparameterization(void)
   //         if (i < j) {
   //           for (int b = 0; b < Q; b++) {
   //             Dh(a, i) +=
-  //               msa_stats.frequency_1p(b, j) * max_step_J *
+  //               msa_stats.frequency_1p(b, j) * step_J *
   //               model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
   //               (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) + 0.00000001);
   //           }
@@ -1597,7 +1573,7 @@ Sim::updateReparameterization(void)
   //         if (i > j) {
   //           for (int b = 0; b < Q; b++) {
   //             Dh(a, i) +=
-  //               msa_stats.frequency_1p(b, j) * max_step_J *
+  //               msa_stats.frequency_1p(b, j) * step_J *
   //               model->moment1.J(j, i)(b, a) / (1 - beta1_t) /
   //               (sqrt(model->moment2.J(j, i)(b, a) / (1 - beta2_t)) + 0.00000001);
   //           }
@@ -1609,7 +1585,7 @@ Sim::updateReparameterization(void)
   //   for (int i = 0; i < N; i++) {
   //     for (int a = 0; a < Q; a++) {
   //       model->params.h(a, i) +=
-  //         max_step_h * model->moment1.h(a, i) / (1 - beta1_t) /
+  //         step_h * model->moment1.h(a, i) / (1 - beta1_t) /
   //           (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) + 0.00000001) +
   //         0.5 * Dh(a, i);
   //     }
@@ -1618,7 +1594,7 @@ Sim::updateReparameterization(void)
   //   for (int i = 0; i < N; i++) {
   //     for (int a = 0; a < Q; a++) {
   //       model->params.h(a, i) +=
-  //         max_step_h * model->moment1.h(a, i) / (1 - beta1_t) /
+  //         step_h * model->moment1.h(a, i) / (1 - beta1_t) /
   //           (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) + 0.00000001);
   //     }
   //   }

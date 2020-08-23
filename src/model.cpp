@@ -45,8 +45,6 @@ Model::Model(std::string parameters_file_h,
 }
 
 Model::Model(MSAStats msa_stats,
-             double epsilon_h,
-             double epsilon_J,
              bool init_gradient)
 {
   N = msa_stats.getN();
