@@ -33,14 +33,14 @@ private:
   void clearFiles(std::string);
 
   // BM settings
-  double lambda_reg1;  // L2 regularization strength for 1p statistics (fields)
-  double lambda_reg2;  // L2 regularization strength for 2p statistics (cpling)
-  int step_max;        // max number of BM steps
-  double error_max;    // exit error
-  std::string stop_mode = "threshold";
-  double error_threshold; // placeholder for dyanmic exit error
-  int save_parameters; // multiple of iterations at which to save parameters
-  int save_best_steps; // multiple of iterations at which to save parameters
+  double lambda_reg1;                  // L2 regularization strength for 1p statistics (fields)
+  double lambda_reg2;                  // L2 regularization strength for 2p statistics (cpling)
+  int step_max;                        // max number of BM steps
+  double error_max;                    // exit error
+  std::string stop_mode = "threshold"; // stop mode
+  double error_threshold;              // placeholder for dyanmic exit error
+  int save_parameters;                 // multiple of iterations at which to save parameters
+  int save_best_steps;                 // multiple of iterations at which to save parameters
   int random_seed;
   bool use_reparametrization = true;
   bool initialize_params = true;
@@ -79,14 +79,14 @@ private:
   // MCMC settings
   bool use_ss = false;          // flag to use stochastic sampling mode
   int step;                     // current step number
-  int step_offset = 0;
+  int step_offset = 0;          // placeholder variable for restarting runs
   int M;                        // number of samples for each MCMC run
   int count_max;                // number of independent MCMC runs
   bool init_sample = false;     // flag for loading the first positions when
                                 // initializing the mcmc from a file
   std::string init_sample_file; // name of file with mcmc initial sample
   std::string sampler = "mh";   // MC sampler type ('mh' or 'z')
-  bool use_pos_reg = false;     // enable for position-specific regularizetion
+  bool use_pos_reg = false;     // enable for position-specific regularization
 
   bool output_binary = true;
 

@@ -15,7 +15,7 @@ public:
   int N;
   int Q;
 
-  Model(MSAStats, double, double, bool=true);
+  Model(MSAStats, double, double, bool = true);
   Model(std::string, std::string, std::string, std::string, std::string);
   Model(std::string,
         std::string,

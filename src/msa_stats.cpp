@@ -1,14 +1,14 @@
 #include "msa_stats.hpp"
 
+#include <algorithm>
 #include <armadillo>
 #include <cmath>
 #include <fstream>
 #include <iostream>
-#include <algorithm>
 #include <numeric>
+#include <random>
 #include <unordered_set>
 #include <vector>
-#include <random>
 
 #include "pcg_random.hpp"
 
@@ -60,13 +60,13 @@ MSAStats::MSAStats(MSA* msa)
   frequency_1p = frequency_1p / M_effective;
 
   double mean_1p_var =
-    arma::accu(frequency_1p % (1. - frequency_1p)) / (double)(N*Q);
+    arma::accu(frequency_1p % (1. - frequency_1p)) / (double)(N * Q);
 
   // Compute the 2p statistics
   arma::Col<double> mean_2p_var_vec = arma::Col<double>(N, arma::fill::zeros);
 #pragma omp parallel
   {
-#pragma omp for schedule(dynamic,1)
+#pragma omp for schedule(dynamic, 1)
     for (int i = 0; i < N; i++) {
       for (int j = i + 1; j < N; j++) {
         double* weight_ptr = msa->sequence_weights.memptr();
@@ -195,8 +195,8 @@ MSAStats::computeErrorMSA(int reps, long int seed)
     arma::field<arma::Mat<double>> msa_2_frequency_2p =
       arma::field<arma::Mat<double>>(N, N);
 
-    // Compute the frequecies (1p statistics) for amino acids (and gaps) for each
-    // position. Use pointers to make things speedier.
+    // Compute the frequecies (1p statistics) for amino acids (and gaps) for
+    // each position. Use pointers to make things speedier.
 #pragma omp parallel
     {
 #pragma omp for
@@ -228,7 +228,7 @@ MSAStats::computeErrorMSA(int reps, long int seed)
     // Compute the 2p statistics
 #pragma omp parallel
     {
-#pragma omp for schedule(dynamic,1)
+#pragma omp for schedule(dynamic, 1)
       for (int i = 0; i < N; i++) {
         for (int j = i + 1; j < N; j++) {
           double* weight_ptr = msa_1.sequence_weights.memptr();
@@ -246,7 +246,7 @@ MSAStats::computeErrorMSA(int reps, long int seed)
     }
 #pragma omp parallel
     {
-#pragma omp for schedule(dynamic,1)
+#pragma omp for schedule(dynamic, 1)
       for (int i = 0; i < N; i++) {
         for (int j = i + 1; j < N; j++) {
           double* weight_ptr = msa_2.sequence_weights.memptr();
@@ -270,7 +270,7 @@ MSAStats::computeErrorMSA(int reps, long int seed)
     arma::Col<double> error_2p_vec = arma::Col<double>(N, arma::fill::zeros);
 #pragma omp parallel
     {
-#pragma omp for schedule(dynamic,1)
+#pragma omp for schedule(dynamic, 1)
       for (int i = 0; i < N; i++) {
         for (int j = i + 1; j < N; j++) {
           error_2p_vec(i) = arma::accu(

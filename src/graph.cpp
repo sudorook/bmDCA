@@ -145,7 +145,7 @@ Graph::sample_mcmc_energies(double* ptr,
         E += de;
       }
     }
-    *(ptr+s) = E;
+    *(ptr + s) = E;
   }
   return;
 };

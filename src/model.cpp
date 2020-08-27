@@ -74,9 +74,9 @@ Model::Model(MSAStats msa_stats,
           log((1. - pseudocount) * (*(freq_ptr + aa)) + pseudocount * (1. / Q));
       }
       for (int aa = 0; aa < Q; aa++) {
-        params.h(aa, i) =
-          log((1. - pseudocount) * (*(freq_ptr + aa)) + pseudocount * (1. / Q)) -
-          avg / Q;
+        params.h(aa, i) = log((1. - pseudocount) * (*(freq_ptr + aa)) +
+                              pseudocount * (1. / Q)) -
+                          avg / Q;
       }
     }
   }

@@ -105,7 +105,7 @@ MCMCStats::computeCorrelations(void)
   // Compute distances within replicates
 #pragma omp parallel
   {
-#pragma omp for schedule(dynamic,1)
+#pragma omp for schedule(dynamic, 1)
     for (int rep = 0; rep < reps; rep++) {
       arma::Mat<int> slice = (samples->slice(rep)).t();
       for (int seq1 = 0; seq1 < M; seq1++) {
@@ -136,7 +136,7 @@ MCMCStats::computeCorrelations(void)
   // Compute distances between replicates
 #pragma omp parallel
   {
-#pragma omp for schedule(dynamic,1)
+#pragma omp for schedule(dynamic, 1)
     for (int seq = 0; seq < M; seq++) {
       for (int rep1 = 0; rep1 < reps; rep1++) {
         for (int rep2 = rep1 + 1; rep2 < reps; rep2++) {
@@ -280,7 +280,7 @@ MCMCStats::computeSampleStats(void)
 
 #pragma omp parallel
   {
-#pragma omp for schedule(dynamic,1)
+#pragma omp for schedule(dynamic, 1)
     for (int i = 0; i < N; i++) {
       for (int j = i + 1; j < N; j++) {
         arma::Cube<double> n2 =

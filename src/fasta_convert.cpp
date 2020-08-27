@@ -11,7 +11,8 @@ void
 print_usage(void)
 {
   std::cout << "mumeric2fasta usage:" << std::endl;
-  std::cout << "(e.g. numeric2fasta -n <numeric MSA> -o <output FASTA file>" << std::endl;
+  std::cout << "(e.g. numeric2fasta -n <numeric MSA> -o <output FASTA file>"
+            << std::endl;
   std::cout << "  -n: numeric MSA (only 21 states supported)" << std::endl;
   std::cout << "  -o: output FASTA file" << std::endl;
   std::cout << "  -h: print usage (i.e. this message)" << std::endl;
@@ -56,8 +57,8 @@ main(int argc, char* argv[])
   std::ifstream input_stream(numeric_file);
 
   if (!input_stream) {
-    std::cerr << "ERROR: couldn't open '" << numeric_file
-              << "' for reading." << std::endl;
+    std::cerr << "ERROR: couldn't open '" << numeric_file << "' for reading."
+              << std::endl;
     std::exit(EXIT_FAILURE);
   }
 
@@ -104,7 +105,6 @@ main(int argc, char* argv[])
     output_stream << std::endl << std::endl;
   }
   output_stream.close();
-
 
   return 0;
 }

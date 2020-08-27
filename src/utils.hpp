@@ -50,6 +50,7 @@ bool checkFileExists(std::string);
 
 void deleteAllFiles(std::string);
 
-char convertAA(int);
+char
+convertAA(int);
 
 #endif

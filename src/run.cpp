@@ -1060,8 +1060,7 @@ Sim::run(void)
       bool converged = false;
       if (error_tot < error_max) {
         converged = true;
-      } else if ((stop_mode == "stderr") |
-                 (stop_mode == "stderr_adj")) {
+      } else if ((stop_mode == "stderr") | (stop_mode == "stderr_adj")) {
         double std_err = error_threshold;
         if (stop_mode == "stderr_adj") {
           std::vector<double> corr_stats = mcmc_stats->getCorrelationsStats();
@@ -1108,7 +1107,7 @@ Sim::run(void)
           (step_importance == step_importance_max || flag_coherence == false)) {
         std::cout << "writing step " << step << "... " << std::flush;
         timer.tic();
-        writeRunLog(step % save_parameters,  buffer_offset);
+        writeRunLog(step % save_parameters, buffer_offset);
         buffer_offset = 0;
         writeData(step);
         std::cout << timer.toc() << " sec" << std::endl;
