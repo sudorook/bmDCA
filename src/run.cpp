@@ -1203,8 +1203,7 @@ Sim::computeErrorReparametrization(void)
     for (int i = 0; i < N; i++) {
       for (int aa = 0; aa < Q; aa++) {
         delta = mcmc_stats->frequency_1p(aa, i) -
-                msa_stats.frequency_1p(aa, i) +
-                lambda_h * model->params.h(aa, i);
+                msa_stats.frequency_1p(aa, i);
         delta_stat =
           (mcmc_stats->frequency_1p(aa, i) - msa_stats.frequency_1p(aa, i)) /
           (pow(msa_stats.frequency_1p(aa, i) *
@@ -1299,8 +1298,7 @@ Sim::computeErrorReparametrization(void)
                           (1. + fabs(msa_stats.rel_entropy_grad_1p(aa2, j))));
             } else {
               delta = -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
-                        mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
-                        lambda_j * model->params.J(i, j)(aa1, aa2));
+                        mcmc_stats->frequency_2p(i, j)(aa1, aa2));
             }
             delta_stat =
               (mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
@@ -1550,8 +1548,10 @@ Sim::updateReparameterization(void)
       for (int a = 0; a < Q; a++) {
         for (int b = 0; b < Q; b++) {
           model->params.J(i, j)(a, b) +=
-            step_J * model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
-            (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) + 0.00000001);
+            step_J * (model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
+                        (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) +
+                         0.00000001) +
+                      lambda_reg2 * model->params.J(i, j)(a, b));
         }
       }
     }
@@ -1594,8 +1594,10 @@ Sim::updateReparameterization(void)
     for (int i = 0; i < N; i++) {
       for (int a = 0; a < Q; a++) {
         model->params.h(a, i) +=
-          step_h * model->moment1.h(a, i) / (1 - beta1_t) /
-            (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) + 0.00000001);
+          step_h *
+          (model->moment1.h(a, i) / (1 - beta1_t) /
+             (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) + 0.00000001) +
+           lambda_reg1 * model->params.h(a, i));
       }
     }
   }
