@@ -31,8 +31,10 @@ Sim::initializeParameters(void)
   // Learning rate settings
   adapt_up = 1.5;
   adapt_down = 0.6;
-  step_h = 0.1;
-  step_J = 0.01;
+  max_step_h = 0.1;
+  min_step_h = 0.01;
+  max_step_J = 0.01;
+  min_step_J = 0.001;
   error_min_update = -1;
 
   // sampling time settings
@@ -102,8 +104,10 @@ Sim::writeParameters(std::string output_file)
   // Learning rate settings
   stream << "adapt_up=" << adapt_up << std::endl;
   stream << "adapt_down=" << adapt_down << std::endl;
-  stream << "step_h=" << step_h << std::endl;
-  stream << "step_J=" << step_J << std::endl;
+  stream << "max_step_h=" << max_step_h << std::endl;
+  stream << "min_step_h=" << min_step_h << std::endl;
+  stream << "max_step_J=" << max_step_J << std::endl;
+  stream << "min_step_J=" << min_step_J << std::endl;
   stream << "error_min_update=" << error_min_update << std::endl;
 
   // sampling time settings
@@ -228,10 +232,14 @@ Sim::compareParameter(std::string key, std::string value)
     same = same & (adapt_up == std::stod(value));
   } else if (key == "adapt_down") {
     same = same & (adapt_down == std::stod(value));
-  } else if (key == "step_h") {
-    same = same & (step_h == std::stod(value));
-  } else if (key == "step_J") {
-    same = same & (step_J == std::stod(value));
+  } else if (key == "max_step_h") {
+    same = same & (max_step_h == std::stod(value));
+  } else if (key == "min_step_h") {
+    same = same & (min_step_h == std::stod(value));
+  } else if (key == "max_step_J") {
+    same = same & (max_step_J == std::stod(value));
+  } else if (key == "min_step_J") {
+    same = same & (min_step_J == std::stod(value));
   } else if (key == "error_min_update") {
     same = same & (error_min_update == std::stod(value));
   } else if (key == "t_wait_0") {
@@ -332,10 +340,14 @@ Sim::setParameter(std::string key, std::string value)
     adapt_up = std::stod(value);
   } else if (key == "adapt_down") {
     adapt_down = std::stod(value);
-  } else if (key == "step_h") {
-    step_h = std::stod(value);
-  } else if (key == "step_J") {
-    step_J = std::stod(value);
+  } else if (key == "max_step_h") {
+    max_step_h = std::stod(value);
+  } else if (key == "min_step_h") {
+    min_step_h = std::stod(value);
+  } else if (key == "max_step_J") {
+    max_step_J = std::stod(value);
+  } else if (key == "min_step_J") {
+    min_step_J = std::stod(value);
   } else if (key == "error_min_update") {
     error_min_update = std::stod(value);
   } else if (key == "t_wait_0") {
@@ -1542,6 +1554,10 @@ Sim::updateReparameterization(void)
   //     }
   //   }
   // }
+
+
+  double step_J = Max(min_step_J, max_step_J * (1. - (double)step/100.));
+  double step_h = Max(min_step_h, max_step_h * (1. - (double)step/100.));
 
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
