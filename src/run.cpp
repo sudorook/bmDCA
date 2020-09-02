@@ -1549,9 +1549,9 @@ Sim::updateReparameterization(void)
         for (int b = 0; b < Q; b++) {
           model->params.J(i, j)(a, b) +=
             step_J * (model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
-                        (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) +
-                         0.00000001) +
-                      lambda_reg2 * model->params.J(i, j)(a, b));
+                      (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) +
+                       0.00000001)) -
+            lambda_reg2 * model->params.J(i, j)(a, b);
         }
       }
     }
@@ -1595,9 +1595,9 @@ Sim::updateReparameterization(void)
       for (int a = 0; a < Q; a++) {
         model->params.h(a, i) +=
           step_h *
-          (model->moment1.h(a, i) / (1 - beta1_t) /
-             (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) + 0.00000001) +
-           lambda_reg1 * model->params.h(a, i));
+            (model->moment1.h(a, i) / (1 - beta1_t) /
+             (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) + 0.00000001)) -
+          lambda_reg1 * model->params.h(a, i);
       }
     }
   }
