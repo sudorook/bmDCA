@@ -96,7 +96,7 @@ Sim::writeParameters(std::string output_file)
   // BM settings
   stream << "lambda_reg1=" << lambda_reg1 << std::endl;
   stream << "lambda_reg2=" << lambda_reg2 << std::endl;
-  stream << "alphg_reg=" << alpha_reg << std::endl;
+  stream << "alpha_reg=" << alpha_reg << std::endl;
   stream << "weight_decay1=" << weight_decay1 << std::endl;
   stream << "weight_decay2=" << weight_decay2 << std::endl;
   stream << "step_max=" << step_max << std::endl;
