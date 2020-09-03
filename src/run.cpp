@@ -3,6 +3,7 @@
 #include <armadillo>
 #include <cassert>
 #include <cstdlib>
+#include <cmath>
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
@@ -21,6 +22,9 @@ Sim::initializeParameters(void)
   // BM settings
   lambda_reg1 = 0.01;
   lambda_reg2 = 0.01;
+  alpha_reg = 1.0;
+  weight_decay1 = 0;
+  weight_decay2 = 0;
   step_max = 2000;
   error_max = 0.00001;
   save_parameters = 20;
@@ -92,6 +96,9 @@ Sim::writeParameters(std::string output_file)
   // BM settings
   stream << "lambda_reg1=" << lambda_reg1 << std::endl;
   stream << "lambda_reg2=" << lambda_reg2 << std::endl;
+  stream << "alphg_reg=" << alpha_reg << std::endl;
+  stream << "weight_decay1=" << weight_decay1 << std::endl;
+  stream << "weight_decay2=" << weight_decay2 << std::endl;
   stream << "step_max=" << step_max << std::endl;
   stream << "stop_mode=" << stop_mode << std::endl;
   stream << "error_max=" << error_max << std::endl;
@@ -209,6 +216,12 @@ Sim::compareParameter(std::string key, std::string value)
     same = same & (lambda_reg1 == std::stod(value));
   } else if (key == "lambda_reg2") {
     same = same & (lambda_reg2 == std::stod(value));
+  } else if (key == "alpha_reg") {
+    same = same & (alpha_reg == std::stod(value));
+  } else if (key == "weight_decay1") {
+    same = same & (weight_decay1 == std::stod(value));
+  } else if (key == "weight_decay2") {
+    same = same & (weight_decay2 == std::stod(value));
   } else if (key == "step_max") {
   } else if (key == "error_max") {
   } else if (key == "stop_mode") {
@@ -308,6 +321,12 @@ Sim::setParameter(std::string key, std::string value)
     lambda_reg1 = std::stod(value);
   } else if (key == "lambda_reg2") {
     lambda_reg2 = std::stod(value);
+  } else if (key == "alpha_reg") {
+    alpha_reg = std::stod(value);
+  } else if (key == "weight_decay1") {
+    weight_decay1 = std::stod(value);
+  } else if (key == "weight_decay2") {
+    weight_decay2 = std::stod(value);
   } else if (key == "step_max") {
     step_max = std::stoi(value);
   } else if (key == "stop_mode") {
@@ -1154,6 +1173,8 @@ Sim::computeErrorReparametrization(void)
   int N = msa_stats.getN();
   int Q = msa_stats.getQ();
 
+  double gamma = alpha_reg;
+
   error_1p = 0;
   error_2p = 0;
   error_stat_1p = 0;
@@ -1214,8 +1235,11 @@ Sim::computeErrorReparametrization(void)
   } else {
     for (int i = 0; i < N; i++) {
       for (int aa = 0; aa < Q; aa++) {
-        delta = mcmc_stats->frequency_1p(aa, i) -
-                msa_stats.frequency_1p(aa, i);
+        delta =
+          mcmc_stats->frequency_1p(aa, i) - msa_stats.frequency_1p(aa, i) +
+          lambda_h * (gamma * model->params.h(aa, i) +
+                      (1. - gamma) *
+                        (0.5 - (double)std::signbit(model->params.h(aa, i))));
         delta_stat =
           (mcmc_stats->frequency_1p(aa, i) - msa_stats.frequency_1p(aa, i)) /
           (pow(msa_stats.frequency_1p(aa, i) *
@@ -1309,8 +1333,13 @@ Sim::computeErrorReparametrization(void)
                           (1. + fabs(msa_stats.rel_entropy_grad_1p(aa1, i))) /
                           (1. + fabs(msa_stats.rel_entropy_grad_1p(aa2, j))));
             } else {
-              delta = -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
-                        mcmc_stats->frequency_2p(i, j)(aa1, aa2));
+              delta =
+                -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
+                  mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
+                  lambda_j *
+                    (gamma * model->params.J(i, j)(aa1, aa2) +
+                     (1. - gamma) * (0.5 - (double)std::signbit(model->params.J(
+                                             i, j)(aa1, aa2)))));
             }
             delta_stat =
               (mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
@@ -1564,10 +1593,14 @@ Sim::updateReparameterization(void)
       for (int a = 0; a < Q; a++) {
         for (int b = 0; b < Q; b++) {
           model->params.J(i, j)(a, b) +=
-            step_J * (model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
-                      (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) +
-                       0.00000001)) -
-            lambda_reg2 * model->params.J(i, j)(a, b);
+            step_J *
+            (model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
+               (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) +
+                0.00000001) -
+             weight_decay2 *
+               (alpha_reg * model->params.J(i, j)(a, b) +
+                (1. - alpha_reg) *
+                  (0.5 - (double)std::signbit(model->params.J(i, j)(a, b)))));
         }
       }
     }
@@ -1611,9 +1644,12 @@ Sim::updateReparameterization(void)
       for (int a = 0; a < Q; a++) {
         model->params.h(a, i) +=
           step_h *
-            (model->moment1.h(a, i) / (1 - beta1_t) /
-             (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) + 0.00000001)) -
-          lambda_reg1 * model->params.h(a, i);
+          (model->moment1.h(a, i) / (1 - beta1_t) /
+             (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) + 0.00000001) -
+           weight_decay1 *
+             (alpha_reg * model->params.h(a, i) +
+              (1. - alpha_reg) *
+                (0.5 - (double)std::signbit(model->params.h(a, i)))));
       }
     }
   }
