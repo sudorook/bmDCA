@@ -1556,8 +1556,8 @@ Sim::updateReparameterization(void)
   // }
 
 
-  double step_J = Max(min_step_J, max_step_J * (1. - (double)step/100.));
-  double step_h = Max(min_step_h, max_step_h * (1. - (double)step/100.));
+  double step_J = Max(min_step_J, max_step_J * (1. - (double)step/200.));
+  double step_h = Max(min_step_h, max_step_h * (1. - (double)step/200.));
 
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
