@@ -56,10 +56,10 @@ private:
   double eta_min;              // min scaling factor for annealing
   double eta_max;              // max scaling factor for annealing
   std::string anneal_schedule; // type of annealing schedule
-  double anneal_period;        // period (# steps) for annealing
-  double anneal_warm;          // warm-up # steps for trapezoidal annealing
-  double anneal_hot;           // # steps to run at eta_max scaling
-  double anneal_cool;          // cool-down # steps to return to eta_min
+  int anneal_period;           // period (# steps) for annealing
+  int anneal_warm;             // warm-up # steps for trapezoidal annealing
+  int anneal_hot;              // # steps to run at eta_max scaling
+  int anneal_cool;             // cool-down # steps to return to eta_min
   double error_min_update;     // minimal number of standard deviation s of z
                                // variable for having parameter update (if
                                // negative or zero all parameters are updated)

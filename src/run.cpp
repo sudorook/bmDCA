@@ -268,13 +268,13 @@ Sim::compareParameter(std::string key, std::string value)
   } else if (key == "anneal_schedule") {
     same = same & (anneal_schedule == value);
   } else if (key == "anneal_period") {
-    same = same & (anneal_period == std::stod(value));
+    same = same & (anneal_period == std::stoi(value));
   } else if (key == "anneal_warm") {
-    same = same & (anneal_warm == std::stod(value));
+    same = same & (anneal_warm == std::stoi(value));
   } else if (key == "anneal_hot") {
-    same = same & (anneal_hot == std::stod(value));
+    same = same & (anneal_hot == std::stoi(value));
   } else if (key == "anneal_cool") {
-    same = same & (anneal_cool == std::stod(value));
+    same = same & (anneal_cool == std::stoi(value));
   } else if (key == "error_min_update") {
     same = same & (error_min_update == std::stod(value));
   } else if (key == "t_wait_0") {
@@ -392,13 +392,13 @@ Sim::setParameter(std::string key, std::string value)
   } else if (key == "anneal_schedule") {
     anneal_schedule = value;
   } else if (key == "anneal_period") {
-    anneal_period = std::stod(value);
+    anneal_period = std::stoi(value);
   } else if (key == "anneal_warm") {
-    anneal_warm = std::stod(value);
+    anneal_warm = std::stoi(value);
   } else if (key == "anneal_hot") {
-    anneal_hot = std::stod(value);
+    anneal_hot = std::stoi(value);
   } else if (key == "anneal_cool") {
-    anneal_cool = std::stod(value);
+    anneal_cool = std::stoi(value);
   } else if (key == "error_min_update") {
     error_min_update = std::stod(value);
   } else if (key == "t_wait_0") {
