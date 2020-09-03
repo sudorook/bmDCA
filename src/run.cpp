@@ -85,6 +85,12 @@ Sim::checkParameters(void)
   //   std::cerr << "WARNING: disabling 'check_ergo' when M=1." << std::endl;
   // }
 
+  if ((anneal_period < 1) & (anneal_schedule == "cos")) {
+    std::cerr << "ERROR: period " << anneal_period
+              << " invalid for 'cos' schedule." << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+
   if ((stop_mode == "stderr_adj") & (check_ergo == false)) {
     std::cerr << "ERROR: enable 'check_ergo' to use adjusted std err."
               << std::endl;
@@ -1503,11 +1509,22 @@ Sim::updateReparameterization(void)
   double beta2_t = pow(beta2, step);
 
   double eta = 0;
-  if ((anneal_period < 1) | (anneal_schedule == "none")) {
+  if (anneal_schedule == "none") {
     eta = eta_max;
-  } else {
+  } else if (anneal_schedule == "cos") {
     eta = eta_min + 0.5 * (eta_max - eta_min) *
                       (1 + cos(PI * (double)step / anneal_period));
+  } else if (anneal_schedule == "trap") {
+    if (step <= anneal_warm) {
+      eta = eta_min + (eta_max - eta_min) * (double)step / anneal_warm;
+    } else if (step <= (anneal_hot + anneal_warm)) {
+      eta = eta_max;
+    } else if (step <= (anneal_cool + anneal_hot + anneal_warm)) {
+      eta = eta_max - (eta_max - eta_min) *
+                        (double)(step - anneal_hot - anneal_warm) / anneal_cool;
+    } else {
+      eta = eta_min;
+    }
   }
 
   for (int i = 0; i < N; i++) {
