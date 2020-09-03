@@ -33,33 +33,36 @@ private:
   void clearFiles(std::string);
 
   // BM settings
-  double lambda_reg1;                  // regularization strength for 1p statistics (fields)
-  double lambda_reg2;                  // regularization strength for 2p statistics (coupling)
-  double alpha_reg;                    // relative weighting of L1 and L2 regularization
-  double weight_decay1;                // weight decay rate (fields)
-  double weight_decay2;                // weight decay rate (couplings)
-  int step_max;                        // max number of BM steps
-  double error_max;                    // exit error
-  std::string stop_mode = "threshold"; // stop mode
-  double error_threshold;              // placeholder for dyanmic exit error
-  int save_parameters;                 // multiple of iterations at which to save parameters
-  int save_best_steps;                 // multiple of iterations at which to save parameters
+  double lambda_reg_h;    // regularization strength for fields
+  double lambda_reg_J;    // regularization strength for couplings
+  double alpha_reg;       // relative weighting of L1 and L2 regularization
+  double weight_decay_h;  // weight decay rate for fields
+  double weight_decay_J;  // weight decay rate for couplings
+  int step_max;           // max number of BM steps
+  double error_max;       // exit error
+  std::string stop_mode;  // stop mode
+  double error_threshold; // placeholder for dyanmic exit error
+  int save_parameters;    // multiple of iterations at which to save parameters
+  int save_best_steps;    // multiple of iterations at which to save parameters
   int random_seed;
   bool use_reparametrization = true;
   bool initialize_params = true;
 
   // Learning parameters
-  double epsilon_0_h;      // starting learning rate for fields
-  double epsilon_0_J;      // starting learning rate for couplings
-  double adapt_up;         // positive adaptive step for learning rate
-  double adapt_down;       // negative sdaptive step for learning rate
-  double max_step_h;       // learning rate for fields
-  double min_step_h;       // learning rate for fields
-  double max_step_J;       // learning rate for couplings
-  double min_step_J;       // learning rate for couplings
-  double error_min_update; // minimal number of standard deviation s of z
-                           // variable for having parameter update (if
-                           // negative or zero all parameters are updated)
+  double adapt_up;             // positive adaptive step for learning rate
+  double adapt_down;           // negative adaptive step for learning rate
+  double learn_rate_h;         // learning rate for fields
+  double learn_rate_J;         // learning rate for couplings
+  double eta_min;              // min scaling factor for annealing
+  double eta_max;              // max scaling factor for annealing
+  std::string anneal_schedule; // type of annealing schedule
+  double anneal_period;        // period (# steps) for annealing
+  double anneal_warm;          // warm-up # steps for trapezoidal annealing
+  double anneal_hot;           // # steps to run at eta_max scaling
+  double anneal_cool;          // cool-down # steps to return to eta_min
+  double error_min_update;     // minimal number of standard deviation s of z
+                               // variable for having parameter update (if
+                               // negative or zero all parameters are updated)
 
   // Sampling times
   int t_wait_0;           // staring thermalization time for MCMC

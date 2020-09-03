@@ -15,18 +15,20 @@
 #include <vector>
 
 #define EPSILON 0.00000001
+#define PI 3.1415926
 
 void
 Sim::initializeParameters(void)
 {
   // BM settings
-  lambda_reg1 = 0.01;
-  lambda_reg2 = 0.01;
+  lambda_reg_h = 0.01;
+  lambda_reg_J = 0.01;
   alpha_reg = 1.0;
-  weight_decay1 = 0;
-  weight_decay2 = 0;
+  weight_decay_h = 0;
+  weight_decay_J = 0;
   step_max = 2000;
   error_max = 0.00001;
+  stop_mode = "threshold";
   save_parameters = 20;
   random_seed = 1;
   use_reparametrization = true;
@@ -35,10 +37,15 @@ Sim::initializeParameters(void)
   // Learning rate settings
   adapt_up = 1.5;
   adapt_down = 0.6;
-  max_step_h = 0.1;
-  min_step_h = 0.01;
-  max_step_J = 0.01;
-  min_step_J = 0.001;
+  learn_rate_h = 0.01;
+  learn_rate_J = 0.01;
+  eta_min = 0.1;
+  eta_max = 1.;
+  anneal_schedule = "cos";
+  anneal_period = 0;
+  anneal_warm = 0;
+  anneal_hot = 0;
+  anneal_cool = 0;
   error_min_update = -1;
 
   // sampling time settings
@@ -94,11 +101,11 @@ Sim::writeParameters(std::string output_file)
   stream << "[bmDCA]" << std::endl;
 
   // BM settings
-  stream << "lambda_reg1=" << lambda_reg1 << std::endl;
-  stream << "lambda_reg2=" << lambda_reg2 << std::endl;
+  stream << "lambda_reg_h=" << lambda_reg_h << std::endl;
+  stream << "lambda_reg_J=" << lambda_reg_J << std::endl;
+  stream << "weight_decay_h=" << weight_decay_h << std::endl;
+  stream << "weight_decay_J=" << weight_decay_J << std::endl;
   stream << "alpha_reg=" << alpha_reg << std::endl;
-  stream << "weight_decay1=" << weight_decay1 << std::endl;
-  stream << "weight_decay2=" << weight_decay2 << std::endl;
   stream << "step_max=" << step_max << std::endl;
   stream << "stop_mode=" << stop_mode << std::endl;
   stream << "error_max=" << error_max << std::endl;
@@ -111,10 +118,15 @@ Sim::writeParameters(std::string output_file)
   // Learning rate settings
   stream << "adapt_up=" << adapt_up << std::endl;
   stream << "adapt_down=" << adapt_down << std::endl;
-  stream << "max_step_h=" << max_step_h << std::endl;
-  stream << "min_step_h=" << min_step_h << std::endl;
-  stream << "max_step_J=" << max_step_J << std::endl;
-  stream << "min_step_J=" << min_step_J << std::endl;
+  stream << "learn_rate_h=" << learn_rate_h << std::endl;
+  stream << "learn_rate_J=" << learn_rate_J << std::endl;
+  stream << "eta_min=" << eta_min << std::endl;
+  stream << "eta_max=" << eta_max << std::endl;
+  stream << "anneal_schedule=" << anneal_schedule << std::endl;
+  stream << "anneal_period=" << anneal_period << std::endl;
+  stream << "anneal_warm=" << anneal_warm << std::endl;
+  stream << "anneal_hot=" << anneal_hot << std::endl;
+  stream << "anneal_cool=" << anneal_cool << std::endl;
   stream << "error_min_update=" << error_min_update << std::endl;
 
   // sampling time settings
@@ -212,16 +224,16 @@ Sim::compareParameter(std::string key, std::string value)
   bool same = true;
   // It's not possible to use switch blocks on strings because they are char*
   // arrays, not actual types.
-  if (key == "lambda_reg1") {
-    same = same & (lambda_reg1 == std::stod(value));
-  } else if (key == "lambda_reg2") {
-    same = same & (lambda_reg2 == std::stod(value));
+  if (key == "lambda_reg_h") {
+    same = same & (lambda_reg_h == std::stod(value));
+  } else if (key == "lambda_reg_J") {
+    same = same & (lambda_reg_J == std::stod(value));
   } else if (key == "alpha_reg") {
     same = same & (alpha_reg == std::stod(value));
-  } else if (key == "weight_decay1") {
-    same = same & (weight_decay1 == std::stod(value));
-  } else if (key == "weight_decay2") {
-    same = same & (weight_decay2 == std::stod(value));
+  } else if (key == "weight_decay_h") {
+    same = same & (weight_decay_h == std::stod(value));
+  } else if (key == "weight_decay_J") {
+    same = same & (weight_decay_J == std::stod(value));
   } else if (key == "step_max") {
   } else if (key == "error_max") {
   } else if (key == "stop_mode") {
@@ -245,14 +257,24 @@ Sim::compareParameter(std::string key, std::string value)
     same = same & (adapt_up == std::stod(value));
   } else if (key == "adapt_down") {
     same = same & (adapt_down == std::stod(value));
-  } else if (key == "max_step_h") {
-    same = same & (max_step_h == std::stod(value));
-  } else if (key == "min_step_h") {
-    same = same & (min_step_h == std::stod(value));
-  } else if (key == "max_step_J") {
-    same = same & (max_step_J == std::stod(value));
-  } else if (key == "min_step_J") {
-    same = same & (min_step_J == std::stod(value));
+  } else if (key == "learn_rate_h") {
+    same = same & (learn_rate_h == std::stod(value));
+  } else if (key == "learn_rate_J") {
+    same = same & (learn_rate_J == std::stod(value));
+  } else if (key == "eta_min") {
+    same = same & (eta_min == std::stod(value));
+  } else if (key == "eta_max") {
+    same = same & (eta_max == std::stod(value));
+  } else if (key == "anneal_schedule") {
+    same = same & (anneal_schedule == value);
+  } else if (key == "anneal_period") {
+    same = same & (anneal_period == std::stod(value));
+  } else if (key == "anneal_warm") {
+    same = same & (anneal_warm == std::stod(value));
+  } else if (key == "anneal_hot") {
+    same = same & (anneal_hot == std::stod(value));
+  } else if (key == "anneal_cool") {
+    same = same & (anneal_cool == std::stod(value));
   } else if (key == "error_min_update") {
     same = same & (error_min_update == std::stod(value));
   } else if (key == "t_wait_0") {
@@ -317,16 +339,16 @@ Sim::setParameter(std::string key, std::string value)
 {
   // It's not possible to use switch blocks on strings because they are char*
   // arrays, not actual types.
-  if (key == "lambda_reg1") {
-    lambda_reg1 = std::stod(value);
-  } else if (key == "lambda_reg2") {
-    lambda_reg2 = std::stod(value);
+  if (key == "lambda_reg_h") {
+    lambda_reg_h = std::stod(value);
+  } else if (key == "lambda_reg_J") {
+    lambda_reg_J = std::stod(value);
   } else if (key == "alpha_reg") {
     alpha_reg = std::stod(value);
-  } else if (key == "weight_decay1") {
-    weight_decay1 = std::stod(value);
-  } else if (key == "weight_decay2") {
-    weight_decay2 = std::stod(value);
+  } else if (key == "weight_decay_h") {
+    weight_decay_h = std::stod(value);
+  } else if (key == "weight_decay_J") {
+    weight_decay_J = std::stod(value);
   } else if (key == "step_max") {
     step_max = std::stoi(value);
   } else if (key == "stop_mode") {
@@ -359,14 +381,24 @@ Sim::setParameter(std::string key, std::string value)
     adapt_up = std::stod(value);
   } else if (key == "adapt_down") {
     adapt_down = std::stod(value);
-  } else if (key == "max_step_h") {
-    max_step_h = std::stod(value);
-  } else if (key == "min_step_h") {
-    min_step_h = std::stod(value);
-  } else if (key == "max_step_J") {
-    max_step_J = std::stod(value);
-  } else if (key == "min_step_J") {
-    min_step_J = std::stod(value);
+  } else if (key == "learn_rate_h") {
+    learn_rate_h = std::stod(value);
+  } else if (key == "learn_rate_J") {
+    learn_rate_J = std::stod(value);
+  } else if (key == "eta_min") {
+    eta_min = std::stod(value);
+  } else if (key == "eta_max") {
+    eta_max = std::stod(value);
+  } else if (key == "anneal_schedule") {
+    anneal_schedule = value;
+  } else if (key == "anneal_period") {
+    anneal_period = std::stod(value);
+  } else if (key == "anneal_warm") {
+    anneal_warm = std::stod(value);
+  } else if (key == "anneal_hot") {
+    anneal_hot = std::stod(value);
+  } else if (key == "anneal_cool") {
+    anneal_cool = std::stod(value);
   } else if (key == "error_min_update") {
     error_min_update = std::stod(value);
   } else if (key == "t_wait_0") {
@@ -1189,8 +1221,8 @@ Sim::computeErrorReparametrization(void)
          num_rho_1p = 0, den_stat_1p = 0, den_mc_1p = 0;
 
   double phi = 0;
-  double lambda_h = lambda_reg1;
-  double lambda_j = lambda_reg2;
+  double lambda_h = lambda_reg_h;
+  double lambda_j = lambda_reg_J;
 
   int count1 = 0;
   int count2 = 0;
@@ -1470,134 +1502,25 @@ Sim::updateReparameterization(void)
   double beta1_t = pow(beta1, step);
   double beta2_t = pow(beta2, step);
 
-  // double rho_inf = 2. / (1. - beta2) - 1.;
-  // double rho_t = rho_inf - 2. * (double)step * beta2_t / (1. - beta2_t);
-  //
-  // if (rho_t > 4.) {
-  //   double rectifier = sqrt(((rho_t - 4.) * (rho_t - 2.) * rho_inf) /
-  //                           ((rho_inf - 4.) * (rho_inf - 2.) * rho_t));
-  //   for (int i = 0; i < N; i++) {
-  //     for (int j = i + 1; j < N; j++) {
-  //       for (int a = 0; a < Q; a++) {
-  //         for (int b = 0; b < Q; b++) {
-  //           model->params.J(i, j)(a, b) +=
-  //             rectifier * step_J * model->moment1.J(i, j)(a, b) /
-  //             (1. - beta1_t) /
-  //             (sqrt(model->moment2.J(i, j)(a, b) / (1. - beta2_t)) +
-  //              0.00000001);
-  //         }
-  //       }
-  //     }
-  //   }
-  //
-  //   if (use_reparametrization) {
-  //     arma::Mat<double> Dh = arma::Mat<double>(Q, N, arma::fill::zeros);
-  //     for (int i = 0; i < N; i++) {
-  //       for (int a = 0; a < Q; a++) {
-  //         for (int j = 0; j < N; j++) {
-  //           if (i < j) {
-  //             for (int b = 0; b < Q; b++) {
-  //               Dh(a, i) +=
-  //                 msa_stats.frequency_1p(b, j) * step_J * rectifier *
-  //                 model->moment1.J(i, j)(a, b) / (1. - beta1_t) /
-  //                 (sqrt(model->moment2.J(i, j)(a, b) / (1. - beta2_t)) +
-  //                  0.00000001);
-  //             }
-  //           }
-  //           if (i > j) {
-  //             for (int b = 0; b < Q; b++) {
-  //               Dh(a, i) +=
-  //                 msa_stats.frequency_1p(b, j) * step_J * rectifier *
-  //                 model->moment1.J(j, i)(b, a) / (1. - beta1_t) /
-  //                 (sqrt(model->moment2.J(j, i)(b, a) / (1. - beta2_t)) +
-  //                  0.00000001);
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-  //
-  //     for (int i = 0; i < N; i++) {
-  //       for (int a = 0; a < Q; a++) {
-  //         model->params.h(a, i) +=
-  //           rectifier * step_h * model->moment1.h(a, i) / (1. - beta1_t) /
-  //             (sqrt(model->moment2.h(a, i) / (1. - beta2_t)) + 0.00000001) +
-  //           0.5 * Dh(a, i);
-  //       }
-  //     }
-  //   } else {
-  //     for (int i = 0; i < N; i++) {
-  //       for (int a = 0; a < Q; a++) {
-  //         model->params.h(a, i) +=
-  //           rectifier * step_h * model->moment1.h(a, i) / (1. - beta1_t) /
-  //           (sqrt(model->moment2.h(a, i) / (1. - beta2_t)) + 0.00000001);
-  //       }
-  //     }
-  //   }
-  // } else {
-  //   for (int i = 0; i < N; i++) {
-  //     for (int j = i + 1; j < N; j++) {
-  //       for (int a = 0; a < Q; a++) {
-  //         for (int b = 0; b < Q; b++) {
-  //           model->params.J(i, j)(a, b) +=
-  //             step_J * model->moment1.J(i, j)(a, b) / (1. - beta1_t);
-  //         }
-  //       }
-  //     }
-  //   }
-  //
-  //   if (use_reparametrization) {
-  //     arma::Mat<double> Dh = arma::Mat<double>(Q, N, arma::fill::zeros);
-  //     for (int i = 0; i < N; i++) {
-  //       for (int a = 0; a < Q; a++) {
-  //         for (int j = 0; j < N; j++) {
-  //           if (i < j) {
-  //             for (int b = 0; b < Q; b++) {
-  //               Dh(a, i) += msa_stats.frequency_1p(b, j) * step_J *
-  //                           model->moment1.J(i, j)(a, b) / (1. - beta1_t);
-  //             }
-  //           }
-  //           if (i > j) {
-  //             for (int b = 0; b < Q; b++) {
-  //               Dh(a, i) += msa_stats.frequency_1p(b, j) * step_J *
-  //                           model->moment1.J(j, i)(b, a) / (1. - beta1_t);
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-  //
-  //     for (int i = 0; i < N; i++) {
-  //       for (int a = 0; a < Q; a++) {
-  //         model->params.h(a, i) +=
-  //           step_h * model->moment1.h(a, i) / (1. - beta1_t) +
-  //           0.5 * Dh(a, i);
-  //       }
-  //     }
-  //   } else {
-  //     for (int i = 0; i < N; i++) {
-  //       for (int a = 0; a < Q; a++) {
-  //         model->params.h(a, i) +=
-  //           step_h * model->moment1.h(a, i) / (1. - beta1_t);
-  //       }
-  //     }
-  //   }
-  // }
-
-
-  double step_J = Max(min_step_J, max_step_J * (1. - (double)step/200.));
-  double step_h = Max(min_step_h, max_step_h * (1. - (double)step/200.));
+  double eta = 0;
+  if ((anneal_period < 1) | (anneal_schedule == "none")) {
+    eta = eta_max;
+  } else {
+    eta = eta_min + 0.5 * (eta_max - eta_min) *
+                      (1 + cos(PI * (double)step / anneal_period));
+  }
 
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
       for (int a = 0; a < Q; a++) {
         for (int b = 0; b < Q; b++) {
           model->params.J(i, j)(a, b) +=
-            step_J *
-            (model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
-               (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) +
-                0.00000001) -
-             weight_decay2 *
+            eta *
+            (learn_rate_J *
+               (model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
+                (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) +
+                 0.00000001)) -
+             weight_decay_J *
                (alpha_reg * model->params.J(i, j)(a, b) +
                 (1. - alpha_reg) *
                   (0.5 - (double)std::signbit(model->params.J(i, j)(a, b)))));
@@ -1614,7 +1537,7 @@ Sim::updateReparameterization(void)
           if (i < j) {
             for (int b = 0; b < Q; b++) {
               Dh(a, i) +=
-                msa_stats.frequency_1p(b, j) * step_J *
+                msa_stats.frequency_1p(b, j) * learn_rate_J *
                 model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
                 (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) + 0.00000001);
             }
@@ -1622,7 +1545,7 @@ Sim::updateReparameterization(void)
           if (i > j) {
             for (int b = 0; b < Q; b++) {
               Dh(a, i) +=
-                msa_stats.frequency_1p(b, j) * step_J *
+                msa_stats.frequency_1p(b, j) * learn_rate_J *
                 model->moment1.J(j, i)(b, a) / (1 - beta1_t) /
                 (sqrt(model->moment2.J(j, i)(b, a) / (1 - beta2_t)) + 0.00000001);
             }
@@ -1634,7 +1557,7 @@ Sim::updateReparameterization(void)
     for (int i = 0; i < N; i++) {
       for (int a = 0; a < Q; a++) {
         model->params.h(a, i) +=
-          step_h * model->moment1.h(a, i) / (1 - beta1_t) /
+          learn_rate_h * model->moment1.h(a, i) / (1 - beta1_t) /
             (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) + 0.00000001) +
           0.5 * Dh(a, i);
       }
@@ -1643,13 +1566,13 @@ Sim::updateReparameterization(void)
     for (int i = 0; i < N; i++) {
       for (int a = 0; a < Q; a++) {
         model->params.h(a, i) +=
-          step_h *
-          (model->moment1.h(a, i) / (1 - beta1_t) /
-             (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) + 0.00000001) -
-           weight_decay1 *
-             (alpha_reg * model->params.h(a, i) +
-              (1. - alpha_reg) *
-                (0.5 - (double)std::signbit(model->params.h(a, i)))));
+          eta * (learn_rate_h * (model->moment1.h(a, i) / (1 - beta1_t) /
+                                 (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) +
+                                  0.00000001)) -
+                 weight_decay_h *
+                   (alpha_reg * model->params.h(a, i) +
+                    (1. - alpha_reg) *
+                      (0.5 - (double)std::signbit(model->params.h(a, i)))));
       }
     }
   }
