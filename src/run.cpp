@@ -1537,15 +1537,11 @@ Sim::updateReparameterization(void)
       for (int a = 0; a < Q; a++) {
         for (int b = 0; b < Q; b++) {
           model->params.J(i, j)(a, b) +=
-            eta *
-            (learn_rate_J *
-               (model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
-                (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) +
-                 0.00000001)) -
-             weight_decay_J *
-               (alpha_reg * model->params.J(i, j)(a, b) +
-                (1. - alpha_reg) *
-                  (0.5 - (double)std::signbit(model->params.J(i, j)(a, b)))));
+            eta * (learn_rate_J *
+                     (model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
+                      (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) +
+                       0.00000001)) -
+                   weight_decay_J * model->params.J(i, j)(a, b));
         }
       }
     }
@@ -1591,10 +1587,7 @@ Sim::updateReparameterization(void)
           eta * (learn_rate_h * (model->moment1.h(a, i) / (1 - beta1_t) /
                                  (sqrt(model->moment2.h(a, i) / (1 - beta2_t)) +
                                   0.00000001)) -
-                 weight_decay_h *
-                   (alpha_reg * model->params.h(a, i) +
-                    (1. - alpha_reg) *
-                      (0.5 - (double)std::signbit(model->params.h(a, i)))));
+                 weight_decay_h * model->params.h(a, i));
       }
     }
   }
