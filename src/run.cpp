@@ -1218,8 +1218,6 @@ Sim::computeErrorReparametrization(void)
   int N = msa_stats.getN();
   int Q = msa_stats.getQ();
 
-  double gamma = alpha_reg;
-
   error_1p = 0;
   error_2p = 0;
   error_stat_1p = 0;
@@ -1282,8 +1280,8 @@ Sim::computeErrorReparametrization(void)
       for (int aa = 0; aa < Q; aa++) {
         delta =
           mcmc_stats->frequency_1p(aa, i) - msa_stats.frequency_1p(aa, i) +
-          lambda_h * (gamma * model->params.h(aa, i) +
-                      (1. - gamma) *
+          lambda_h * (alpha_reg * model->params.h(aa, i) +
+                      (1. - alpha_reg) *
                         (0.5 - (double)std::signbit(model->params.h(aa, i))));
         delta_stat =
           (mcmc_stats->frequency_1p(aa, i) - msa_stats.frequency_1p(aa, i)) /
@@ -1382,8 +1380,8 @@ Sim::computeErrorReparametrization(void)
                 -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
                   mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
                   lambda_j *
-                    (gamma * model->params.J(i, j)(aa1, aa2) +
-                     (1. - gamma) * (0.5 - (double)std::signbit(model->params.J(
+                    (alpha_reg * model->params.J(i, j)(aa1, aa2) +
+                     (1. - alpha_reg) * (0.5 - (double)std::signbit(model->params.J(
                                              i, j)(aa1, aa2)))));
             }
             delta_stat =
