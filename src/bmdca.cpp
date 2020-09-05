@@ -107,15 +107,8 @@ main(int argc, char* argv[])
   msa.writeSequenceWeights(dest_dir + "/sequence_weights.txt");
   msa.writeMatrix(dest_dir + "/msa_numerical.txt");
 
-  // Compute the statistics of the MSA.
-  MSAStats msa_stats = MSAStats(&msa);
-  msa_stats.writeFrequency1p(dest_dir + "/stat_align_1p.bin");
-  msa_stats.writeFrequency2p(dest_dir + "/stat_align_2p.bin");
-  msa_stats.writeRelEntropyGradient(dest_dir +
-                                    "/rel_entropy_grad_align_1p.bin");
-
   // Initialize the MCMC using the statistics of the MSA.
-  Sim sim = Sim(msa_stats, config_file, dest_dir, force_restart);
+  Sim sim = Sim(msa,config_file, dest_dir, force_restart);
   sim.writeParameters("bmdca_params.conf");
   sim.run();
 

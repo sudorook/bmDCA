@@ -12,7 +12,7 @@
 class Sim
 {
 public:
-  Sim(MSAStats, std::string, std::string, bool);
+  Sim(MSA, std::string, std::string, bool);
   ~Sim(void);
   void run(void);
   void loadParameters(std::string);
@@ -121,8 +121,10 @@ private:
   arma::Col<int> initial_sample;
 
   // Stats from original MSA
-  MSAStats msa_stats;
+  MSA msa;
+  MSAStats *msa_stats;
 
+  // Training model
   Model* model;
 
   // MCMC

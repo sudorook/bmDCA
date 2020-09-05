@@ -12,7 +12,7 @@
 
 #include "pcg_random.hpp"
 
-MSAStats::MSAStats(MSA* msa)
+MSAStats::MSAStats(MSA* msa, bool verbose)
   : msa(msa)
 {
   // Initialize
@@ -21,13 +21,27 @@ MSAStats::MSAStats(MSA* msa)
   Q = msa->Q;
   M_effective = sum(msa->sequence_weights);
 
-  std::cout << M << " sequences" << std::endl;
-  std::cout << N << " positions" << std::endl;
-  std::cout << Q << " amino acids (including gaps)" << std::endl;
-  std::cout << M_effective << " effective sequences" << std::endl;
+  reweight = msa->reweight;
+  threshold = msa->threshold;
+
+  if (verbose) {
+    std::cout << M << " sequences" << std::endl;
+    std::cout << N << " positions" << std::endl;
+    std::cout << Q << " amino acids (including gaps)" << std::endl;
+    std::cout << M_effective << " effective sequences" << std::endl;
+  }
 
   frequency_1p = arma::Mat<double>(Q, N, arma::fill::zeros);
   frequency_2p = arma::field<arma::Mat<double>>(N, N);
+#pragma omp parallel
+  {
+#pragma omp for schedule(dynamic, 1)
+    for (int i = 0; i < N; i++) {
+      for (int j = i + 1; j < N; j++) {
+        frequency_2p(i, j) = arma::Mat<double>(Q, Q, arma::fill::zeros);
+      }
+    }
+  }
   rel_entropy_1p = arma::Mat<double>(Q, N, arma::fill::zeros);
   rel_entropy_pos_1p = arma::Col<double>(N, arma::fill::zeros);
   rel_entropy_grad_1p = arma::Mat<double>(Q, N, arma::fill::zeros);
@@ -41,7 +55,41 @@ MSAStats::MSAStats(MSA* msa)
   } else {
     aa_background_frequencies = aa_background_frequencies / (double)Q;
   }
-  pseudocount = 0.03;
+
+  computeMSAStats(msa);
+};
+
+void
+MSAStats::updateMSA(MSA* new_msa, bool verbose)
+{
+  msa = new_msa;
+
+  // Initialize
+  N = msa->N;
+  M = msa->M;
+  Q = msa->Q;
+  M_effective = sum(msa->sequence_weights);
+
+  reweight = msa->reweight;
+  threshold = msa->threshold;
+
+  if (verbose) {
+    std::cout << M << " sequences" << std::endl;
+    std::cout << N << " positions" << std::endl;
+    std::cout << Q << " amino acids (including gaps)" << std::endl;
+    std::cout << M_effective << " effective sequences" << std::endl;
+  }
+
+  computeMSAStats(msa);
+};
+
+void
+MSAStats::computeMSAStats(MSA *msa) {
+  frequency_1p.zeros();
+  rel_entropy_1p.zeros();
+  rel_entropy_pos_1p.zeros();
+  rel_entropy_grad_1p.zeros();
+  aa_background_frequencies.zeros();
 
   // Compute the frequecies (1p statistics) for amino acids (and gaps) for each
   // position. Use pointers to make things speedier.
@@ -70,7 +118,7 @@ MSAStats::MSAStats(MSA* msa)
     for (int i = 0; i < N; i++) {
       for (int j = i + 1; j < N; j++) {
         double* weight_ptr = msa->sequence_weights.memptr();
-        frequency_2p(i, j) = arma::Mat<double>(Q, Q, arma::fill::zeros);
+        frequency_2p(i, j).zeros();
 
         int* align_ptr1 = msa->alignment.colptr(i);
         int* align_ptr2 = msa->alignment.colptr(j);
@@ -124,8 +172,6 @@ MSAStats::MSAStats(MSA* msa)
 void
 MSAStats::computeErrorMSA(int reps, long int seed)
 {
-  const bool reweight = msa->reweight;
-  const double threshold = msa->threshold;
   msa_rms = arma::Col<double>(reps, arma::fill::zeros);
 
   int M_1 = (int)((M + 1) / 2);

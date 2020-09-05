@@ -44,12 +44,11 @@ Model::Model(std::string parameters_file_h,
   Q = params.h.n_rows;
 }
 
-Model::Model(MSAStats msa_stats,
-             bool init_gradient)
+Model::Model(MSAStats* msa_stats, bool init_gradient)
 {
-  N = msa_stats.getN();
-  Q = msa_stats.getQ();
-  double pseudocount = 1. / msa_stats.getEffectiveM();
+  N = msa_stats->getN();
+  Q = msa_stats->getQ();
+  double pseudocount = 1. / msa_stats->getEffectiveM();
 
   // Initialize the parameters J and h
   params.J = arma::field<arma::Mat<double>>(N, N);
@@ -69,7 +68,7 @@ Model::Model(MSAStats msa_stats,
     double* freq_ptr = nullptr;
     for (int i = 0; i < N; i++) {
       avg = 0;
-      freq_ptr = msa_stats.frequency_1p.colptr(i);
+      freq_ptr = msa_stats->frequency_1p.colptr(i);
       for (int aa = 0; aa < Q; aa++) {
         avg +=
           log((1. - pseudocount) * (*(freq_ptr + aa)) + pseudocount * (1. / Q));

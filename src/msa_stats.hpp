@@ -8,7 +8,8 @@
 class MSAStats
 {
 public:
-  MSAStats(MSA*);
+  MSAStats(MSA*, bool=false);
+  void updateMSA(MSA*, bool=false);
 
   double getEffectiveM();
   double getN();
@@ -38,13 +39,19 @@ public:
   arma::Col<double> msa_rms;
 
 private:
-  double pseudocount;
+  const double pseudocount = 0.03;
+
   int M;              // number of sequences
   int N;              // number of positions
   int Q;              // amino acid alphabet size
   double M_effective; // effect number of sequences
 
+  bool reweight;
+  bool threshold;
+
   MSA* msa;
+
+  void computeMSAStats(MSA*);
 
   arma::Col<double> aa_background_frequencies;
 };

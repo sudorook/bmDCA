@@ -76,7 +76,7 @@ Sim::checkParameters(void)
     M = 1;
     delta_t_0 = 1; // use 1 instead of 0 to avoid log(delta_t_0) issues...
     check_ergo = true;
-    count_max = (int)(round(msa_stats.getEffectiveM()));
+    count_max = (int)(round(msa_stats->getEffectiveM()));
   }
 
   // // Ensure that the set of ergodiciy checks is disabled if M=1
@@ -463,12 +463,18 @@ Sim::setParameter(std::string key, std::string value)
   }
 };
 
-Sim::Sim(MSAStats msa_stats,
+Sim::Sim(MSA msa,
          std::string config_file,
          std::string dest_dir,
          bool force_restart)
-  : msa_stats(msa_stats)
+  : msa(msa)
 {
+
+  msa_stats = new MSAStats(&msa, true);
+  msa_stats->writeFrequency1p(dest_dir + "/stat_align_1p.bin");
+  msa_stats->writeFrequency2p(dest_dir + "/stat_align_2p.bin");
+  msa_stats->writeRelEntropyGradient(dest_dir +
+                                     "/rel_entropy_grad_align_1p.bin");
 
   initializeParameters();
   if (!config_file.empty()) {
@@ -524,7 +530,7 @@ Sim::Sim(MSAStats msa_stats,
                   "moment2_" + std::to_string(step_offset) + ".txt");
     }
   }
-  mcmc = new MCMC(msa_stats.getN(), msa_stats.getQ());
+  mcmc = new MCMC(msa_stats->getN(), msa_stats->getQ());
 };
 
 void
@@ -766,6 +772,7 @@ Sim::setStepOffset(void)
 
 Sim::~Sim(void)
 {
+  delete msa_stats;
   delete model;
   delete mcmc;
   delete mcmc_stats;
@@ -854,6 +861,7 @@ Sim::run(void)
 
   int N = model->N;
   int Q = model->Q;
+  double M_eff = arma::sum(msa.sequence_weights);
 
   // Initialize sample data structure
   samples = arma::Cube<int>(M, N, count_max, arma::fill::zeros);
@@ -893,18 +901,18 @@ Sim::run(void)
   if (stop_mode == "msaerr") {
     std::cout << "bootstrapping msa... " << std::flush;
     timer.tic();
-    msa_stats.computeErrorMSA(10);
+    msa_stats->computeErrorMSA(10);
     std::cout << timer.toc() << " sec" << std::endl;
 
-    double error_avg = arma::mean(msa_stats.msa_rms);
-    double error_stddev = arma::stddev(msa_stats.msa_rms, 1);
+    double error_avg = arma::mean(msa_stats->msa_rms);
+    double error_stddev = arma::stddev(msa_stats->msa_rms, 1);
     // error_threshold = (error_avg - 2 * error_stddev) /
-    //                   sqrt(M * count_max / msa_stats.getEffectiveM());
+    //                   sqrt(M * count_max / msa_stats->getEffectiveM());
     error_threshold =
-      error_avg / sqrt(M * count_max / msa_stats.getEffectiveM());
+      error_avg / sqrt(M * count_max / msa_stats->getEffectiveM());
     std::cout << "convergence threshold is " << error_threshold << std::endl;
   } else if ((stop_mode == "stderr") | (stop_mode == "stderr_adj")) {
-    error_threshold = msa_stats.freq_rms / sqrt(M * count_max);
+    error_threshold = msa_stats->freq_rms / sqrt(M * count_max);
     std::cout << "convergence threshold is " << error_threshold << std::endl;
   }
 
@@ -1214,9 +1222,9 @@ Sim::run(void)
 void
 Sim::computeErrorReparametrization(void)
 {
-  double M_eff = msa_stats.getEffectiveM();
-  int N = msa_stats.getN();
-  int Q = msa_stats.getQ();
+  double M_eff = msa_stats->getEffectiveM();
+  int N = msa_stats->getN();
+  int Q = msa_stats->getQ();
 
   error_1p = 0;
   error_2p = 0;
@@ -1247,21 +1255,21 @@ Sim::computeErrorReparametrization(void)
           if (i < j) {
             for (int bb = 0; bb < Q; bb++) {
               phi +=
-                model->params.J(i, j)(aa, bb) * msa_stats.frequency_1p(bb, j);
+                model->params.J(i, j)(aa, bb) * msa_stats->frequency_1p(bb, j);
             }
           } else if (i > j) {
             for (int bb = 0; bb < Q; bb++) {
               phi +=
-                model->params.J(j, i)(bb, aa) * msa_stats.frequency_1p(bb, j);
+                model->params.J(j, i)(bb, aa) * msa_stats->frequency_1p(bb, j);
             }
           }
         }
         delta = mcmc_stats->frequency_1p(aa, i) -
-                msa_stats.frequency_1p(aa, i) + lambda_h * 0.5 * phi;
+                msa_stats->frequency_1p(aa, i) + lambda_h * 0.5 * phi;
         delta_stat =
-          (mcmc_stats->frequency_1p(aa, i) - msa_stats.frequency_1p(aa, i)) /
-          (pow(msa_stats.frequency_1p(aa, i) *
-                   (1. - msa_stats.frequency_1p(aa, i)) / M_eff +
+          (mcmc_stats->frequency_1p(aa, i) - msa_stats->frequency_1p(aa, i)) /
+          (pow(msa_stats->frequency_1p(aa, i) *
+                   (1. - msa_stats->frequency_1p(aa, i)) / M_eff +
                  pow(mcmc_stats->frequency_1p_sigma(aa, i), 2) + EPSILON,
                0.5));
         error_1p += pow(delta, 2);
@@ -1279,14 +1287,14 @@ Sim::computeErrorReparametrization(void)
     for (int i = 0; i < N; i++) {
       for (int aa = 0; aa < Q; aa++) {
         delta =
-          mcmc_stats->frequency_1p(aa, i) - msa_stats.frequency_1p(aa, i) +
+          mcmc_stats->frequency_1p(aa, i) - msa_stats->frequency_1p(aa, i) +
           lambda_h * (alpha_reg * model->params.h(aa, i) +
                       (1. - alpha_reg) *
                         (0.5 - (double)std::signbit(model->params.h(aa, i))));
         delta_stat =
-          (mcmc_stats->frequency_1p(aa, i) - msa_stats.frequency_1p(aa, i)) /
-          (pow(msa_stats.frequency_1p(aa, i) *
-                   (1. - msa_stats.frequency_1p(aa, i)) / M_eff +
+          (mcmc_stats->frequency_1p(aa, i) - msa_stats->frequency_1p(aa, i)) /
+          (pow(msa_stats->frequency_1p(aa, i) *
+                   (1. - msa_stats->frequency_1p(aa, i)) / M_eff +
                  pow(mcmc_stats->frequency_1p_sigma(aa, i), 2) + EPSILON,
                0.5));
         error_1p += pow(delta, 2);
@@ -1311,33 +1319,33 @@ Sim::computeErrorReparametrization(void)
         for (int aa1 = 0; aa1 < Q; aa1++) {
           for (int aa2 = 0; aa2 < Q; aa2++) {
             if (use_pos_reg) {
-              delta = -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
+              delta = -(msa_stats->frequency_2p(i, j)(aa1, aa2) -
                         mcmc_stats->frequency_2p(i, j)(aa1, aa2) +
                         (mcmc_stats->frequency_1p(aa1, i) -
-                         msa_stats.frequency_1p(aa1, i)) *
-                          msa_stats.frequency_1p(aa2, j) +
+                         msa_stats->frequency_1p(aa1, i)) *
+                          msa_stats->frequency_1p(aa2, j) +
                         (mcmc_stats->frequency_1p(aa2, j) -
-                         msa_stats.frequency_1p(aa2, j)) *
-                          msa_stats.frequency_1p(aa1, i) -
+                         msa_stats->frequency_1p(aa2, j)) *
+                          msa_stats->frequency_1p(aa1, i) -
                         lambda_j * model->params.J(i, j)(aa1, aa2) * 1. /
-                          (1. + fabs(msa_stats.rel_entropy_grad_1p(aa1, i))) /
-                          (1. + fabs(msa_stats.rel_entropy_grad_1p(aa2, j))));
+                          (1. + fabs(msa_stats->rel_entropy_grad_1p(aa1, i))) /
+                          (1. + fabs(msa_stats->rel_entropy_grad_1p(aa2, j))));
             } else {
-              delta = -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
+              delta = -(msa_stats->frequency_2p(i, j)(aa1, aa2) -
                         mcmc_stats->frequency_2p(i, j)(aa1, aa2) +
                         (mcmc_stats->frequency_1p(aa1, i) -
-                         msa_stats.frequency_1p(aa1, i)) *
-                          msa_stats.frequency_1p(aa2, j) +
+                         msa_stats->frequency_1p(aa1, i)) *
+                          msa_stats->frequency_1p(aa2, j) +
                         (mcmc_stats->frequency_1p(aa2, j) -
-                         msa_stats.frequency_1p(aa2, j)) *
-                          msa_stats.frequency_1p(aa1, i) -
+                         msa_stats->frequency_1p(aa2, j)) *
+                          msa_stats->frequency_1p(aa1, i) -
                         lambda_j * model->params.J(i, j)(aa1, aa2));
             }
             delta_stat =
               (mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
-               msa_stats.frequency_2p(i, j)(aa1, aa2)) /
-              (pow(msa_stats.frequency_2p(i, j)(aa1, aa2) *
-                       (1.0 - msa_stats.frequency_2p(i, j)(aa1, aa2)) / M_eff +
+               msa_stats->frequency_2p(i, j)(aa1, aa2)) /
+              (pow(msa_stats->frequency_2p(i, j)(aa1, aa2) *
+                       (1.0 - msa_stats->frequency_2p(i, j)(aa1, aa2)) / M_eff +
                      pow(mcmc_stats->frequency_2p(i, j)(aa1, aa2), 2) + EPSILON,
                    0.5));
 
@@ -1345,8 +1353,8 @@ Sim::computeErrorReparametrization(void)
                    mcmc_stats->frequency_1p(aa1, i) *
                      mcmc_stats->frequency_1p(aa2, j);
             c_stat =
-              msa_stats.frequency_2p(i, j)(aa1, aa2) -
-              msa_stats.frequency_1p(aa1, i) * msa_stats.frequency_1p(aa2, j);
+              msa_stats->frequency_2p(i, j)(aa1, aa2) -
+              msa_stats->frequency_1p(aa1, i) * msa_stats->frequency_1p(aa2, j);
             c_mc_av += c_mc;
             c_stat_av += c_stat;
             error_c += pow(c_mc - c_stat, 2);
@@ -1370,14 +1378,14 @@ Sim::computeErrorReparametrization(void)
         for (int aa1 = 0; aa1 < Q; aa1++) {
           for (int aa2 = 0; aa2 < Q; aa2++) {
             if (use_pos_reg) {
-              delta = -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
+              delta = -(msa_stats->frequency_2p(i, j)(aa1, aa2) -
                         mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
                         lambda_j * model->params.J(i, j)(aa1, aa2) * 1. /
-                          (1. + fabs(msa_stats.rel_entropy_grad_1p(aa1, i))) /
-                          (1. + fabs(msa_stats.rel_entropy_grad_1p(aa2, j))));
+                          (1. + fabs(msa_stats->rel_entropy_grad_1p(aa1, i))) /
+                          (1. + fabs(msa_stats->rel_entropy_grad_1p(aa2, j))));
             } else {
               delta =
-                -(msa_stats.frequency_2p(i, j)(aa1, aa2) -
+                -(msa_stats->frequency_2p(i, j)(aa1, aa2) -
                   mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
                   lambda_j *
                     (alpha_reg * model->params.J(i, j)(aa1, aa2) +
@@ -1386,9 +1394,9 @@ Sim::computeErrorReparametrization(void)
             }
             delta_stat =
               (mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
-               msa_stats.frequency_2p(i, j)(aa1, aa2)) /
-              (pow(msa_stats.frequency_2p(i, j)(aa1, aa2) *
-                       (1.0 - msa_stats.frequency_2p(i, j)(aa1, aa2)) / M_eff +
+               msa_stats->frequency_2p(i, j)(aa1, aa2)) /
+              (pow(msa_stats->frequency_2p(i, j)(aa1, aa2) *
+                       (1.0 - msa_stats->frequency_2p(i, j)(aa1, aa2)) / M_eff +
                      pow(mcmc_stats->frequency_2p(i, j)(aa1, aa2), 2) + EPSILON,
                    0.5));
 
@@ -1396,8 +1404,8 @@ Sim::computeErrorReparametrization(void)
                    mcmc_stats->frequency_1p(aa1, i) *
                      mcmc_stats->frequency_1p(aa2, j);
             c_stat =
-              msa_stats.frequency_2p(i, j)(aa1, aa2) -
-              msa_stats.frequency_1p(aa1, i) * msa_stats.frequency_1p(aa2, j);
+              msa_stats->frequency_2p(i, j)(aa1, aa2) -
+              msa_stats->frequency_1p(aa1, i) * msa_stats->frequency_1p(aa2, j);
             c_mc_av += c_mc;
             c_stat_av += c_stat;
             error_c += pow(c_mc - c_stat, 2);
@@ -1429,8 +1437,8 @@ Sim::computeErrorReparametrization(void)
             mcmc_stats->frequency_2p(i, j)(aa1, aa2) -
             mcmc_stats->frequency_1p(aa1, i) * mcmc_stats->frequency_1p(aa2, j);
           c_stat =
-            msa_stats.frequency_2p(i, j)(aa1, aa2) -
-            msa_stats.frequency_1p(aa1, i) * msa_stats.frequency_1p(aa2, j);
+            msa_stats->frequency_2p(i, j)(aa1, aa2) -
+            msa_stats->frequency_1p(aa1, i) * msa_stats->frequency_1p(aa2, j);
           num_rho += (c_mc - c_mc_av) * (c_stat - c_stat_av);
           num_beta += (c_mc) * (c_stat);
           den_stat += pow(c_stat - c_stat_av, 2);
@@ -1445,8 +1453,8 @@ Sim::computeErrorReparametrization(void)
   for (int i = 0; i < N; i++) {
     for (int aa = 0; aa < Q; aa++) {
       num_rho_1p += (mcmc_stats->frequency_1p(aa, i) - 1.0 / Q) *
-                    (msa_stats.frequency_1p(aa, i) - 1.0 / Q);
-      den_stat_1p += pow(msa_stats.frequency_1p(aa, i) - 1.0 / Q, 2);
+                    (msa_stats->frequency_1p(aa, i) - 1.0 / Q);
+      den_stat_1p += pow(msa_stats->frequency_1p(aa, i) - 1.0 / Q, 2);
       den_mc_1p += pow(mcmc_stats->frequency_1p(aa, i) - 1.0 / Q, 2);
     }
   }
@@ -1472,8 +1480,8 @@ Sim::computeErrorReparametrization(void)
 void
 Sim::updateMoments(void)
 {
-  int N = msa_stats.getN();
-  int Q = msa_stats.getQ();
+  int N = msa_stats->getN();
+  int Q = msa_stats->getQ();
 
   double beta1 = 0.9;
   double beta2 = 0.999;
@@ -1505,8 +1513,8 @@ Sim::updateMoments(void)
 void
 Sim::updateReparameterization(void)
 {
-  int N = msa_stats.getN();
-  int Q = msa_stats.getQ();
+  int N = msa_stats->getN();
+  int Q = msa_stats->getQ();
 
   double beta1 = 0.9;
   double beta2 = 0.999;
@@ -1555,7 +1563,7 @@ Sim::updateReparameterization(void)
           if (i < j) {
             for (int b = 0; b < Q; b++) {
               Dh(a, i) +=
-                msa_stats.frequency_1p(b, j) * learn_rate_J *
+                msa_stats->frequency_1p(b, j) * learn_rate_J *
                 model->moment1.J(i, j)(a, b) / (1 - beta1_t) /
                 (sqrt(model->moment2.J(i, j)(a, b) / (1 - beta2_t)) + 0.00000001);
             }
@@ -1563,7 +1571,7 @@ Sim::updateReparameterization(void)
           if (i > j) {
             for (int b = 0; b < Q; b++) {
               Dh(a, i) +=
-                msa_stats.frequency_1p(b, j) * learn_rate_J *
+                msa_stats->frequency_1p(b, j) * learn_rate_J *
                 model->moment1.J(j, i)(b, a) / (1 - beta1_t) /
                 (sqrt(model->moment2.J(j, i)(b, a) / (1 - beta2_t)) + 0.00000001);
             }
