@@ -41,7 +41,7 @@ Sim::initializeParameters(void)
   learn_rate_J = 0.01;
   eta_min = 0.1;
   eta_max = 1.;
-  anneal_schedule = "cos";
+  anneal_schedule = "none";
   anneal_period = 0;
   anneal_warm = 0;
   anneal_hot = 0;
@@ -934,10 +934,11 @@ Sim::run(void)
         while (flag_burn) {
           double burn_reps = 24;
           double burn_count = 4;
-          seed = dist(rng);
           arma::Mat<double> energy_burn =
             arma::Mat<double>(burn_count, burn_reps, arma::fill::zeros);
 
+          seed = dist(rng);
+          run_buffer((step - 1) % save_parameters, 18) = seed;
           mcmc->sample_energies(
             &energy_burn, burn_reps, burn_count, N, t_wait, t_wait, seed);
 
@@ -947,10 +948,8 @@ Sim::run(void)
                           arma::mean(energy_burn.row(burn_count - 2))) /
                          2;
           double e_end_sigma =
-            sqrt(pow(arma::stddev(energy_burn.row(burn_count - 1), 1), 2) /
-                   burn_count +
-                 pow(arma::stddev(energy_burn.row(burn_count - 2), 1), 2) /
-                   burn_count);
+            sqrt(pow(arma::stddev(energy_burn.row(burn_count - 1), 1), 2) +
+                  pow(arma::stddev(energy_burn.row(burn_count - 2), 1), 2));
           double e_err =
             sqrt((pow(e_start_sigma, 2) / burn_reps + pow(e_end_sigma, 2)) / 2 /
                  burn_reps);
