@@ -27,6 +27,8 @@ public:
   void writeSequenceWeights(std::string);
   void writeHammingDistances(std::string);
 
+  MSA subsampleAlignment(int = 0, long int = 0);
+
 private:
   std::vector<SeqRecord> seq_records;
   int getSequenceLength(std::string);

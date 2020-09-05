@@ -6,6 +6,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <random>
+#include <unordered_set>
+
+#include "pcg_random.hpp"
 
 #ifndef AA_ALPHABET_SIZE
 #define AA_ALPHABET_SIZE 21
@@ -398,4 +402,35 @@ MSA::writeHammingDistances(std::string output_file)
   for (int i = 0; i < M; i++) {
     output_stream << hamming_distances(i) << std::endl;
   }
+};
+
+MSA
+MSA::subsampleAlignment(int size, long int seed)
+{
+  pcg32 rng;
+  rng.seed(seed);
+
+  arma::Mat<int> alignment_T = alignment.t();
+  arma::Mat<int> sub_alignment =
+    arma::Mat<int>(N, size, arma::fill::zeros);
+
+  std::unordered_set<int> elems;
+  for (int r = M - size; r < M; ++r) {
+    std::uniform_int_distribution<int> dist(0, r);
+    int v = dist(rng);
+    if (!elems.insert(v).second) {
+      elems.insert(r);
+    }
+  }
+  std::vector<int> idx(elems.begin(), elems.end());
+
+#pragma omp parallel
+  {
+#pragma omp for
+    for (int i = 0; i < size; i++) {
+      sub_alignment.col(i) = alignment_T.col(idx.at(i));
+    }
+  }
+
+  return MSA(sub_alignment.t(), size, N, Q, reweight, threshold);
 };
