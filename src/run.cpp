@@ -33,6 +33,7 @@ Sim::initializeParameters(void)
   random_seed = 1;
   use_reparametrization = true;
   initialize_params = true;
+  use_cross_validation = false;
 
   // Learning rate settings
   adapt_up = 1.5;
@@ -120,6 +121,7 @@ Sim::writeParameters(std::string output_file)
   stream << "random_seed=" << random_seed << std::endl;
   stream << "use_reparametrization=" << use_reparametrization << std::endl;
   stream << "initialize_params=" << initialize_params << std::endl;
+  stream << "use_cross_validation=" << use_cross_validation << std::endl;
 
   // Learning rate settings
   stream << "adapt_up=" << adapt_up << std::endl;
@@ -259,6 +261,12 @@ Sim::compareParameter(std::string key, std::string value)
     } else {
       same = same & (initialize_params == (value == "true"));
     }
+  } else if (key == "use_cross_validation") {
+    if (value.size() == 1) {
+      same = same & (use_cross_validation == (std::stoi(value) == 1));
+    } else {
+      same = same & (use_cross_validation == (value == "true"));
+    }
   } else if (key == "adapt_up") {
     same = same & (adapt_up == std::stod(value));
   } else if (key == "adapt_down") {
@@ -382,6 +390,12 @@ Sim::setParameter(std::string key, std::string value)
       initialize_params = (std::stoi(value) == 1);
     } else {
       initialize_params = (value == "true");
+    }
+  } else if (key == "use_cross_validation") {
+    if (value.size() == 1) {
+      use_cross_validation = (std::stoi(value) == 1);
+    } else {
+      use_cross_validation = (value == "true");
     }
   } else if (key == "adapt_up") {
     adapt_up = std::stod(value);
@@ -1114,6 +1128,17 @@ Sim::run(void)
         std::cout << "computing mcmc 1p and 2p statistics... " << std::flush;
         timer.tic();
         mcmc_stats->computeSampleStats();
+        std::cout << timer.toc() << " sec" << std::endl;
+      }
+
+      // Subsample the MSA if cross-validation is enabled
+      if (use_cross_validation) {
+        std::cout << "resampling msa and computing statistics... " << std::flush;
+        timer.tic();
+        seed = dist(rng);
+        run_buffer((step - 1) % save_parameters, 18) = seed;
+        MSA sub_msa = msa.subsampleAlignment(M_eff, seed);
+        msa_stats->updateMSA(&sub_msa);
         std::cout << timer.toc() << " sec" << std::endl;
       }
 

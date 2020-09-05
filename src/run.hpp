@@ -47,6 +47,7 @@ private:
   int random_seed;
   bool use_reparametrization = true;
   bool initialize_params = true;
+  bool use_cross_validation = false;
 
   // Learning parameters
   double adapt_up;             // positive adaptive step for learning rate
