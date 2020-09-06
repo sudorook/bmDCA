@@ -36,6 +36,8 @@ public:
         std::string,
         std::string);
 
+  void resetModel(MSAStats*, bool = true);
+
   void writeParams(std::string, std::string);
   void writeParamsPrevious(std::string, std::string);
   void writeMoment1(std::string, std::string);

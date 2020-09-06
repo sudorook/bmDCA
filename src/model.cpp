@@ -112,6 +112,61 @@ Model::Model(MSAStats* msa_stats, bool init_gradient)
 };
 
 void
+Model::resetModel(MSAStats* msa_stats, bool init_gradient)
+{
+  N = msa_stats->getN();
+  Q = msa_stats->getQ();
+  double pseudocount = 1. / msa_stats->getEffectiveM();
+
+  // Initialize the parameters J and h
+  params.h.zeros();
+  params_prev.h.zeros();
+  if (init_gradient) {
+    double avg;
+    double* freq_ptr = nullptr;
+    for (int i = 0; i < N; i++) {
+      avg = 0;
+      freq_ptr = msa_stats->frequency_1p.colptr(i);
+      for (int aa = 0; aa < Q; aa++) {
+        avg +=
+          log((1. - pseudocount) * (*(freq_ptr + aa)) + pseudocount * (1. / Q));
+      }
+      for (int aa = 0; aa < Q; aa++) {
+        params.h(aa, i) = log((1. - pseudocount) * (*(freq_ptr + aa)) +
+                              pseudocount * (1. / Q)) -
+                          avg / Q;
+      }
+    }
+  }
+  for (int i = 0; i < N; i++) {
+    for (int j = i + 1; j < N; j++) {
+      params.J(i, j).zeros();
+      params_prev.J(i, j).zeros();
+    }
+  }
+
+  // Initialize the gradient
+  gradient.h.zeros();
+  gradient_prev.h.zeros();
+  for (int i = 0; i < N; i++) {
+    for (int j = i + 1; j < N; j++) {
+      gradient.J(i, j).zeros();
+      gradient_prev.J(i, j).zeros();
+    }
+  }
+
+  // Initialize the moments
+  moment1.h.zeros();
+  moment2.h.zeros();
+  for (int i = 0; i < N; i++) {
+    for (int j = i + 1; j < N; j++) {
+      moment1.J(i, j).zeros();
+      moment2.J(i, j).zeros();
+    }
+  }
+};
+
+void
 Model::writeParams(std::string output_file_h, std::string output_file_J)
 {
   params.h.save(output_file_h, arma::arma_binary);
