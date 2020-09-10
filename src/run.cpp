@@ -1549,8 +1549,20 @@ Sim::updateReparameterization(void)
   if (anneal_schedule == "none") {
     eta = eta_max;
   } else if (anneal_schedule == "cos") {
-    eta = eta_min + 0.5 * (eta_max - eta_min) *
-                      (1 + cos(PI * (double)step / anneal_period));
+    if (step <= anneal_warm) {
+      eta = eta_min + (eta_max - eta_min) * (double)step / anneal_warm;
+    } else {
+      int epoch_length = anneal_period;
+      int total_length = anneal_warm;
+      while ((step - total_length) > epoch_length) {
+        total_length = total_length + epoch_length;
+        epoch_length = epoch_length * anneal_scale;
+      }
+      eta =
+        eta_min +
+        0.5 * (eta_max - eta_min) *
+          (1 + cos(PI * (double)(step - total_length) / (double)epoch_length));
+    }
   } else if (anneal_schedule == "trap") {
     if (step <= anneal_warm) {
       eta = eta_min + (eta_max - eta_min) * (double)step / anneal_warm;
