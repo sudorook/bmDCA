@@ -4,6 +4,33 @@
 #include <armadillo>
 #include <string>
 
+#define BINS 201
+
+typedef struct
+{
+  arma::Mat<unsigned long long int> range;
+  int bins = BINS;
+  double bin_width;
+  double min = 0;
+  double max = 1;
+} histogram1d;
+
+typedef struct
+{
+  arma::Mat<unsigned long long int> grid;
+  int bins = BINS;
+  double bin_width;
+  double min = 0;
+  double max = 1;
+} histogram2d;
+
+typedef struct
+{
+  double a;
+  double b;
+  double R2;
+} linear_model;
+
 class SeqRecord
 {
 private:
@@ -52,5 +79,11 @@ void deleteAllFiles(std::string);
 
 char
 convertAA(int);
+
+void writeHistogram1D(std::string, histogram1d);
+
+void writeHistogram2D(std::string, histogram2d);
+
+void writeLinearModel(std::string, linear_model);
 
 #endif

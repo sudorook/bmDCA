@@ -21,9 +21,6 @@ MSAStats::MSAStats(MSA* msa, bool verbose)
   Q = msa->Q;
   M_effective = sum(msa->sequence_weights);
 
-  reweight = msa->reweight;
-  threshold = msa->threshold;
-
   if (verbose) {
     std::cout << M << " sequences" << std::endl;
     std::cout << N << " positions" << std::endl;
@@ -69,9 +66,6 @@ MSAStats::updateMSA(MSA* new_msa, bool verbose)
   M = msa->M;
   Q = msa->Q;
   M_effective = sum(msa->sequence_weights);
-
-  reweight = msa->reweight;
-  threshold = msa->threshold;
 
   if (verbose) {
     std::cout << M << " sequences" << std::endl;
@@ -207,13 +201,16 @@ MSAStats::computeErrorMSA(int reps, long int seed)
     arma::Col<int> idx_2_v2 = arma::conv_to<arma::Col<int>>::from(idx_2);
 
     arma::Mat<int> alignment_1 = arma::Mat<int>(N, M_1, arma::fill::zeros);
-    arma::Mat<int> alignment_2 = arma::Mat<int>(N, M_1, arma::fill::zeros);
+    arma::Mat<int> alignment_2 = arma::Mat<int>(N, M_2, arma::fill::zeros);
+    arma::Col<double> weights_1 = arma::Col<double>(M_1, arma::fill::zeros);
+    arma::Col<double> weights_2 = arma::Col<double>(M_2, arma::fill::zeros);
 
 #pragma omp parallel
     {
 #pragma omp for
       for (int i = 0; i < M_1; i++) {
         alignment_1.col(i) = alignment_T.col(idx_1.at(i));
+        weights_1(i) = msa->sequence_weights(idx_1.at(i));
       }
     }
 
@@ -222,11 +219,12 @@ MSAStats::computeErrorMSA(int reps, long int seed)
 #pragma omp for
       for (int i = 0; i < M_2; i++) {
         alignment_2.col(i) = alignment_T.col(idx_2.at(i));
+        weights_2(i) = msa->sequence_weights(idx_2.at(i));
       }
     }
 
-    MSA msa_1 = MSA(alignment_1.t(), M_1, N, Q, reweight, threshold);
-    MSA msa_2 = MSA(alignment_2.t(), M_2, N, Q, reweight, threshold);
+    MSA msa_1 = MSA(alignment_1.t(), weights_1, M_1, N, Q);
+    MSA msa_2 = MSA(alignment_2.t(), weights_2, M_2, N, Q);
 
     double M_1_effective = arma::sum(msa_1.sequence_weights);
     double M_2_effective = arma::sum(msa_2.sequence_weights);
@@ -326,12 +324,8 @@ MSAStats::computeErrorMSA(int reps, long int seed)
     }
     double error_2p = sqrt(arma::accu(error_2p_vec) / (N * (N - 1) * Q * Q));
 
-    if (reweight) {
-      msa_rms(rep) = (error_1p + error_2p) /
-                     sqrt(M_effective / (M_1_effective + M_2_effective) * 2);
-    } else {
-      msa_rms(rep) = (error_1p + error_2p) / sqrt(2);
-    }
+    msa_rms(rep) = (error_1p + error_2p) /
+                   sqrt(M_effective / (M_1_effective + M_2_effective) * 2);
   }
 
   return;
@@ -361,24 +355,24 @@ MSAStats::getEffectiveM(void)
   return M_effective;
 };
 
-void
-MSAStats::writeRelEntropyGradient(std::string output_file)
-{
-  rel_entropy_grad_1p.save(output_file, arma::arma_binary);
-};
+// void
+// MSAStats::writeRelEntropyGradient(std::string output_file)
+// {
+//   rel_entropy_grad_1p.save(output_file, arma::arma_binary);
+// };
 
-void
-MSAStats::writeRelEntropyGradientAscii(std::string output_file)
-{
-  std::ofstream output_stream(output_file);
-  for (int i = 0; i < N; i++) {
-    output_stream << i;
-    for (int aa = 0; aa < Q; aa++) {
-      output_stream << " " << rel_entropy_grad_1p(aa, i);
-    }
-    output_stream << std::endl;
-  }
-};
+// void
+// MSAStats::writeRelEntropyGradientAscii(std::string output_file)
+// {
+//   std::ofstream output_stream(output_file);
+//   for (int i = 0; i < N; i++) {
+//     output_stream << i;
+//     for (int aa = 0; aa < Q; aa++) {
+//       output_stream << " " << rel_entropy_grad_1p(aa, i);
+//     }
+//     output_stream << std::endl;
+//   }
+// };
 
 // void
 // MSAStats::writeRelEntropyPos(std::string output_file)
@@ -386,33 +380,33 @@ MSAStats::writeRelEntropyGradientAscii(std::string output_file)
 //   rel_entropy_pos_1p.save(output_file, arma::arma_binary);
 // };
 
-void
-MSAStats::writeRelEntropyPosAscii(std::string output_file)
-{
-  std::ofstream output_stream(output_file);
-  for (int i = 0; i < N; i++) {
-    output_stream << " " << rel_entropy_pos_1p(i) << std::endl;
-  }
-};
+// void
+// MSAStats::writeRelEntropyPosAscii(std::string output_file)
+// {
+//   std::ofstream output_stream(output_file);
+//   for (int i = 0; i < N; i++) {
+//     output_stream << " " << rel_entropy_pos_1p(i) << std::endl;
+//   }
+// };
 
-void
-MSAStats::writeRelEntropy(std::string output_file)
-{
-  rel_entropy_1p.save(output_file, arma::arma_binary);
-};
+// void
+// MSAStats::writeRelEntropy(std::string output_file)
+// {
+//   rel_entropy_1p.save(output_file, arma::arma_binary);
+// };
 
-void
-MSAStats::writeRelEntropyAscii(std::string output_file)
-{
-  std::ofstream output_stream(output_file);
-  for (int i = 0; i < N; i++) {
-    output_stream << i;
-    for (int aa = 0; aa < Q; aa++) {
-      output_stream << " " << rel_entropy_1p(aa, i);
-    }
-    output_stream << std::endl;
-  }
-};
+// void
+// MSAStats::writeRelEntropyAscii(std::string output_file)
+// {
+//   std::ofstream output_stream(output_file);
+//   for (int i = 0; i < N; i++) {
+//     output_stream << i;
+//     for (int aa = 0; aa < Q; aa++) {
+//       output_stream << " " << rel_entropy_1p(aa, i);
+//     }
+//     output_stream << std::endl;
+//   }
+// };
 
 void
 MSAStats::writeFrequency1p(std::string output_file)

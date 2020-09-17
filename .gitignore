@@ -11,6 +11,7 @@ src/initialize_ind
 src/MCMC_rip
 src/reweighting
 src/preprocess
+src/process_msa
 src/bmdca
 src/bmdca_sample
 src/arma2ascii

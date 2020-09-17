@@ -15,13 +15,7 @@
 #define AA_ALPHABET_SIZE 21
 #endif
 
-MSA::MSA(std::string msa_file,
-         std::string weight_file,
-         bool reweight,
-         bool is_numeric_msa,
-         double threshold)
-  : reweight(reweight)
-  , threshold(threshold)
+MSA::MSA(std::string msa_file, std::string weight_file, bool is_numeric_msa)
 {
   if (is_numeric_msa) {
     readInputNumericMSA(msa_file);
@@ -32,9 +26,7 @@ MSA::MSA(std::string msa_file,
     Q = AA_ALPHABET_SIZE;
     makeNumericalMatrix();
   }
-  if (reweight) {
-    computeSequenceWeights(threshold);
-  } else if (!weight_file.empty()) {
+  if (!weight_file.empty()) {
     readSequenceWeights(weight_file);
   } else {
     sequence_weights = arma::Col<double>(M, arma::fill::ones);
@@ -44,22 +36,25 @@ MSA::MSA(std::string msa_file,
 MSA::MSA(arma::Mat<int> alignment,
          int M,
          int N,
-         int Q,
-         bool reweight,
-         double threshold)
+         int Q)
   : alignment(alignment)
   , M(M)
   , N(N)
   , Q(Q)
-  , reweight(reweight)
-  , threshold(threshold)
 {
-  if (reweight) {
-    computeSequenceWeights(threshold);
-  } else {
-    sequence_weights = arma::Col<double>(M, arma::fill::ones);
-  }
+  sequence_weights = arma::Col<double>(M, arma::fill::ones);
 };
+
+MSA::MSA(arma::Mat<int> alignment,
+         arma::Col<double> weights,
+         int M,
+         int N,
+         int Q)
+  : alignment(alignment)
+  , M(M)
+  , N(N)
+  , Q(Q)
+  , sequence_weights(weights){};
 
 void
 MSA::readInputNumericMSA(std::string numeric_msa_file)
@@ -359,13 +354,98 @@ MSA::computeSequenceWeights(double threshold)
 };
 
 void
-MSA::writeSequenceWeights(std::string output_file)
+MSA::filterSimilarSequences(double threshold)
 {
-  std::ofstream output_stream(output_file);
-  for (int i = 0; i < M; i++) {
-    output_stream << sequence_weights(i) << std::endl;
+  arma::Col<int> sequence_status = arma::Col<int>(M, arma::fill::zeros);
+  int sim_cutoff = (int)(N * threshold);
+  arma::Mat<int> alignment_T = alignment.t();
+#pragma omp parallel
+  {
+#pragma omp for schedule(dynamic, 1)
+    for (int m1 = 0; m1 < M; ++m1) {
+      int* m1_ptr = alignment_T.colptr(m1);
+      for (int m2 = 0; m2 < M; ++m2) {
+        if (m1 != m2) {
+          int* m2_ptr = alignment_T.colptr(m2);
+          double id = 0;
+          for (int i = 0; i < N; ++i) {
+            if (*(m1_ptr + i) == *(m2_ptr + i)) {
+              id += 1;
+            }
+          }
+          if (id > sim_cutoff) {
+            sequence_status(m1) = 1;
+            break;
+          }
+        }
+      }
+    }
   }
+
+  arma::uvec bad_sequences = arma::find(sequence_status == 1);
+  for (size_t i = 0; i < seq_to_keep.size(); i++) {
+    bad_sequences.shed_rows(arma::find(bad_sequences == seq_to_keep[i]));
+  }
+  alignment.shed_rows(bad_sequences);
+  M = alignment.n_rows;
 };
+
+void
+MSA::filterSequenceGaps(double seq_threshold)
+{
+  arma::Col<int> seq_gap_counts = arma::Col<int>(M, arma::fill::zeros);
+
+  int seq_gap_cutoff = (int)(seq_threshold * N);
+
+#pragma omp parallel
+  {
+#pragma omp for
+    for (int i = 0; i < M; i++) {
+      for (int j = 0; j < N; j++ ) {
+        // seq_gap_counts(i) += alignment(i, Q * j);
+        if (alignment(i, j) == 0) {
+          seq_gap_counts(i)++;
+        }
+      }
+    }
+  }
+
+  arma::uvec bad_sequences = arma::find(seq_gap_counts > seq_gap_cutoff);
+  for (size_t i = 0; i < seq_to_keep.size(); i++) {
+    bad_sequences.shed_rows(arma::find(bad_sequences == seq_to_keep[i]));
+  }
+  alignment.shed_rows(bad_sequences);
+  M = alignment.n_rows;
+};
+
+void
+MSA::filterPositionGaps(double pos_threshold)
+{
+  arma::Col<int> pos_gap_counts =
+    arma::Col<int>(N, arma::fill::zeros);
+
+  int pos_gap_cutoff = (int)(pos_threshold * arma::sum(sequence_weights));
+
+#pragma omp parallel
+  {
+#pragma omp for
+    for (int i = 0; i < N; i++) {
+      for (int j = 0; j < M; j++) {
+        if (alignment(j, i) == 0) {
+          pos_gap_counts(i) += sequence_weights(j);
+        }
+      }
+    }
+  }
+
+  arma::uvec bad_positions = arma::find(pos_gap_counts > pos_gap_cutoff);
+  for (size_t i = 0; i < pos_to_keep.size(); i++) {
+    bad_positions.shed_rows(arma::find(bad_positions == pos_to_keep[i]));
+  }
+  alignment.shed_cols(bad_positions);
+  N = (int)alignment.n_cols;
+};
+
 
 void
 MSA::computeHammingDistances(void)
@@ -396,6 +476,15 @@ MSA::computeHammingDistances(void)
 };
 
 void
+MSA::writeSequenceWeights(std::string output_file)
+{
+  std::ofstream output_stream(output_file);
+  for (int i = 0; i < M; i++) {
+    output_stream << sequence_weights(i) << std::endl;
+  }
+};
+
+void
 MSA::writeHammingDistances(std::string output_file)
 {
   std::ofstream output_stream(output_file);
@@ -405,7 +494,7 @@ MSA::writeHammingDistances(std::string output_file)
 };
 
 MSA
-MSA::subsampleAlignment(int size, long int seed)
+MSA::sampleAlignment(int size, long int seed)
 {
   pcg32 rng;
   rng.seed(seed);
@@ -432,5 +521,72 @@ MSA::subsampleAlignment(int size, long int seed)
     }
   }
 
-  return MSA(sub_alignment.t(), size, N, Q, reweight, threshold);
+  return MSA(sub_alignment.t(), size, N, Q);
+};
+
+std::vector<MSA*>
+MSA::partitionAlignment(int validation_size, long int seed)
+{
+  arma::arma_rng::set_seed(seed);
+
+  if (validation_size >= arma::sum(sequence_weights)) {
+    std::cerr << "ERROR: cannot sample " << validation_size
+              << " from alignment size " << M << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+  
+  arma::Mat<int> alignment_T = alignment.t();
+
+  // Select sequences for the validation alignment such that the cumulative
+  // effective sequence size is greater than the given threshold.
+  arma::uvec idx = arma::randperm(M);
+  double accu = 0;
+  int size = 0;
+  for (int i = 0; i < M; i++) {
+    size++;
+    accu += sequence_weights(idx(i));
+    if (accu > (double)validation_size)
+      break;
+  }
+  
+  // don't use more than a quarter of the MSA for cross-validation
+  size = Min(size, (int) M / 4);
+
+  arma::Mat<int> sub_alignment_1 =
+    arma::Mat<int>(N, M - size, arma::fill::zeros);
+  arma::Col<double> weights_1 =
+    arma::Col<double>(M - size, arma::fill::ones);
+
+  arma::Mat<int> sub_alignment_2 =
+    arma::Mat<int>(N, size, arma::fill::zeros);
+  arma::Col<double> weights_2 =
+    arma::Col<double>(size, arma::fill::ones);
+
+#pragma omp parallel
+  {
+#pragma omp for
+    for (int i = size; i < M; i++) {
+      sub_alignment_1.col(i - size) = alignment_T.col(idx(i));
+      weights_1(i - size) = sequence_weights(idx(i));
+    }
+  }
+
+#pragma omp parallel
+  {
+#pragma omp for
+    for (int i = 0; i < size; i++) {
+      sub_alignment_2.col(i) = alignment_T.col(idx(i));
+      weights_2(i) = sequence_weights(idx(i));
+    }
+  }
+
+  std::vector<MSA*> return_vector;
+  MSA* tmp;
+
+  tmp = new MSA(sub_alignment_1.t(), weights_1, M - size, N, Q);
+  return_vector.push_back(tmp);
+  tmp = new MSA(sub_alignment_2.t(), weights_2, size, N, Q);
+  return_vector.push_back(tmp);
+
+  return return_vector;
 };

@@ -55,25 +55,11 @@ sudo apt-get install git gcc g++ automake autoconf pkg-config \
 For Arch Linux, GCC should have been installed with the `base` and `base-devel`
 metapackages (`sudo pacman -S base base-devel`), but if not installed, run:
 ```
-sudo pacman -S gcc automake autoconf pkgconf
+sudo pacman -S gcc automake autoconf pkgconf superlu
 ```
 
 For Arch, Armadillo is not in the package repositories. You will need to check
 the AUR.
-
-First, install the SuperLU library:
-```
-git clone https://aur.archlinux.org/superlu.git
-cd superlu
-makepkg -si
-cd ..
-```
-
-SuperLU is a fast matrix factorization library required as a build dependency
-for Armadillo. Other build dependencies will be installed via `makepkg` from
-the official repositories.
-
-Now, download and install Armadillo:
 ```
 git clone https://aur.archlinux.org/armadillo.git
 cd armadillo
@@ -333,29 +319,25 @@ to fit values to a Potts model for amino acid frequencies at positions (Potts
 fields) and pairs of frequencies at pairs of positions (Potts couplings).
 
 The command line flags are:
- - `-i`: input MSA, FASTA format
+ - `-i`: training input MSA, FASTA format
+ - `-I`: (_optional_) validation input MSA, FASTA format
  - `-d`: directory where output files are written
- - `-r`: (_optional_) flag to compute re-weighting coefficients for each
-         sequence in the alignment, with the goal to not unduly bias inference
-         by highly similar sequences arising from the phylogeny (default:
-         `false`)
  - `-c`: (_optional_) config file for bmDCA run hyperparameters, such as
          `example/bmdca.conf`
- - `-t`: threshold for computing default sequence weights (default: `0.8`)
- - `-n`: input MSA, numerical format
- - `-w`: file containing sequence weights
+ - `-n`: training input MSA, numerical format
+ - `-N`: (_optional_) validation input MSA, numerical format
+ - `-w`: training MSA sequence weights
+ - `-W`: (_optional_) validation MSA sequence weights
  - `-h`: print usage information
  - `-f`: force a restart of inference loop (i.e., start at step 1)
-
-If `-r` is not specified, each sequence will be equally weighted, and if no
-config file is supplied, the run will default to hyperparameters hard-coded in
-the `initializeParameters()` function defined in `src/run.cpp`. The default
-number of iterations for the Boltzmann machine is 2000.
 
 The mapping from amino acids to integers is defined in the following way. Amino
 acids are ordered as in the following string "-ACDEFGHIKLMNPQRSTVWY". They are
 then mapped to the integer corresponding to their position in the string, minus
 one. The gap symbol is mapped to 0, A is mapped to 1, etc...
+
+To generate a sequence weight file, you can use the provided `process_msa` tool
+bundled in bmDCA. Instructions are in a subsequent section.
 
 __Important:__ The MSA processing function does not handle gaps represented by
 '.' characters.
@@ -366,19 +348,11 @@ To learn a FASTA-formatted multiple sequence alignment (with re-weighting) and
 a config file:
 
 ```
-bmdca -i <input_alignment.fasta> -d <output_directory> -r -c <config_file.conf>
-```
-
-#### Example 2: run from weighted numerical alignment
-
-If you already have a numerically-formatted alignment (gaps are 0) and set of
-per-sequence weights, run:
-```
-bmdca -n <numerical_alignment.txt> -w <sequence_weights.txt>
+bmdca -i <input_alignment.fasta> -w <input_alignment_weignts.txt> \
   -d <output_directory> -c <config_file.conf>
 ```
 
-#### Example 3: restarting runs
+#### Example 2: restarting runs
 
 Take, for example, this command:
 ```
@@ -393,18 +367,23 @@ bmdca -i <input_alignment.fasta> -d <output_directory> -r -c <config_file.conf>
 
 The inference loop will pick up from where it left off.
 
-**IMPORTANT** To guarantee that inferences loops produce the same results
+**IMPORTANT** To guarantee that inferences loop produce the same results
 irrespective of whether they were stopped and restarted or ran continuously,
 bmDCA will check that the hyperparameters used previously and presently match.
 The only fields that may be adjusted before restarting are:
 
-1. `save_parameters`
-2. `step_max` - the max number of steps (increase to continue a loop after it
-                ends)
-3. `error_max` - the convergence threshold (lower it to continue)
+1. `save_period` - the interval at which the state of the program is saved to
+   disk.
+2. `save_best_step` - boolean flag to save any step that produces the lowest
+   RMS error with respect to the MSA so far in the inference.
+3. `step_max` - the max number of steps (increase to continue a loop after it
+   ends)
+4. `stop_mode` - the method used to determine the convergence threshold
+   (description below)
+5. `stop_threshold` - the convergence threshold (lower it to continue)
 
 The hyperparameters used by any given run are stored in the `bmdca_params.conf`
-file. For boolean configuration options, it is not to specify `1` or `0`
+file. For boolean configuration options, it is fine to specify `1` or `0`
 instead of `true` and `false`.
 
 ### Sampling (`bmdca_sample`)
@@ -419,7 +398,7 @@ bmdca_sample -p <parameters.txt> -d <output_directory> \
   -r <number_of_indep_sampling_runs> -c <config_file.conf>
 ```
 
-If instead, you save parameters in binary format, run:
+If instead, you have parameters in binary format, run:
 ```
 bmdca_sample -p <parameters_h.bin> -P <parameters_J.bin>  \
   -d <output_directory> -o <output_file.txt> \
@@ -443,13 +422,13 @@ in text files. For binary parameters, which are stored in two `_h_%d.bin` and
 `_J_%d.bin` files, pass the fields (h) file to `-p` and couplings (J) file to
 `-P`.
 
-### Conversion (`arma2ascii`)
+### Conversion from binary to text (`arma2ascii`)
 
-If using the `output_binary=true` flag during the inference step, the output
-will be stored in an Armadillo-specific binary format. While this allows for
-reproducible outputs in stopped-and-restarted inference runs, the format is not
-accessible for other programs. You can use the `arma2ascii` tool to convert
-binary-stored outputs to ASCII.
+If using the `output_binary=true` flag during the inference step (recommended),
+the output will be stored in an Armadillo-specific binary format. While this
+allows for reproducible outputs in stopped-and-restarted inference runs, the
+format is not accessible for other programs. You can use the `arma2ascii` tool
+to convert binary-stored outputs to ASCII.
 
 To convert parameters:
 ```
@@ -463,6 +442,60 @@ arma2ascii -s <MC_stat_file.bin>
 
 The output fill be stored in a `.txt` file.
 
+### Conversion from numeric to FASTA (`numeric2fasta`)
+
+Output sampled alignments are in numeric format. To convert them back to FASTA,
+use:
+```
+numeric2fasta -n <numeric_msa_file> -o <output_fasta_file>
+```
+
+Presently, only numeric alignments with 21 states (20 amino acids + 1 for gaps)
+can be converted to FASTA format.
+
+### Alignment pre-preprocessing (`process_msa`)
+
+A MSA will need to be preprocessed before any sort of inference is performed.
+This is to ensure that the alignment contains mostly the relevant variation on
+protein sequences. Often, for large alignment, most positions are gaps, and
+most sequences consist of gaps. Such alignments will not yield informative
+models.
+
+To preprocess the MSA, you can use `process_msa` program. Command line flags
+are:
+ - `-i`: input multiple sequence alignment, FASTA format
+ - `-n`: input multiple sequence alignment, numerical format
+ - `-w`: (_optional_) sequence weight file for the input MSA
+ - `-r`: (_optional_) flag to re-weight sequences before any processing is done
+         (if no weights file is provided)
+ - `-t`: sequence similarity threshold for re-weighting
+         (if no weights file is provided)
+ - `-g`: maximum allowable fraction of gaps in sequences so that highly gapped
+         sequences are removed
+ - `-G`: maximum allowable fraction of gaps in positions so that highly gapped
+         positions are removed
+ - `-s`: maximum sequence identity fraction, where sequences above the
+         threshold will be pruned from the alignment
+ - `-p`: positions (indexed from 0) to protect from being pruned from the
+         alignment
+ - `-q`: sequences (indexed form 0 in the alignment) to protect from being
+         pruning
+ - `-o`: output name of the processed alignment
+ - `-O`: (_optional_) output name for sequence weights
+ - `-h`: print usage information
+
+Below are some examples:
+
+To prune sequences and positions with gaps above `0.2`:
+```
+process_msa -i <input msa> -g .2 -G .2 -o <output file>
+```
+
+To remove sequences above 90% similarity but protect the first two sequences:
+```
+process_msa -i <input msa> -o <output file> -s .9 -q 0 -q 1
+```
+
 ## Configuration file options
 
 Inference and sampling runs can be configured using a text file (see
@@ -470,10 +503,12 @@ Inference and sampling runs can be configured using a text file (see
 
 ### [bmDCA]
 
-1. `lambda_reg1` - L2 regularization strength for fields, h (default: 0.01)
-2. `lambda_reg2` - L2 regularization strength for couplings, J (default: 0.01)
-3. `step_max` - maximum number of iterations for Boltzmann learning process
+1. `count_max` - maximum number of iterations for Boltzmann learning process
    (default: 2000)
+2. `save_period` - save parameters every `save_period` number of steps
+   (default: 20)
+3. `save_best_steps` - save steps that yield the lowest RMSE of the gradient
+   (default: false)
 4. `stop_mode` - error criterion for stopping (default: "threshold")
    * "threshold" - use the value in `error_max` below
    * "stderr" - use threshold from multinomial standard error of the MSA
@@ -481,127 +516,229 @@ Inference and sampling runs can be configured using a text file (see
      with correction for correlated probabilities
    * "msaerr" - estimate threshold from error by bootstrapping separate subsets
      MSA against one another
-5. `error_max` - manual exit threshold for error convergence (default: 1e-05)
-6. `save_parameters` - save parameters every `save_parameters` number of steps
-   (default: 100)
-7. `save_best_steps` - save steps that yield the lowest RMSE of the gradient
-   (default: false)
+5. `stop_threshold` - manual exit threshold for error convergence (default: 1e-05)
+6. `cross_validate` - subset the alignment to train one subset and validate the
+   model against the other subset to assess overfitting
+7. `validation_seqs` - number of effective sequences to sequester for
+   cross-validation.
 8. `random_seed` - initial seed for the random number generator (default: 1)
-9. `use_reparametrization` - use the re-parametrized model for inference
-   (default: true)
-10. `initalize_params` - initialize fields to fit 1p frequencies (default:
-    true)
-11. `adapt_up` - multiple by which to increase Potts (J and h) gradient
-    (default: 1.5)
-12. `adapt_down` - multiple by which to decrease Potts (J and h) gradient
-    (default: 0.6)
-13. `step_h` - learning rate for h (default: 0.1)
-14. `step_J` - learning rate for J, scaled by effective number of sequences
-    (default: 0.01)
-15. `error_min_update` - threshold for differences in MSA and MCMC frequencies
-    above which parameters (J and h) are updated (default: -1)
-16. `t_wait_0` - initial burn-in time (default: 10000)
-17. `delta_t_0` - initial wait time between sampling sequences (default: 100)
-18. `check_ergo` - flag to check MCMC sample energies and autocorrelations,
-    without which wait and burn-in times are not updated (default: true)
-19. `adapt_up_time` - multiple to increase MCMC wait/burn-in time (default:
-    1.5)
-20. `adapt_down_time` - multiple to decrease MCMC wait/burn-in time (default
-    0.6)
-21. `step_important_max` - maximum number of importance sampling steps
-    (default: 1, i.e.importance sampling disabled)
-22. `coherence_min` - (default=.9999)
-23. `use_ss` - flag to sample sequences equal to the effective number of
-    sequences in the alignment (default: false)
-24. `M` - number of sequences to sample for each MCMC replicate (default: 1000)
-25. `count_max` - number of independent MCMC replicates (default: 10)
-26. `init_sample` - flag for whether of not to use seed sequence for
-    initializing the MCMC (default: false)
-27. `init_sample_file` - file containing the MCMC seed sequences (default: "")
-28. `sampler` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
-    'z-barker' for Zanella, 2019. 'z-sqrt' corresponds to a balancing function
-    of `sqrt(t)`, and 'z-barker' corresponds to `t/(1+t)`. (default: "mh")
-29. `use_pos_reg` - flag to apply position-specific regularization when
-    learning J (default: false)
-30. `output_binary` - flag to output data in binary format, which is faster and
+9. `output_binary` - flag to output data in binary format, which is faster and
     more precise (default: true)
-
-### [sampling]
-
-1. `random_seed` - initial seed for the random number generator (default: 1)
-2. `t_wait_0` - initial burn-in time (default: 100000)
-3. `delta_t_0` - initial wait time between sampling sequences (default: 1000)
-4. `check_ergo` - flag to check MCMC sample energies and autocorrelations,
-   without which wait and burn-in times are not updated (default: true)
-5. `adapt_up_time` - multiple to increase MCMC wait/burn-in time (default: 1.5)
-6. `adapt_down_time` - multiple to decrease MCMC wait/burn-in time (default
-   0.6)
-7. `sampler` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
+10. `update_rule` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
    'z-barker' for Zanella, 2019. 'z-sqrt' corresponds to a balancing function
    of `sqrt(t)`, and 'z-barker' corresponds to `t/(1+t)`. (default: "mh")
-8. `temperature` - temperature at which to sample sequences (default: 1.0)
+11. `update_burn_timeo` - flag to check tune the burn times during runtime
+    using MCMC sample energies and autocorrelations or lookahead sampling of a
+    small set of sequences. (default: true)
+12. `burn_in_start` - initial burn-in time (default: 10000)
+13. `burn_between_start` - initial wait time between sampling sequences (default: 100)
+14. `adapt_up_time` - multiple to increase MCMC wait/burn-in time (default:
+    1.5)
+15. `adapt_down_time` - multiple to decrease MCMC wait/burn-in time (default
+    0.6)
+16. `step_important_max` - maximum number of importance sampling steps
+    (default: 0, i.e.importance sampling disabled)
+17. `coherence_min` - (default=.9999)
+18. `use_ss` - flag to sample sequences equal to the effective number of
+    sequences in the alignment (default: false)
+19. `samples_per_walk` - number of sequences to sample for each MCMC replicate
+    (default: 1000)
+20. `walkers` - number of independent MCMC replicates (default: 10)
+
+#### [[original]]
+
+This model is a plain Boltzmann-machine without any model reparametrization and
+individual learning rates for each fields and coupling. This is the default:
+
+1. `lambda_reg_h` - regularization strength for fields (default: 0.01)
+2. `lambda_reg_J` - regularization strength for couplings (default: 0.01)
+3. `alpha_reg` - relative weighting of L1 (`alpha_reg=0`) and L2
+   (`alpha_reg=1`) regularization (default: 1)
+4. `initial_params` - choice of initializing the parameters (`profile` for an
+   independent site profile model, zero otherwise)  (default: 'profile')
+5. `set_zero_gauge` - TBD (default: false)
+6. `epsilon_h` - initial values for the learning rates for fields (default:
+   0.01)
+7. `epsilon_J` - initial values for the learning rates for couplings (default:
+   0.001)
+8. `learn_rate_h_min` - smallest possible values for learning rates for fields
+   (default: 0.0001) 
+9. `learn_rate_h_max` - largest possible values for learning rates for fields
+   (default: 0.5)
+10. `learn_rate_J_min` - smallest possible values for learning rates for
+    couplings (default: 0.0001) 
+11. `learn_rate_J_max` - largest possible values for learning rates for
+    couplings (default: 0.5)
+12. `adapt_up` - scaling factor by which learning rates can be increased
+    (default: 1.2)
+13. `adapt_down` - scaling factor by which learning rates are decreased. Keep
+    `adapt_up` x `adapt_down` less than 1 (default: 0.6)
+14. `use_pos_reg` - use position-specific regularizer derived from relative
+    entropy gradient for coupling frequencies in the MSA  (default: false)
+
+#### [[reparametrization]]
+
+Reparametrized model described in Figluizzi, 2018 paper.
+
+1. `lambda_reg_h` - regularization strength for fields (default: 0.01)
+2. `lambda_reg_J` - regularization strength for couplings (default: 0.01)
+3. `alpha_reg` - relative weighting of L1 (`alpha_reg=0`) and L2
+   (`alpha_reg=1`) regularization (default: 1)
+4. `initial_params` - choice of initializing the parameters (`profile` for an
+   independent site profile model, zero otherwise)  (default: 'profile')
+5. `set_zero_gauge` - TBD (default: false)
+6. `epsilon_h` - initial values for the learning rates for fields (default:
+   0.01)
+7. `epsilon_J` - initial values for the learning rates for couplings (default:
+   0.001)
+8. `learn_rate_h_min` - smallest possible values for learning rates for fields
+   (default: 0.0001) 
+9. `learn_rate_h_max` - largest possible values for learning rates for fields
+   (default: 0.5)
+10. `learn_rate_J_min` - smallest possible values for learning rates for
+    couplings (default: 0.0001) 
+11. `learn_rate_J_max` - largest possible values for learning rates for
+    couplings (default: 0.5)
+12. `adapt_up` - scaling factor by which learning rates can be increased
+    (default: 1.2)
+13. `adapt_down` - scaling factor by which learning rates are decreased. Keep
+    `adapt_up` x `adapt_down` less than 1 (default: 0.6)
+
+#### [[adam]]
+
+Adam (adaptive moments) is a momentum-based variant of stochastic gradient
+descent where momentum terms are scaled by the second moment, so as to reduce
+or enhance movement in directions that do little or enhance model accuracy.
+Fast, but tends to overfit small alignments very quickly.
+
+1. `lambda_reg_h` - regularization strength for fields (default: 0.01)
+2. `lambda_reg_J` - regularization strength for couplings (default: 0.01)
+3. `alpha_reg` - relative weighting of L1 (`alpha_reg=0`) and L2
+   (`alpha_reg=1`) regularization (default: 1)
+4. `initial_params` - choice of initializing the parameters (`profile` for an
+   independent site profile model, zero otherwise)  (default: 'profile')
+5. `set_zero_gauge` - TBD (default: false)
+6. `learn_rate_h` - learning rate for fields (default: 0.01)
+7. `learn_rate_J` - learning rate for couplings (default: 0.01)
+
+#### [[adamw]]
+
+Modified version of Adam that uses weight decay instead of L2 regularization.
+The rationale is that the regularization terms in ordinary Adam get scaled up
+or down by the moments and are less able to affect inference. Weight decay
+(after a transform of the original L2 loss minimization equation) is
+independent of the moments.
+
+1. `lambda_decay_h` - weight decay strength for fields (default: 0.01)
+2. `lambda_decay_J` - weight decay strength for couplings (default: 0.01)
+3. `initial_params` - choice of initializing the parameters (`profile` for an
+   independent site profile model, zero otherwise)  (default: 'profile')
+5. `set_zero_gauge` - TBD (default: false)
+6. `learn_rate_h` - learning rate for fields (default: 0.01)
+7. `learn_rate_J` - learning rate for couplings (default: 0.01)
+8. `eta_min` - minimum scaling value for annealing schedule (default: 0.1)
+9. `eta_max` - maximum scaling value for annealing schedule (default: 1)
+10. `anneal_schedule` - periodic rule for scaling the learning rates (default:
+    none)
+    - `cos`, cosine-based annealing
+    - `trap`, trapezoidal (warm-up, hot, then cool-down) annealing
+11. `anneal_scale` - scaling factor for the period, extending (or shortening)
+the schedules over time and iterations (default: 2)
+12. `anneal_period` - period for cycling the annealing schedule (default: 40)
+13. `anneal_warm` - warm-up number of iterations to scale from `eta_min` to
+`eta_max` (default: 20)
+14. `anneal_hot` - number of iterations to run at `eta_max` (default: 0)
+15. `anneal_cool` - number of iterations to decrease from `eta_max` to
+`eta_min` (default: 0)
+
+#### [[radam]]
+
+Variant of Adam with rectified initial iterations that are more Adam-like and
+later iterations that more closely resemble ordinary stochastic gradient
+descent with momentum, which generally appears to be more accurate than Adam
+but much slower at early iterations.
+
+1. `lambda_reg_h` - regularization strength for fields (default: 0.01)
+2. `lambda_reg_J` - regularization strength for couplings (default: 0.01)
+3. `alpha_reg` - relative weighting of L1 (`alpha_reg=0`) and L2
+   (`alpha_reg=1`) regularization (default: 1)
+4. `initial_params` - choice of initializing the parameters (`profile` for an
+   independent site profile model, zero otherwise)  (default: 'profile')
+5. `set_zero_gauge` - TBD (default: false)
+6. `learn_rate_h` - learning rate for fields (default: 0.01)
+7. `learn_rate_J` - learning rate for couplings (default: 0.01)
+
+### [bmDCA_sample]
+
+1. `resample_max` - number of time to attempt to resample a set of decorrelated
+   MCMC sequences before giving up (default: 20)
+2. `random_seed` - initial seed for the random number generator (default: 1)
+3. `save_interim_samples` - flag to save intermediate samples in between
+   resamplings for ideal aggregate sequence properties (default: true)
+4. `update_rule` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
+   'z-barker' for Zanella, 2019. 'z-sqrt' corresponds to a balancing function
+   of `sqrt(t)`, and 'z-barker' corresponds to `t/(1+t)`. (default: "mh")
+5. `burn_in_start` - initial burn-in time (default: 100000)
+6. `burn_between_start` - initial wait time between sampling sequences
+   (default: 1000)
+7. `update_burn_timeo` - flag to check tune the burn times during runtime using
+   MCMC sample energies and autocorrelations or lookahead sampling of a small
+   set of sequences. (default: true)
+8. `adapt_up_time` - multiple to increase MCMC wait/burn-in time (default: 1.5)
+9. `adapt_down_time` - multiple to decrease MCMC wait/burn-in time (default
+   0.6)
+10. `temperature` - temperature at which to sample sequences (default: 1.0)
 
 ## Output files
 
 `bmdca` will output files during the course of its run:
+ - `bmdca_run.log`: table of values and measurements taken at every iteration
+   of the learning procedure.
  - `bmdca_params.conf`: a list of the hyperparameters used in the learning
    procedure.
- - `energy_%d.dat`: mean and std dev over replicates for sample sequence
-   energies at each step of the Markov chain
- - `ergo_%d.dat`: set of autocorrelation calculations for sampled sequences
-   used for deciding whether to increase/decrease MCMC wait intervals and
-   burn-in times
-   1. correlation of sequences 1 wait interval apart.
-   2. correlation of sequences M/10 wait intervals apart. (M = # sequences)
-   3. cross correlation of sequences
-   4. standard deviation of correlations 1 wait intervals apart
-   5. standard deviation of correlations M/10 intervals apart
-   6. standard deviation of cross correlations
-   7. combined deviation of cross and autocorrelations (1 wait interval)
-   8. combined deviation of cross and autocorrelations (M/10 wait intervals)
-   9. combined deviation of autocorrelations 1 and M/10 intervals apart
- - `MC_energies_%d.txt`: energies of each MCMC sequence, grouped by replicate
- - `MC_samples_%d.txt`: sequences sampled from MCMC, grouped by replicate
- - `msa_numerical.txt`: numerical representation on input MSA
- - `my_energies_cfr_%d.txt`: statistics of energies over replicates, used for
-   deciding whether to increase/decrease MCMC wait intervals and burn-in times:
-   1. number of replicates
-   2. average over replicates of the energies of starting MCMC sequences
-   3. standard deviation over replicates of energies of starting MCMC sequences
-   4. number of replicates
-   5. average over replicates of the energies of ending MCMC sequences
-   6. standard deviation over replicates of energies of sending MCMC sequences
- - `my_energies_cfr_err_%d.txt`: additional energies statistics
-   1. average over replicates of the energies of starting MCMC sequences
-   2. average over replicates of the energies of ending MCMC sequences
-   3. combined std dev of energies for staring and ending MCMC sequences
- - `my_energies_end_%d.txt`: energies of ending MCMC sequence for each replicate
- - `my_energies_start_%d.txt`: energies of starting MCMC sequence for each replicate
- - `overlap_%d.txt`: overlap  of pairs of MCMC sequences
-   1. number of steps apart (in units of wait time)
-   2. mean overlap for all sequences %d steps apart
-   3. standard deviation of overlaps for all sequences %d steps apart
+ - `energies_%d.txt`: energies of each MCMC sequence, grouped by replicate
+ - `samples_%d.txt`: sequences sampled from MCMC, grouped by replicate
+ - `msa_numerical.txt`: numerical representation on input MSA for training
+ - `msa_validate_numerical.txt`: numerical representation on input MSA for
+   validation
  - `parameters_%d.txt`: learned Potts model parameters (J and h)
  - `parameters_h_%d.bin` and `parameters_J_%d.bin`: learned Potts model
    parameters (J and h), stored in arma binary format (see `output_binary=true`
    flag from config file).
- - `rel_ent_grad_align_1p.txt`: relative entropy gradient for each amino acid
-   at each position
- - `sequence_weights.txt`: weights for each sequence, either a number between 0
-   and 1 based on sequence similarity or 1 if re-weighting was not specified
- - `stat_align_1p`: table of frequencies for each amino acid at each position
+ - `gradients_%d.txt`: learned Potts model gradients (J and h)
+ - `gradients_h_%d.bin` and `gradients_J_%d.bin`: learned Potts model gradients
+   (J and h), stored in arma binary format (see `output_binary=true` flag from
+   config file).
+ - `moment1_%d.txt`: first moment (J and h) of the gradients
+ - `moment1_h_%d.bin` and `moment1_J_%d.bin`: first moment (J and h) of the
+   gradients, stored in arma binary format (see `output_binary=true` flag from
+   config file).
+ - `moment2_%d.txt`: second moment (J and h) of the gradients
+ - `moment2_h_%d.bin` and `moment2_J_%d.bin`: second moment (J and h) of the
+   gradients, stored in arma binary format (see `output_binary=true` flag from
+   config file).
+ - `learning_rates_%d.txt`: per-parameter learning rates (J and h)
+ - `learning_rates_h_%d.bin` and `learning_rates_J_%d.bin`: learning rates
+   stored in arma binary format (see `output_binary=true` flag from config
+   file).
+ - `msa_weights.txt`: weights for each sequence, either a number between 0 and
+   1 based on sequence similarity or 1 if re-weighting was not specified
+ - `msa_validate_weights.txt`: weights for each validation sequence, either a
+   number between 0 and 1 based on sequence similarity or 1 if re-weighting was
+   not specified
+ - `msa_stat_1p.bin`: table of frequencies for each amino acid at each position
    in the MSA
- - `stat_align_2p`: table of frequencies for pairs of amino acids at each pair
+ - `msa_stat_2p.bin`: table of frequencies for pairs of amino acids at each pair
    of positions in the MSA (due to symmetry, only the 'upper triangle' of
    positions is stored)
- - `stat_MC_1p_%d.txt`: table of frequencies for each amino acid at each
+ - `samples_stat_1p_%d.bin`: table of frequencies for each amino acid at each
    position of the set of MCMC-sampled sequences.
- - `stat_MC_1p_sigma_%d.txt`: table of standard deviation of frequencies over
+ - `samples_stat_1p_sigma_%d.bin`: table of standard deviation of frequencies over
    replicates for each amino acid at each position of the set of MCMC-sampled
    sequences.
- - `stat_MC_2p_%d.txt`: table of frequencies for pairs of amino acids at each
+ - `samples_stat_2p_%d.bin`: table of frequencies for pairs of amino acids at each
    pair of positions from the set of MCMC-sampled sequences
- - `stat_MC_2p_sigma_%d.txt`: table of standard deviation over replicates of
+ - `samples_stat_2p_sigma_%d.bin`: table of standard deviation over replicates of
    frequencies for pairs of amino acids at each pair of positions from the set
    of MCMC-sampled sequences
 

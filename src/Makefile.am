@@ -1,4 +1,4 @@
-bin_PROGRAMS = bmdca bmdca_sample arma2ascii numeric2fasta
+bin_PROGRAMS = bmdca bmdca_sample arma2ascii numeric2fasta process_msa
 
 CXXFLAGS = -O3 -std=c++11 $(OPENMP_CXXFLAGS) $(ARMADILLO_CFLAGS) \
            -DARMA_DONT_USE_HDF5 -DARMA_NO_DEBUG
@@ -16,24 +16,31 @@ endif
 DISTCLEANFILES = Makefile.in
 
 bmdca_SOURCES = bmdca.cpp \
-                model.cpp \
                 msa.cpp \
                 msa_stats.cpp \
+                sampler.cpp \
+                sample_stats.cpp \
                 run.cpp \
-                mcmc.cpp \
-                mcmc_stats.cpp \
-                graph.cpp \
+		model.cpp \
+		adam.cpp \
+		adamw.cpp \
+		original.cpp \
+		radam.cpp \
+		reparam.cpp \
                 utils.cpp
 
 bmdca_sample_SOURCES = bmdca_sample.cpp \
-                       generator.cpp \
-                       mcmc.cpp \
-                       mcmc_stats.cpp \
-                       graph.cpp \
-                       utils.cpp
+		       generator.cpp \
+		       sampler.cpp \
+		       sample_stats.cpp \
+		       utils.cpp
 
 arma2ascii_SOURCES = arma_convert.cpp \
-                     utils.cpp
+		     utils.cpp
 
 numeric2fasta_SOURCES = fasta_convert.cpp \
-                        utils.cpp
+			utils.cpp
+
+process_msa_SOURCES = process_msa.cpp \
+		      msa.cpp \
+		      utils.cpp

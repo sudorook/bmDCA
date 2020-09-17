@@ -1,8 +1,7 @@
 #include "generator.hpp"
 
-#include "mcmc.hpp"
-#include "mcmc_stats.hpp"
-#include "pcg_random.hpp"
+#include "sampler.hpp"
+#include "sample_stats.hpp"
 #include "utils.hpp"
 
 Generator::Generator(potts_model params, int n, int q, std::string config_file)
@@ -10,7 +9,6 @@ Generator::Generator(potts_model params, int n, int q, std::string config_file)
   , Q(q)
   , model(params)
 {
-  initializeParameters();
   if (config_file.length() != 0) {
     loadParameters(config_file);
   }
@@ -18,32 +16,12 @@ Generator::Generator(potts_model params, int n, int q, std::string config_file)
 
 Generator::~Generator(void)
 {
-  delete mcmc_stats;
+  delete sample_stats;
+  delete sampler;
 };
 
 void
-Generator::initializeParameters(void)
-{
-  resample_max = 20;
-  random_seed = 1;
-  adapt_up_time = 1.5;
-  adapt_down_time = 0.600;
-  t_wait_0 = 100000;
-  delta_t_0 = 1000;
-  check_ergo = true;
-  sampler = "mh";
-  temperature = 1.0;
-};
-
-void
-Generator::checkParameters(void)
-{
-  // Ensure that the set of ergodiciy checks is disabled if M=1
-  if ((M == 1) && check_ergo) {
-    check_ergo = false;
-    std::cerr << "WARNING: disabling 'check_ergo' when M=1." << std::endl;
-  }
-}
+Generator::checkParameters(void){};
 
 void
 Generator::loadParameters(std::string file_name)
@@ -56,7 +34,7 @@ Generator::loadParameters(std::string file_name)
       if (line[0] == '#' || line.empty()) {
         continue;
       } else if (line[0] == '[') {
-        if (line == "[sampling]") {
+        if (line == "[bmDCA_sample]") {
           reading_bmdca_section = true;
           continue;
         } else {
@@ -84,22 +62,28 @@ Generator::setParameter(std::string key, std::string value)
     resample_max = std::stoi(value);
   } else if (key == "random_seed") {
     random_seed = std::stoi(value);
+  } else if (key == "save_interim_samples") {
+    if (value.size() == 1) {
+      save_interim_samples = (std::stoi(value) == 1);
+    } else {
+      save_interim_samples = (value == "true");
+    }
+  } else if (key == "update_rule") {
+    update_rule = value;
+  } else if (key == "burn_in_start") {
+    burn_in_start = std::stoi(value);
+  } else if (key == "burn_between_start") {
+    burn_between_start = std::stoi(value);
+  } else if (key == "update_burn_time") {
+    if (value.size() == 1) {
+      update_burn_time = (std::stoi(value) == 1);
+    } else {
+      update_burn_time = (value == "true");
+    }
   } else if (key == "adapt_up_time") {
     adapt_up_time = std::stod(value);
   } else if (key == "adapt_down_time") {
     adapt_down_time = std::stod(value);
-  } else if (key == "t_wait_0") {
-    t_wait_0 = std::stoi(value);
-  } else if (key == "delta_t_0") {
-    delta_t_0 = std::stoi(value);
-  } else if (key == "check_ergo") {
-    if (value.size() == 1) {
-      check_ergo = (std::stoi(value) == 1);
-    } else {
-      check_ergo = (value == "true");
-    }
-  } else if (key == "sampler") {
-    sampler = value;
   } else if (key == "temperature") {
     temperature = std::stod(value);
   }
@@ -108,18 +92,37 @@ Generator::setParameter(std::string key, std::string value)
 void
 Generator::writeAASequences(std::string output_file)
 {
-  int M = samples.n_rows;
-  int N = samples.n_cols;
-  int reps = samples.n_slices;
+  if (samples_per_walk > 1) {
+    int M = samples_3d.n_rows;
+    int N = samples_3d.n_cols;
+    int reps = samples_3d.n_slices;
 
-  std::ofstream output_stream(output_file);
+    std::ofstream output_stream(output_file);
 
-  char aa;
-  for (int rep = 0; rep < reps; rep++) {
+    char aa;
+    for (int rep = 0; rep < reps; rep++) {
+      for (int m = 0; m < M; m++) {
+        output_stream << ">sample" << m * rep + m << std::endl;
+        for (int n = 0; n < N; n++) {
+          aa = convertAA(samples_3d(m, n, rep));
+          if (aa != '\0') {
+            output_stream << aa;
+          }
+        }
+        output_stream << std::endl << std::endl;
+      }
+    }
+  } else {
+    int M = samples_2d.n_rows;
+    int N = samples_2d.n_cols;
+
+    std::ofstream output_stream(output_file);
+
+    char aa;
     for (int m = 0; m < M; m++) {
-      output_stream << ">sample" << m * rep + m << std::endl;
+      output_stream << ">sample" << m << std::endl;
       for (int n = 0; n < N; n++) {
-        aa = convertAA(samples(m, n, rep));
+        aa = convertAA(samples_2d(m, n));
         if (aa != '\0') {
           output_stream << aa;
         }
@@ -129,14 +132,119 @@ Generator::writeAASequences(std::string output_file)
   }
 };
 
+bool
+Generator::checkErgodicity(void)
+{
+  arma::Col<double> stats = sample_stats->getStats();
+        
+  double e_start = stats.at(0);
+  double e_end = stats.at(2);
+  double e_err = stats.at(4);
+    
+  double auto_corr = stats.at(7);
+  double cross_corr = stats.at(8);
+  double check_corr = stats.at(9);
+  double cross_check_err = stats.at(14); 
+  double auto_cross_err = stats.at(13);
+    
+  bool flag_deltat_up = true;
+  bool flag_deltat_down = true;
+  bool flag_twaiting_up = true;
+  bool flag_twaiting_down = true;
+
+  if (check_corr - cross_corr <= cross_check_err) {
+    flag_deltat_up = false;
+  } 
+  if (auto_corr - cross_corr >= auto_cross_err) {
+    flag_deltat_down = false;
+  } 
+
+  if (e_start - e_end <= 2 * e_err) {
+    flag_twaiting_up = false;
+  }   
+  if (e_start - e_end >= -2 * e_err) {
+    flag_twaiting_down = false;
+  }
+      
+  if (flag_deltat_up) {
+    burn_between = (int)(round((double)burn_between * adapt_up_time));
+    std::cout << "increasing burn-between time to " << burn_between << std::endl;
+  } else if (flag_deltat_down) {
+    burn_between = Max((int)(round((double)burn_between * adapt_down_time)), 1);
+    std::cout << "decreasing burn-between time to " << burn_between << std::endl;
+  }
+
+  if (flag_twaiting_up) {
+    burn_in = (int)(round((double)burn_in * adapt_up_time));
+    std::cout << "increasing burn-in time to " << burn_in << std::endl;
+  } else if (flag_twaiting_down) {
+    burn_in = Max((int)(round((double)burn_in * adapt_down_time)), 1);
+    std::cout << "decreasing burn-in time to " << burn_in << std::endl;
+  }
+
+  bool flag_mc = true;
+  if (not flag_deltat_up and not flag_twaiting_up) {
+    flag_mc = false;
+  }
+  return flag_mc;
+};
+
+void
+Generator::estimateBurnTime(void)
+{ 
+  std::uniform_int_distribution<long int> dist(0, RAND_MAX - walkers);
+  
+  bool flag_burn = true;
+  while (flag_burn) {
+    double burn_reps = 24;
+    double burn_count = 4;
+    arma::Mat<double> energy_burn = 
+      arma::Mat<double>(burn_count, burn_reps, arma::fill::zeros);
+
+    sampler->sampleEnergies(
+      &energy_burn, burn_reps, burn_count, burn_in, burn_in, dist(rng));
+
+    double e_start = arma::mean(energy_burn.row(0));
+    double e_start_sigma = arma::stddev(energy_burn.row(0), 1); 
+    double e_end = (arma::mean(energy_burn.row(burn_count - 1)) +
+                    arma::mean(energy_burn.row(burn_count - 2))) /
+                   2;
+    double e_end_sigma =
+      sqrt(pow(arma::stddev(energy_burn.row(burn_count - 1), 1), 2) +
+           pow(arma::stddev(energy_burn.row(burn_count - 2), 1), 2));
+    double e_err =
+      sqrt((pow(e_start_sigma, 2) / burn_reps + pow(e_end_sigma, 2)) / 2 /
+           burn_reps);
+    
+    bool flag_twaiting_up = true;
+    bool flag_twaiting_down = true;
+    if (e_start - e_end <= 2 * e_err) {
+      flag_twaiting_up = false;
+    }
+    if (e_start - e_end >= -2 * e_err) {
+      flag_twaiting_down = false;
+    }
+    if (flag_twaiting_up) {
+      burn_in = (int)(round((double)burn_in * adapt_up_time));
+    } else if (flag_twaiting_down) {
+      burn_in = Max((int)(round((double)burn_in * adapt_down_time)), 1);
+    }
+    if (!flag_twaiting_up) {
+      flag_burn = false;
+    }
+    // sampler->setBurnTime(burn_in, burn_in);
+  }
+};
+
+
 void
 Generator::writeNumericalSequences(std::string output_file)
 {
   int idx = output_file.find_last_of(".");
   std::string raw_file = output_file.substr(0, idx);
 
-  mcmc_stats->writeSamples(raw_file + "_numerical.txt");
-  mcmc_stats->writeSampleEnergies(raw_file + "_energies.txt");
+  sample_stats->writeSamples(raw_file + "_numerical.txt");
+  sample_stats->writeSampleEnergies(raw_file + "_energies.txt");
 }
 
 void
@@ -147,126 +255,90 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
   arma::wall_clock timer;
   timer.tic();
 
-  count_max = n_indep_runs;
-  M = n_per_run;
+  walkers = n_indep_runs;
+  samples_per_walk = n_per_run;
 
   checkParameters();
 
-  samples = arma::Cube<int>(M, N, count_max, arma::fill::zeros);
-  mcmc = new MCMC(N, Q, &model);
-  mcmc_stats = new MCMCStats(&samples, &(model));
+  if (samples_per_walk == 1) {
+    samples_2d = arma::Mat<int>(walkers, N, arma::fill::zeros);
+    sample_stats = new SampleStats2D(&samples_2d, &(model));
+  } else {
+    samples_3d = arma::Cube<int>(samples_per_walk, N, walkers, arma::fill::zeros);
+    sample_stats = new SampleStats3D(&samples_3d, &(model));
+  }
 
   // Instantiate the PCG random number generator and unifrom random
   // distribution.
-  pcg32 rng;
   rng.seed(random_seed);
-  std::uniform_int_distribution<long int> dist(0, RAND_MAX - count_max);
+  std::uniform_int_distribution<long int> dist(0, RAND_MAX - walkers);
 
   std::cout << timer.toc() << " sec" << std::endl << std::endl;
 
-  int t_wait = t_wait_0;
-  int delta_t = delta_t_0;
+  burn_in = burn_in_start;
+  burn_between = burn_between_start;
+  
+  sampler = new Sampler(N, Q, &model);
+
+  if ((samples_per_walk == 1) & update_burn_time) {
+    std::cout << "setting burn time to... " << std::flush;
+    timer.tic();
+    estimateBurnTime();
+    std::cout << burn_in << "... " << timer.toc() << " sec" << std::endl;
+  }
+  
   bool flag_mc = true;
   int resample_counter = 0;
   while (flag_mc) {
-    std::cout << "sampling model with mcmc... " << std::flush;
+    std::cout << "sampling the model... " << std::flush;
     timer.tic();
-    if (sampler == "mh") {
-      mcmc->sample(
-        &samples, count_max, M, N, t_wait, delta_t, dist(rng), temperature);
-    } else if (sampler == "z-sqrt") {
-      mcmc->sample_zanella(&samples,
-                           count_max,
-                           M,
-                           N,
-                           t_wait,
-                           delta_t,
-                           dist(rng),
-                           "sqrt",
-                           temperature);
-    } else if (sampler == "z-barker") {
-      mcmc->sample_zanella(&samples,
-                           count_max,
-                           M,
-                           N,
-                           t_wait,
-                           delta_t,
-                           dist(rng),
-                           "barker",
-                           temperature);
+    if(samples_per_walk > 1) {
+      if (update_rule == "mh") {
+        sampler->sampleSequences(&samples_3d,
+                                 walkers,
+                                 samples_per_walk,
+                                 burn_in,
+                                 burn_between,
+                                 dist(rng),
+                                 temperature);
+      } else if (update_rule == "z-sqrt") {
+        sampler->sampleSequencesZanella(
+          &samples_3d, walkers, samples_per_walk, burn_in, burn_between, dist(rng), "sqrt", temperature);
+      } else if (update_rule == "z-barker") {
+        sampler->sampleSequencesZanella(
+          &samples_3d, walkers, samples_per_walk, burn_in, burn_between, dist(rng), "barker", temperature);
+      } else {
+        std::cerr << "ERROR: sampler '" << sampler << "' not recognized."
+                  << std::endl;
+        std::exit(EXIT_FAILURE);
+      }
     } else {
-      std::cerr << "ERROR: sampler '" << sampler << "' not recognized."
-                << std::endl;
-      std::exit(EXIT_FAILURE);
+      if (update_rule == "mh") {
+        sampler->sampleSequences(
+          &samples_2d, walkers, burn_in, dist(rng), temperature);
+      } else if (update_rule == "z-sqrt") {
+        sampler->sampleSequencesZanella(
+          &samples_2d, walkers, burn_in, dist(rng), "sqrt", temperature);
+      } else if (update_rule == "z-barker") {
+        sampler->sampleSequencesZanella(
+          &samples_2d, walkers, burn_in, dist(rng), "barker", temperature);
+      } else {
+        std::cerr << "ERROR: sampler '" << sampler << "' not recognized."
+                  << std::endl;
+        std::exit(EXIT_FAILURE);
+      }
     }
     std::cout << timer.toc() << " sec" << std::endl;
 
-    std::cout << "updating mcmc stats with samples... " << std::flush;
+    std::cout << "computing sequence energies and correlations... "
+              << std::flush;
+    sample_stats->computeStatsExtra();
     timer.tic();
-    mcmc_stats->updateData(&samples, &model);
     std::cout << timer.toc() << " sec" << std::endl;
 
-    if (check_ergo) {
-      std::cout << "computing sequence energies and correlations... "
-                << std::flush;
-      timer.tic();
-      mcmc_stats->computeEnergiesStats();
-      mcmc_stats->computeCorrelations();
-      std::cout << timer.toc() << " sec" << std::endl;
-
-      std::vector<double> energy_stats = mcmc_stats->getEnergiesStats();
-      std::vector<double> corr_stats = mcmc_stats->getCorrelationsStats();
-
-      double auto_corr = corr_stats.at(2);
-      double cross_corr = corr_stats.at(3);
-      double check_corr = corr_stats.at(4);
-      double cross_check_err = corr_stats.at(9);
-      double auto_cross_err = corr_stats.at(8);
-
-      double e_start = energy_stats.at(0);
-      double e_start_sigma = energy_stats.at(1);
-      double e_end = energy_stats.at(2);
-      double e_end_sigma = energy_stats.at(3);
-      double e_err = energy_stats.at(4);
-
-      bool flag_deltat_up = true;
-      bool flag_deltat_down = true;
-      bool flag_twaiting_up = true;
-      bool flag_twaiting_down = true;
-
-      if (check_corr - cross_corr < cross_check_err) {
-        flag_deltat_up = false;
-      }
-      if (auto_corr - cross_corr > auto_cross_err) {
-        flag_deltat_down = false;
-      }
-
-      if (e_start - e_end < 2 * e_err) {
-        flag_twaiting_up = false;
-      }
-      if (e_start - e_end > -2 * e_err) {
-        flag_twaiting_down = false;
-      }
-
-      if (flag_deltat_up) {
-        delta_t = (int)(round((double)delta_t * adapt_up_time));
-        std::cout << "increasing wait time to " << delta_t << std::endl;
-      } else if (flag_deltat_down) {
-        delta_t = Max((int)(round((double)delta_t * adapt_down_time)), 1);
-        std::cout << "decreasing wait time to " << delta_t << std::endl;
-      }
-
-      if (flag_twaiting_up) {
-        t_wait = (int)(round((double)t_wait * adapt_up_time));
-        std::cout << "increasing burn-in time to " << t_wait << std::endl;
-      } else if (flag_twaiting_down) {
-        t_wait = Max((int)(round((double)t_wait * adapt_down_time)), 1);
-        std::cout << "decreasing burn-in time to " << t_wait << std::endl;
-      }
-
-      if (not flag_deltat_up and not flag_twaiting_up) {
-        flag_mc = false;
-      } else {
+    if (update_burn_time & (samples_per_walk > 1)) {
+      flag_mc = checkErgodicity();
+      if (flag_mc) {
         if (resample_counter >= resample_max) {
           std::cout << "maximum number of resamplings (" << resample_counter
                     << ") reached. stopping..." << std::endl;
@@ -275,9 +347,11 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
           std::cout << "resampling..." << std::endl;
           resample_counter++;
 
-          std::cout << "writing temporary files" << std::endl;
-          writeAASequences("temp_" + output_file);
-          writeNumericalSequences("temp_" + output_file);
+          if (save_interim_samples) {
+            std::cout << "writing temporary files" << std::endl;
+            writeAASequences("temp_" + output_file);
+            writeNumericalSequences("temp_" + output_file);
+          }
         }
       }
     } else {
@@ -287,12 +361,14 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
 
   int idx = output_file.find_last_of(".");
   std::string output_name = output_file.substr(0, idx);
-  if (deleteFile("temp_" + output_file) != 0)
-    std::cerr << "temporary file deletion failed!" << std::endl;
-  else if (deleteFile("temp_" + output_name + "_numerical.txt") != 0)
-    std::cerr << "temporary file deletion failed!" << std::endl;
-  else if (deleteFile("temp_" + output_name + "_energies.txt") != 0)
-    std::cerr << "temporary file deletion failed!" << std::endl;
+  if (save_interim_samples) {
+    if (deleteFile("temp_" + output_file) != 0)
+      std::cerr << "temporary file deletion failed!" << std::endl;
+    else if (deleteFile("temp_" + output_name + "_numerical.txt") != 0)
+      std::cerr << "temporary file deletion failed!" << std::endl;
+    else if (deleteFile("temp_" + output_name + "_energies.txt") != 0)
+      std::cerr << "temporary file deletion failed!" << std::endl;
+  }
 
   std::cout << "writing final sequences... " << std::flush;
   writeAASequences(output_file);

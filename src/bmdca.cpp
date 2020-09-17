@@ -1,25 +1,27 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <string>
+#include <iostream>
 
 #include "msa.hpp"
-#include "msa_stats.hpp"
+// #include "msa_stats.hpp"
 #include "run.hpp"
 
 void
 print_usage(void)
 {
   std::cout << "bmdca usage:" << std::endl;
-  std::cout << "(e.g. bmdca -i <input MSA> -r -d <directory> -c <config file>)"
+  std::cout << "(e.g. bmdca -i <training MSA> -w <training sequence weights> -d <output directory> -c <config file>)"
             << std::endl;
-  std::cout << "  -i: input MSA (FASTA format)" << std::endl;
+  std::cout << "  -i: training MSA (FASTA format)" << std::endl;
+  std::cout << "  -I: validation MSA (FASTA format)" << std::endl;
   std::cout << "  -d: destination directory" << std::endl;
-  std::cout << "  -r: re-weighting flag" << std::endl;
-  std::cout << "  -n: numerical MSA" << std::endl;
-  std::cout << "  -w: sequence weights" << std::endl;
+  std::cout << "  -n: training numerical MSA" << std::endl;
+  std::cout << "  -N: validation numerical MSA" << std::endl;
+  std::cout << "  -w: training sequence weights" << std::endl;
+  std::cout << "  -W: validation sequence weights" << std::endl;
   std::cout << "  -c: config file" << std::endl;
-  std::cout << "  -t: sequence similarity threshold for reweighting"
-            << std::endl;
   std::cout << "  -h: print usage (i.e. this message)" << std::endl;
   std::cout << "  -f: force a restart of the inference loop" << std::endl;
 };
@@ -27,20 +29,21 @@ print_usage(void)
 int
 main(int argc, char* argv[])
 {
-  std::string input_file;
+  std::string train_file;
+  std::string train_weight_file;
+  
+  std::string validate_file;
+  std::string validate_weight_file;
+
   std::string config_file;
-  std::string weight_file;
   std::string dest_dir = ".";
 
-  bool reweight = false; // if true, weight sequences by similarity
   bool is_numeric = false;
-  bool input_file_given = false;
   bool force_restart = false;
-  double threshold = 0.8;
 
   // Read command-line parameters.
   char c;
-  while ((c = getopt(argc, argv, "c:d:fhi:n:rt:w:")) != -1) {
+  while ((c = getopt(argc, argv, "c:d:fhi:I:n:N:w:W:")) != -1) {
     switch (c) {
       case 'c':
         config_file = optarg;
@@ -66,22 +69,24 @@ main(int argc, char* argv[])
         return 0;
         break;
       case 'i':
-        input_file = optarg;
-        input_file_given = true;
+        train_file = optarg;
+        break;
+      case 'I':
+        validate_file = optarg;
         break;
       case 'n':
-        input_file = optarg;
-        input_file_given = true;
+        train_file = optarg;
         is_numeric = true;
         break;
-      case 'r':
-        reweight = true;
-        break;
-      case 't':
-        threshold = std::stod(optarg);
+      case 'N':
+        validate_file = optarg;
+        is_numeric = true;
         break;
       case 'w':
-        weight_file = optarg;
+        train_weight_file = optarg;
+        break;
+      case 'W':
+        validate_weight_file = optarg;
         break;
       case '?':
         std::cerr << "ERROR: Incorrect command line usage." << std::endl;
@@ -91,26 +96,31 @@ main(int argc, char* argv[])
   }
 
   // Exit if no input file was provided.
-  if (!input_file_given) {
+  if (train_file.empty()) {
     std::cerr << "ERROR: Missing MSA input file." << std::endl;
     print_usage();
     std::exit(EXIT_FAILURE);
   }
 
-  if (reweight & (!weight_file.empty())) {
-    std::cout << "WARNING: sequence reweighting will ignore weight file."
-              << std::endl;
+  MSA *msa_train = nullptr;
+  MSA *msa_validate = nullptr;
+
+  // Parse the multiple sequence alignment.
+  msa_train = new MSA(train_file, train_weight_file, is_numeric);
+  msa_train->writeSequenceWeights(dest_dir + "/msa_weights.txt");
+  msa_train->writeMatrix(dest_dir + "/msa_numerical.txt");
+  
+  if (!validate_file.empty()) {
+    msa_validate = new MSA(validate_file, validate_weight_file, is_numeric);
+    msa_validate->writeSequenceWeights(dest_dir + "/msa_validate_weights.txt");
+    msa_validate->writeMatrix(dest_dir + "/msa_validate_numerical.txt");
   }
 
-  // Parse the multiple sequence alignment. Reweight sequences if desired.
-  MSA msa = MSA(input_file, weight_file, reweight, is_numeric, threshold);
-  msa.writeSequenceWeights(dest_dir + "/sequence_weights.txt");
-  msa.writeMatrix(dest_dir + "/msa_numerical.txt");
-
-  // Initialize the MCMC using the statistics of the MSA.
-  Sim sim = Sim(msa,config_file, dest_dir, force_restart);
-  sim.writeParameters("bmdca_params.conf");
+  Sim sim = Sim(msa_train, msa_validate, config_file, dest_dir, force_restart);
   sim.run();
 
+  delete msa_train;
+  delete msa_validate;
+  
   return 0;
 };

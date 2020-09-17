@@ -10,24 +10,34 @@
 class MSA
 {
 public:
+  MSA(std::string, std::string = "", bool = true);
+  MSA(arma::Mat<int>, arma::Col<double>, int, int, int);
+  MSA(arma::Mat<int>, int, int, int);
+
   arma::Mat<int> alignment;           // numerical multiple sequence alignment
-  arma::Col<double> sequence_weights; // weights for each sequence
   int M;                              // number of sequences
   int N;                              // number of positions
   int Q;                              // number of amino acids
-  const bool reweight;                // whether reweighting performed
-  const double threshold;             // reweighting threshold
-
+  
+  arma::Col<double> sequence_weights; // weights for each sequence
   arma::Col<double> hamming_distances;
 
-  MSA(std::string, std::string = "", bool = true, bool = false, double = 0.8);
-  MSA(arma::Mat<int>, int, int, int, bool = true, double = 0.8);
+  void setKeepPositions(std::vector<int>);
+  void setKeepSequences(std::vector<int>);
+
+  void filterSequenceGaps(double = 0.2);
+  void filterPositionGaps(double = 0.2);
+  void filterSimilarSequences(double = 0.8);
+  void computeSequenceWeights(double = 0.8);
+  void computeHammingDistances(void);
+
   void printAlignment();
   void writeMatrix(std::string);
   void writeSequenceWeights(std::string);
   void writeHammingDistances(std::string);
 
-  MSA subsampleAlignment(int = 0, long int = 0);
+  MSA sampleAlignment(int = 0, long int = 0);
+  std::vector<MSA*> partitionAlignment(int = 0, long int = 0);
 
 private:
   std::vector<SeqRecord> seq_records;
@@ -36,8 +46,9 @@ private:
   void readInputNumericMSA(std::string);
   void readSequenceWeights(std::string);
   void makeNumericalMatrix(void);
-  void computeSequenceWeights(double);
-  void computeHammingDistances(void);
+
+  std::vector<int> seq_to_keep;
+  std::vector<int> pos_to_keep;
 };
 
 #endif

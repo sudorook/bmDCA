@@ -2,55 +2,59 @@
 #define MODEL_HPP
 
 #include "msa_stats.hpp"
+#include "sample_stats.hpp"
 #include "utils.hpp"
 
 class Model
 {
 public:
+  Model(void);
+  virtual ~Model(){};
+  
+  void setMSAStats(MSAStats*, MSAStats*);
+  void setSampleStats(SampleStats*);
+  void setStep(int);
+
+  double train_error_1p = 1000;
+  double train_error_2p = 1000;
+  double validation_error_1p = 1000;
+  double validation_error_2p = 1000;
+
+  virtual void update(void) = 0;
+  virtual void initialize(void) = 0;
+  virtual void reset(void) = 0;
+  virtual void restore(int, bool) = 0;
+
+  virtual void writeData(std::string, bool = true) = 0;
+  virtual void writeStep(int, bool = true) = 0;
+  virtual void deleteStep(int, bool = true) = 0;
+  virtual bool isValidStep(int, bool = true) = 0;
+  
+  virtual void loadHyperparameters(std::string) = 0;
+  virtual void checkHyperparameters(void) = 0;
+  virtual bool compareHyperparameters(std::string) = 0;
+  virtual void writeHyperparameters(std::string, bool = false) = 0;
+
   potts_model params;
   potts_model params_prev;
-  potts_model gradient;
-  potts_model gradient_prev;
-  potts_model moment1;
-  potts_model moment2;
+
+protected:
+  MSAStats *training = nullptr;
+  MSAStats *validation = nullptr;
+  SampleStats *samples = nullptr;
+
+  std::string hyperparameter_file;
+
+  bool validate;
+
+  void setZeroGauge(void);
+
   int N;
   int Q;
 
-  Model(MSAStats*, bool = true);
-  Model(std::string,
-        std::string,
-        std::string,
-        std::string,
-        std::string,
-        std::string);
-  Model(std::string,
-        std::string,
-        std::string,
-        std::string,
-        std::string,
-        std::string,
-        std::string,
-        std::string,
-        std::string,
-        std::string,
-        std::string,
-        std::string);
+  double temperature = 1.0;
 
-  void resetModel(MSAStats*, bool = true);
-
-  void writeParams(std::string, std::string);
-  void writeParamsPrevious(std::string, std::string);
-  void writeMoment1(std::string, std::string);
-  void writeMoment2(std::string, std::string);
-  void writeGradient(std::string, std::string);
-  void writeGradientPrevious(std::string, std::string);
-
-  void writeParamsAscii(std::string);
-  void writeParamsPreviousAscii(std::string);
-  void writeMoment1Ascii(std::string);
-  void writeMoment2Ascii(std::string);
-  void writeGradientAscii(std::string);
-  void writeGradientPreviousAscii(std::string);
+  int step = 1;
 };
 
 #endif
