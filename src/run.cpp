@@ -160,6 +160,7 @@ Sim::initialize(void) {
       arma::Cube<int>(samples_per_walk, N, walkers, arma::fill::zeros);
     sample_stats =
       new SampleStats3D(&samples_3d, &(model->params), &(model->params_prev));
+    sample_stats->setMixingTime(burn_between);
   } else {
     samples_2d = arma::Mat<int>(walkers, N, arma::fill::zeros);
     sample_stats =
@@ -861,6 +862,7 @@ Sim::run(void)
         flag_mc = checkErgodicity();
         if (flag_mc) {
           std::cout << "resampling..." << std::endl;
+          sample_stats->setMixingTime(burn_between);
         }
       } else {
         flag_mc = false;
