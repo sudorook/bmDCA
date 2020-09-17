@@ -775,6 +775,47 @@ disable writing of a particular log file is to comment out the code in the
 
 ## Output file formats
 
+### Run log
+
+The columns in the run log correspond to:
+1. `step` - current iteration number
+2. `walkers` - number of independent sampling trajectories
+3. `samples-per-walk` - number of samples to take from each walker (MCMC)
+4. `burn-in` - burn-in time for walkers
+5. `burn-between` - burn time between samples along a trajectory
+6. `total-corr` - total sequence correlation among all sampled sequences
+7. `auto-corr` - correlations among sequences sampled along a trajectory
+8. `cross-corr` - correlations among sequences from different trajectories
+9. `auto-cross-err` - combined deviation for correlations within and between
+   trajectories
+10. `energy-start-avg` - mean energy after `burn-in` steps (start of
+    trajectory)
+11. `energy-start-sigma` - standard deviation of energies after `burn-in` steps
+    (start of trajectory)
+12. `energy-end-avg` - mean energy for sequences sampled at the end of
+    trajectories
+13. `energy-end-sigma` - standard deviation of sequences energies at the end of
+    trajectories
+14. `energy-err` - combined deviations for starting (after burn-in) and ending
+    energies
+15. `train-err-1p` - RMSE for 1p frequencies for training MSA
+16. `train-err-2p` - RMSE for 2p frequencies for training MSA
+17. `train-err-tot` - total RMSE for training MSA
+18. `train-err-tot-min` - smallest total RMSE found so far for the training MSA
+19. `validate-err-1p` - RMSE for 1p frequencies for validation MSA
+20. `validate-err-2p` - RMSE for 2p frequencies for validation MSA
+21. `validate-err-tot` - total RMSE for validation MSA
+22. `validate-err-tot-min` - smallest total RMSE found so far for the
+    validation MSA
+23. `seed` - random seed at the current step (used for restoring states when
+    re-starting bmDCA)
+24. `duration` - elapsed time for the current step
+
+Some columns may or may not be present in your log file depending on the
+settings used for inference. For example, if only 1 sequence is sampled from
+each trajectory (`samples_per_walk=1`), then the auto- and cross-correlation
+stats along with the energy ones will be not be computed.
+
 ### Numerical sequence alignment
 
 This file is a space-delimited file, e.g.:
