@@ -516,7 +516,8 @@ Inference and sampling runs can be configured using a text file (see
      with correction for correlated probabilities
    * "msaerr" - estimate threshold from error by bootstrapping separate subsets
      MSA against one another
-5. `stop_threshold` - manual exit threshold for error convergence (default: 1e-05)
+5. `stop_threshold` - manual exit threshold for error convergence (default:
+   1e-05)
 6. `cross_validate` - subset the alignment to train one subset and validate the
    model against the other subset to assess overfitting. _If the validation
    alignment is provided at the command line, this flag is ignored and no
@@ -526,15 +527,16 @@ Inference and sampling runs can be configured using a text file (see
    line, this flag is ignored and no subsetting is performed._
 8. `random_seed` - initial seed for the random number generator (default: 1)
 9. `output_binary` - flag to output data in binary format, which is faster and
-    more precise (default: true)
+   more precise (default: true)
 10. `update_rule` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
-   'z-barker' for Zanella, 2019. 'z-sqrt' corresponds to a balancing function
-   of `sqrt(t)`, and 'z-barker' corresponds to `t/(1+t)`. (default: "mh")
+    'z-barker' for Zanella, 2019. 'z-sqrt' corresponds to a balancing function
+    of `sqrt(t)`, and 'z-barker' corresponds to `t/(1+t)`. (default: "mh")
 11. `update_burn_timeo` - flag to check tune the burn times during runtime
     using MCMC sample energies and autocorrelations or lookahead sampling of a
     small set of sequences. (default: true)
 12. `burn_in_start` - initial burn-in time (default: 10000)
-13. `burn_between_start` - initial wait time between sampling sequences (default: 100)
+13. `burn_between_start` - initial wait time between sampling sequences
+    (default: 100)
 14. `adapt_up_time` - multiple to increase MCMC wait/burn-in time (default:
     1.5)
 15. `adapt_down_time` - multiple to decrease MCMC wait/burn-in time (default
@@ -581,7 +583,7 @@ individual learning rates for each fields and coupling. This is the default:
 
 #### [[reparametrization]]
 
-Reparametrized model described in Figliuzzi, 2018.
+Re-parametrized model described in Figliuzzi, 2018.
 
 1. `lambda_reg_h` - regularization strength for fields (default: 0.01)
 2. `lambda_reg_J` - regularization strength for couplings (default: 0.01)
@@ -641,18 +643,17 @@ independent of the moments.
 7. `learn_rate_J` - learning rate for couplings (default: 0.01)
 8. `eta_min` - minimum scaling value for annealing schedule (default: 0.1)
 9. `eta_max` - maximum scaling value for annealing schedule (default: 1)
-10. `anneal_schedule` - periodic rule for scaling the learning rates (default:
-    none)
+10. `anneal_schedule` - rule for scaling the learning rates (default: none)
     - `cos`, cosine-based annealing
     - `trap`, trapezoidal (warm-up, hot, then cool-down) annealing
 11. `anneal_scale` - scaling factor for the period, extending (or shortening)
-the schedules over time and iterations (default: 2)
+    the schedules over time and iterations (default: 2)
 12. `anneal_period` - period for cycling the annealing schedule (default: 40)
 13. `anneal_warm` - warm-up number of iterations to scale from `eta_min` to
-`eta_max` (default: 20)
+    `eta_max` (default: 20)
 14. `anneal_hot` - number of iterations to run at `eta_max` (default: 0)
 15. `anneal_cool` - number of iterations to decrease from `eta_max` to
-`eta_min` (default: 0)
+    `eta_min` (default: 0)
 
 #### [[radam]]
 
