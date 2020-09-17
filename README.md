@@ -518,9 +518,12 @@ Inference and sampling runs can be configured using a text file (see
      MSA against one another
 5. `stop_threshold` - manual exit threshold for error convergence (default: 1e-05)
 6. `cross_validate` - subset the alignment to train one subset and validate the
-   model against the other subset to assess overfitting
+   model against the other subset to assess overfitting. _If the validation
+   alignment is provided at the command line, this flag is ignored and no
+   subsetting is performed._
 7. `validation_seqs` - number of effective sequences to sequester for
-   cross-validation.
+   cross-validation. _If the validation alignment is provided at the command
+   line, this flag is ignored and no subsetting is performed._
 8. `random_seed` - initial seed for the random number generator (default: 1)
 9. `output_binary` - flag to output data in binary format, which is faster and
     more precise (default: true)
@@ -578,7 +581,7 @@ individual learning rates for each fields and coupling. This is the default:
 
 #### [[reparametrization]]
 
-Reparametrized model described in Figluizzi, 2018 paper.
+Reparametrized model described in Figliuzzi, 2018.
 
 1. `lambda_reg_h` - regularization strength for fields (default: 0.01)
 2. `lambda_reg_J` - regularization strength for couplings (default: 0.01)
