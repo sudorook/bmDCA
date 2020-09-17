@@ -6,11 +6,6 @@
 #include "sampler.hpp"
 #include "sample_stats.hpp"
 #include "model.hpp"
-#include "adam.hpp"
-#include "adamw.hpp"
-#include "original.hpp"
-#include "radam.hpp"
-#include "reparam.hpp"
 #include "utils.hpp"
 #include "pcg_random.hpp"
 

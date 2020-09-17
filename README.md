@@ -671,6 +671,23 @@ but much slower at early iterations.
 6. `learn_rate_h` - learning rate for fields (default: 0.01)
 7. `learn_rate_J` - learning rate for couplings (default: 0.01)
 
+#### [[sgdm]]
+
+Stochastic gradient descent with momentum.
+
+1. `lambda_reg_h` - regularization strength for fields (default: 0.01)
+2. `lambda_reg_J` - regularization strength for couplings (default: 0.01)
+3. `alpha_reg` - relative weighting of L1 (`alpha_reg=0`) and L2
+   (`alpha_reg=1`) regularization (default: 1)
+4. `initial_params` - choice of initializing the parameters (`profile` for an
+   independent site profile model, zero otherwise)  (default: 'profile')
+5. `set_zero_gauge` - TBD (default: false)
+6. `beta_h` - decay rate for gradient running average for fields (default: 0.9)
+7. `bata_J` - decay rate for gradient running average for couplings (default:
+   0.9)
+8. `learn_rate_h` - learning rate for fields (default: 0.01)
+9. `learn_rate_J` - learning rate for couplings (default: 0.01)
+
 ### [bmDCA_sample]
 
 1. `resample_max` - number of time to attempt to resample a set of decorrelated

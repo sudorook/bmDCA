@@ -27,6 +27,7 @@ bmdca_SOURCES = bmdca.cpp \
                 original.cpp \
                 radam.cpp \
                 reparam.cpp \
+                sgdm.cpp \
                 utils.cpp
 
 bmdca_sample_SOURCES = bmdca_sample.cpp \

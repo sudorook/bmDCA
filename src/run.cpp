@@ -14,6 +14,13 @@
 #include <unistd.h>
 #include <vector>
 
+#include "adam.hpp"
+#include "adamw.hpp"
+#include "original.hpp"
+#include "radam.hpp"
+#include "reparam.hpp"
+#include "sgdm.hpp"
+
 #define EPSILON 0.00000001
 #define PI 3.1415926
 
@@ -46,12 +53,18 @@ Sim::Sim(MSA* msa_train,
     model = new Adam();
   } else if (train_mode == "adamw") {
     model = new AdamW();
+  } else if (train_mode == "original") {
+    model = new Original();
   } else if (train_mode == "radam") {
     model = new RAdam();
   } else if (train_mode == "reparametrization") {
     model = new Reparam();
-  } else if (train_mode == "original") {
-    model = new Original();
+  } else if (train_mode == "sgdm") {
+    model = new SGDM();
+  } else {
+    std::cerr << "ERROR: unrecognised training model '" << train_mode
+              << "' given. Exiting." << std::endl;
+    std::exit(EXIT_FAILURE);
   }
 
   if (!config_file.empty()) {
