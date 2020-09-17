@@ -1,8 +1,8 @@
+#include <iostream>
+#include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <string>
-#include <iostream>
 
 #include "msa.hpp"
 // #include "msa_stats.hpp"
@@ -12,7 +12,8 @@ void
 print_usage(void)
 {
   std::cout << "bmdca usage:" << std::endl;
-  std::cout << "(e.g. bmdca -i <training MSA> -w <training sequence weights> -d <output directory> -c <config file>)"
+  std::cout << "(e.g. bmdca -i <training MSA> -w <training sequence weights> "
+               "-d <output directory> -c <config file>)"
             << std::endl;
   std::cout << "  -i: training MSA (FASTA format)" << std::endl;
   std::cout << "  -I: validation MSA (FASTA format)" << std::endl;
@@ -31,7 +32,7 @@ main(int argc, char* argv[])
 {
   std::string train_file;
   std::string train_weight_file;
-  
+
   std::string validate_file;
   std::string validate_weight_file;
 
@@ -102,14 +103,14 @@ main(int argc, char* argv[])
     std::exit(EXIT_FAILURE);
   }
 
-  MSA *msa_train = nullptr;
-  MSA *msa_validate = nullptr;
+  MSA* msa_train = nullptr;
+  MSA* msa_validate = nullptr;
 
   // Parse the multiple sequence alignment.
   msa_train = new MSA(train_file, train_weight_file, is_numeric);
   msa_train->writeSequenceWeights(dest_dir + "/msa_weights.txt");
   msa_train->writeMatrix(dest_dir + "/msa_numerical.txt");
-  
+
   if (!validate_file.empty()) {
     msa_validate = new MSA(validate_file, validate_weight_file, is_numeric);
     msa_validate->writeSequenceWeights(dest_dir + "/msa_validate_weights.txt");
@@ -121,6 +122,6 @@ main(int argc, char* argv[])
 
   delete msa_train;
   delete msa_validate;
-  
+
   return 0;
 };

@@ -114,7 +114,9 @@ Adam::checkHyperparameters(void)
   // }
 }
 
-void Adam::writeHyperparameters(std::string output_file, bool append) {
+void
+Adam::writeHyperparameters(std::string output_file, bool append)
+{
   std::ofstream stream;
   if (append) {
     stream.open(output_file, std::ofstream::out | std::ofstream::app);
@@ -184,7 +186,7 @@ Adam::isValidStep(int step, bool output_binary)
         checkFileExists("moment2_h_" + std::to_string(step) + ".bin") &
         checkFileExists("moment2_J_" + std::to_string(step) + ".bin")) {
       valid = true;
-    } 
+    }
   } else {
     if (checkFileExists("parameters_" + std::to_string(step) + ".txt") &
         checkFileExists("parameters_" + std::to_string(step - 1) + ".txt") &
@@ -309,7 +311,9 @@ Adam::reset()
   }
 };
 
-void Adam::restore(int step, bool output_binary) {
+void
+Adam::restore(int step, bool output_binary)
+{
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + std::to_string(step) + ".bin";
     std::string param_J_file = "parameters_J_" + std::to_string(step) + ".bin";
@@ -320,15 +324,15 @@ void Adam::restore(int step, bool output_binary) {
     std::string param_prev_J_file =
       "parameters_J_" + std::to_string(step - 1) + ".bin";
     params_prev = loadPottsModel(param_prev_h_file, param_prev_J_file);
-    
+
     std::string grad_h_file = "gradients_h_" + std::to_string(step) + ".bin";
     std::string grad_J_file = "gradients_J_" + std::to_string(step) + ".bin";
     gradient = loadPottsModel(grad_h_file, grad_J_file);
-    
+
     std::string moment1_h_file = "moment1_h_" + std::to_string(step) + ".bin";
     std::string moment1_J_file = "moment1_J_" + std::to_string(step) + ".bin";
     moment1 = loadPottsModel(moment1_h_file, moment1_J_file);
-    
+
     std::string moment2_h_file = "moment2_h_" + std::to_string(step) + ".bin";
     std::string moment2_J_file = "moment2_J_" + std::to_string(step) + ".bin";
     moment2 = loadPottsModel(moment2_h_file, moment2_J_file);
@@ -345,7 +349,7 @@ void Adam::restore(int step, bool output_binary) {
 
     std::string moment1_file = "moment1_" + std::to_string(step) + ".txt";
     moment1 = loadPottsModelAscii(moment1_file);
-    
+
     std::string moment2_file = "moment2_" + std::to_string(step) + ".txt";
     moment2 = loadPottsModelAscii(moment2_file);
   }
@@ -361,7 +365,8 @@ Adam::update(void)
 };
 
 void
-Adam::updateGradients(void) {
+Adam::updateGradients(void)
+{
   train_error_1p = 0;
   train_error_2p = 0;
   validation_error_1p = 0;
@@ -380,7 +385,7 @@ Adam::updateGradients(void) {
     }
   }
   train_error_1p = sqrt(train_error_1p / (N * Q));
-  
+
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
       for (int aa1 = 0; aa1 < Q; aa1++) {
@@ -412,7 +417,7 @@ Adam::updateGradients(void) {
       }
     }
     validation_error_1p = sqrt(validation_error_1p / (N * Q));
-    
+
     for (int i = 0; i < N; i++) {
       for (int j = i + 1; j < N; j++) {
         for (int aa1 = 0; aa1 < Q; aa1++) {
@@ -463,7 +468,9 @@ Adam::updateMoments(void)
   }
 };
 
-void Adam::updateParameters(void) {
+void
+Adam::updateParameters(void)
+{
   double beta1 = 0.9;
   double beta2 = 0.999;
   double beta1_t = pow(beta1, step);
@@ -491,33 +498,35 @@ void Adam::updateParameters(void) {
   }
 };
 
-void Adam::writeData(std::string str, bool output_binary) {
+void
+Adam::writeData(std::string str, bool output_binary)
+{
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + str + ".bin";
     std::string param_J_file = "parameters_J_" + str + ".bin";
     writeParams(param_h_file, param_J_file);
-    
+
     std::string grad_h_file = "gradients_h_" + str + ".bin";
     std::string grad_J_file = "gradients_J_" + str + ".bin";
     writeGradient(grad_h_file, grad_J_file);
-    
+
     std::string moment1_h_file = "moment1_h_" + str + ".bin";
     std::string moment1_J_file = "moment1_J_" + str + ".bin";
     writeMoment1(moment1_h_file, moment1_J_file);
-    
+
     std::string moment2_h_file = "moment2_h_" + str + ".bin";
     std::string moment2_J_file = "moment2_J_" + str + ".bin";
     writeMoment2(moment2_h_file, moment2_J_file);
   } else {
     std::string param_file = "parameters_" + str + ".txt";
     writeParamsAscii(param_file);
-    
+
     std::string grad_file = "gradients_" + str + ".txt";
     writeGradientAscii(grad_file);
-    
+
     std::string moment1_file = "moment1_" + str + ".txt";
     writeMoment1Ascii(moment1_file);
-    
+
     std::string moment2_file = "moment2_" + str + ".txt";
     writeMoment2Ascii(moment2_file);
   }
@@ -531,11 +540,11 @@ Adam::deleteStep(int step, bool output_binary)
     file = "parameters_h_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "parameters_J_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "gradients_h_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
@@ -543,7 +552,7 @@ Adam::deleteStep(int step, bool output_binary)
     file = "gradients_J_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "moment1_h_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
@@ -551,7 +560,7 @@ Adam::deleteStep(int step, bool output_binary)
     file = "moment1_J_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "moment2_h_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
@@ -563,22 +572,24 @@ Adam::deleteStep(int step, bool output_binary)
     file = "parameters_" + std::to_string(step) + ".txt";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "gradients_" + std::to_string(step) + ".txt";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "moment1_" + std::to_string(step) + ".txt";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "moment2_" + std::to_string(step) + ".txt";
     if (checkFileExists(file))
       deleteFile(file);
   }
 };
 
-void Adam::writeStep(int step, bool output_binary) {
+void
+Adam::writeStep(int step, bool output_binary)
+{
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + std::to_string(step) + ".bin";
     std::string param_J_file = "parameters_J_" + std::to_string(step) + ".bin";
@@ -589,31 +600,32 @@ void Adam::writeStep(int step, bool output_binary) {
     std::string param_prev_J_file =
       "parameters_J_" + std::to_string(step - 1) + ".bin";
     writeParamsPrevious(param_prev_h_file, param_prev_J_file);
-    
+
     std::string grad_h_file = "gradients_h_" + std::to_string(step) + ".bin";
     std::string grad_J_file = "gradients_J_" + std::to_string(step) + ".bin";
     writeGradient(grad_h_file, grad_J_file);
-    
+
     std::string moment1_h_file = "moment1_h_" + std::to_string(step) + ".bin";
     std::string moment1_J_file = "moment1_J_" + std::to_string(step) + ".bin";
     writeMoment1(moment1_h_file, moment1_J_file);
-    
+
     std::string moment2_h_file = "moment2_h_" + std::to_string(step) + ".bin";
     std::string moment2_J_file = "moment2_J_" + std::to_string(step) + ".bin";
     writeMoment2(moment2_h_file, moment2_J_file);
   } else {
     std::string param_file = "parameters_" + std::to_string(step) + ".txt";
     writeParamsAscii(param_file);
-    
-    std::string param_prev_file = "parameters_prev_" + std::to_string(step) + ".txt";
+
+    std::string param_prev_file =
+      "parameters_prev_" + std::to_string(step) + ".txt";
     writeParamsPreviousAscii(param_prev_file);
-    
+
     std::string grad_file = "gradients_" + std::to_string(step) + ".txt";
     writeGradientAscii(grad_file);
-    
+
     std::string moment1_file = "moment1_" + std::to_string(step) + ".txt";
     writeMoment1Ascii(moment1_file);
-    
+
     std::string moment2_file = "moment2_" + std::to_string(step) + ".txt";
     writeMoment2Ascii(moment2_file);
   }

@@ -27,11 +27,7 @@ public:
                        size_t,
                        long int,
                        double = 1.0);
-  void sampleSequences(arma::Mat<int>*,
-                       size_t,
-                       size_t,
-                       long int,
-                       double = 1.0);
+  void sampleSequences(arma::Mat<int>*, size_t, size_t, long int, double = 1.0);
   void sampleSequencesZanella(arma::Cube<int>*,
                               size_t,
                               size_t,
@@ -51,7 +47,7 @@ private:
   const size_t N; // number of positions
   const size_t Q; // number of amino acids (inc. gaps)
 
-  potts_model *model;
+  potts_model* model;
 };
 
 #endif

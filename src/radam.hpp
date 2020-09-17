@@ -17,7 +17,7 @@ public:
   void writeData(std::string, bool = true);
   void writeStep(int, bool = true);
   void deleteStep(int, bool = true);
-  
+
   void loadHyperparameters(std::string);
   void writeHyperparameters(std::string, bool = true);
   bool isValidStep(int, bool = true);
@@ -49,7 +49,7 @@ private:
   void writeMoment1(std::string, std::string);
   void writeMoment2(std::string, std::string);
   void writeGradient(std::string, std::string);
-  
+
   void writeParamsAscii(std::string);
   void writeParamsPreviousAscii(std::string);
   void writeMoment1Ascii(std::string);

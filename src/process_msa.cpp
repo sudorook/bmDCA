@@ -11,7 +11,7 @@
 void
 print_usage(void)
 {
-  std::cout << "process_msa usage:" <<std::endl;
+  std::cout << "process_msa usage:" << std::endl;
   std::cout << "  -i: input MSA (FASTA format)" << std::endl;
   std::cout << "  -n: numeric MSA" << std::endl;
   std::cout << "  -w: pre-computied sequence weights (optional)" << std::endl;
@@ -124,13 +124,13 @@ main(int argc, char* argv[])
     msa.filterSequenceGaps(sequence_gap_threshold);
     std::cout << "done" << std::endl;
   }
- 
+
   if ((similarity_threshold < 1) & (similarity_threshold >= 0)) {
     std::cout << "filtering similar sequences... " << std::flush;
     msa.filterSimilarSequences(similarity_threshold);
     std::cout << "done" << std::endl;
   }
-  
+
   if ((reweighting_threshold < 1) & (similarity_threshold >= 0)) {
     std::cout << "computing sequence weights... " << std::flush;
     msa.computeSequenceWeights(reweighting_threshold);

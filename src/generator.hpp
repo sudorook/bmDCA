@@ -1,7 +1,7 @@
-#include "sampler.hpp"
-#include "sample_stats.hpp"
-#include "utils.hpp"
 #include "pcg_random.hpp"
+#include "sample_stats.hpp"
+#include "sampler.hpp"
+#include "utils.hpp"
 
 class Generator
 {

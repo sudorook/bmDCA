@@ -18,7 +18,7 @@ public:
   void writeData(std::string, bool = true);
   void writeStep(int, bool = true);
   void deleteStep(int, bool = true);
-  
+
   void loadHyperparameters(std::string);
   void writeHyperparameters(std::string, bool = true);
   bool isValidStep(int, bool = true);
@@ -55,7 +55,7 @@ private:
   void writeGradient(std::string, std::string);
   void writeGradientPrevious(std::string, std::string);
   void writeLearningRates(std::string, std::string);
-  
+
   void writeParamsAscii(std::string);
   void writeParamsPreviousAscii(std::string);
   void writeGradientAscii(std::string);

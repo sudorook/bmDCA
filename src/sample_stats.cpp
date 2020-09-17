@@ -19,22 +19,27 @@ SampleStats2D::SampleStats2D(arma::Mat<int>* s,
 };
 
 void
-SampleStats2D::computeStats(void) {
+SampleStats2D::computeStats(void)
+{
   computeSampleStats();
 };
 
 void
-SampleStats2D::computeStatsExtra(void) {
+SampleStats2D::computeStatsExtra(void)
+{
   computeEnergies();
   computeCorrelations();
 };
 
 void
-SampleStats2D::computeStatsImportance(void) {
+SampleStats2D::computeStatsImportance(void)
+{
   computeSampleStatsImportance();
 };
 
-void SampleStats2D::setMixingTime(int m) {
+void
+SampleStats2D::setMixingTime(int m)
+{
   mixing_time = m;
 }
 
@@ -87,17 +92,16 @@ SampleStats2D::computeEnergies(void)
 #pragma omp parallel
   {
 #pragma omp for
-      for (int seq = 0; seq < M; seq++) {
-        double E = 0;
-        for (int i = 0; i < N; i++) {
-          E -= params->h(samples->at(seq, i), i);
-          for (int j = i + 1; j < N; j++) {
-            E -= params->J(i, j)(samples->at(seq, i),
-                                 samples->at(seq, j));
-          }
+    for (int seq = 0; seq < M; seq++) {
+      double E = 0;
+      for (int i = 0; i < N; i++) {
+        E -= params->h(samples->at(seq, i), i);
+        for (int j = i + 1; j < N; j++) {
+          E -= params->J(i, j)(samples->at(seq, i), samples->at(seq, j));
         }
-        energies(seq) = E;
       }
+      energies(seq) = E;
+    }
   }
 };
 
@@ -350,19 +354,22 @@ SampleStats3D::SampleStats3D(arma::Cube<int>* s,
 };
 
 void
-SampleStats3D::computeStats(void) {
+SampleStats3D::computeStats(void)
+{
   computeSampleStats();
 };
 
 void
-SampleStats3D::computeStatsExtra(void) {
+SampleStats3D::computeStatsExtra(void)
+{
   computeEnergies();
   computeEnergiesStats();
   computeCorrelations();
 };
 
 void
-SampleStats3D::computeStatsImportance(void) {
+SampleStats3D::computeStatsImportance(void)
+{
   computeSampleStatsImportance();
 };
 
@@ -807,7 +814,7 @@ SampleStats3D::writeFrequency2p(std::string output_file,
 
 void
 SampleStats3D::writeFrequency2pAscii(std::string output_file,
-                                 std::string output_file_sigma)
+                                     std::string output_file_sigma)
 {
   std::ofstream output_stream(output_file);
   std::ofstream output_stream_sigma(output_file_sigma);

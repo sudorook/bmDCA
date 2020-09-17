@@ -123,7 +123,9 @@ Reparam::checkHyperparameters(void)
   // }
 }
 
-void Reparam::writeHyperparameters(std::string output_file, bool append) {
+void
+Reparam::writeHyperparameters(std::string output_file, bool append)
+{
   std::ofstream stream;
   if (append) {
     stream.open(output_file, std::ofstream::out | std::ofstream::app);
@@ -295,7 +297,7 @@ Reparam::reset()
       params_prev.J(i, j).zeros();
     }
   }
-  
+
   if (initial_params == "profile") {
     double avg;
     double* freq_ptr = nullptr;
@@ -333,7 +335,9 @@ Reparam::reset()
   }
 };
 
-void Reparam::restore(int step, bool output_binary) {
+void
+Reparam::restore(int step, bool output_binary)
+{
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + std::to_string(step) + ".bin";
     std::string param_J_file = "parameters_J_" + std::to_string(step) + ".bin";
@@ -344,7 +348,7 @@ void Reparam::restore(int step, bool output_binary) {
     std::string param_prev_J_file =
       "parameters_J_" + std::to_string(step - 1) + ".bin";
     params_prev = loadPottsModel(param_prev_h_file, param_prev_J_file);
-    
+
     std::string grad_h_file = "gradients_h_" + std::to_string(step) + ".bin";
     std::string grad_J_file = "gradients_J_" + std::to_string(step) + ".bin";
     gradient = loadPottsModel(grad_h_file, grad_J_file);
@@ -393,7 +397,8 @@ Reparam::update(void)
 };
 
 void
-Reparam::updateGradients(void) {
+Reparam::updateGradients(void)
+{
   train_error_1p = 0;
   train_error_2p = 0;
   validation_error_1p = 0;
@@ -519,7 +524,9 @@ Reparam::updateLearningRates(void)
   }
 };
 
-void Reparam::updateParameters(void) {
+void
+Reparam::updateParameters(void)
+{
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
       for (int a = 0; a < Q; a++) {
@@ -538,15 +545,13 @@ void Reparam::updateParameters(void) {
         if (i < j) {
           for (int b = 0; b < Q; b++) {
             Dh(a, i) += training->frequency_1p(b, j) *
-                        learning_rates.J(i, j)(a, b) *
-                        gradient.J(i, j)(a, b);
+                        learning_rates.J(i, j)(a, b) * gradient.J(i, j)(a, b);
           }
         }
         if (i > j) {
           for (int b = 0; b < Q; b++) {
             Dh(a, i) += training->frequency_1p(b, j) *
-                        learning_rates.J(j, i)(b, a) *
-                        gradient.J(j, i)(b, a);
+                        learning_rates.J(j, i)(b, a) * gradient.J(j, i)(b, a);
           }
         }
       }
@@ -561,26 +566,28 @@ void Reparam::updateParameters(void) {
   }
 };
 
-void Reparam::writeData(std::string str, bool output_binary) {
+void
+Reparam::writeData(std::string str, bool output_binary)
+{
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + str + ".bin";
     std::string param_J_file = "parameters_J_" + str + ".bin";
     writeParams(param_h_file, param_J_file);
-    
+
     std::string grad_h_file = "gradients_h_" + str + ".bin";
     std::string grad_J_file = "gradients_J_" + str + ".bin";
     writeGradient(grad_h_file, grad_J_file);
-    
+
     std::string learning_rates_h_file = "learning_rates_h_" + str + ".bin";
     std::string learning_rates_J_file = "learning_rates_J_" + str + ".bin";
     writeLearningRates(learning_rates_h_file, learning_rates_J_file);
   } else {
     std::string param_file = "parameters_" + str + ".txt";
     writeParamsAscii(param_file);
-    
+
     std::string grad_file = "gradients_" + str + ".txt";
     writeGradientAscii(grad_file);
-    
+
     std::string learning_rates_file = "learning_rates_" + str + ".txt";
     writeLearningRatesAscii(learning_rates_file);
   }
@@ -594,11 +601,11 @@ Reparam::deleteStep(int step, bool output_binary)
     file = "parameters_h_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "parameters_J_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "gradients_h_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
@@ -606,7 +613,7 @@ Reparam::deleteStep(int step, bool output_binary)
     file = "gradients_J_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "learning_rates_h_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
@@ -614,23 +621,25 @@ Reparam::deleteStep(int step, bool output_binary)
     file = "learning_rates_J_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
   } else {
     file = "parameters_" + std::to_string(step) + ".txt";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "gradients_" + std::to_string(step) + ".txt";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "learning_rates_" + std::to_string(step) + ".txt";
     if (checkFileExists(file))
       deleteFile(file);
   }
 };
 
-void Reparam::writeStep(int step, bool output_binary) {
+void
+Reparam::writeStep(int step, bool output_binary)
+{
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + std::to_string(step) + ".bin";
     std::string param_J_file = "parameters_J_" + std::to_string(step) + ".bin";
@@ -641,7 +650,7 @@ void Reparam::writeStep(int step, bool output_binary) {
     std::string param_prev_J_file =
       "parameters_J_" + std::to_string(step - 1) + ".bin";
     writeParamsPrevious(param_prev_h_file, param_prev_J_file);
-    
+
     std::string grad_h_file = "gradients_h_" + std::to_string(step) + ".bin";
     std::string grad_J_file = "gradients_J_" + std::to_string(step) + ".bin";
     writeGradient(grad_h_file, grad_J_file);
@@ -664,7 +673,7 @@ void Reparam::writeStep(int step, bool output_binary) {
     std::string param_prev_file =
       "parameters_prev_" + std::to_string(step - 1) + ".txt";
     writeParamsPreviousAscii(param_prev_file);
-    
+
     std::string grad_file = "gradients_" + std::to_string(step) + ".txt";
     writeGradientAscii(grad_file);
 
@@ -715,7 +724,8 @@ Reparam::writeParamsAscii(std::string output_file)
 };
 
 void
-Reparam::writeParamsPrevious(std::string output_file_h, std::string output_file_J)
+Reparam::writeParamsPrevious(std::string output_file_h,
+                             std::string output_file_J)
 {
   params_prev.h.save(output_file_h, arma::arma_binary);
   params_prev.J.save(output_file_J, arma::arma_binary);
@@ -788,7 +798,7 @@ Reparam::writeGradientAscii(std::string output_file)
 
 void
 Reparam::writeGradientPrevious(std::string output_file_h,
-                             std::string output_file_J)
+                               std::string output_file_J)
 {
   gradient_prev.h.save(output_file_h, arma::arma_binary);
   gradient_prev.J.save(output_file_J, arma::arma_binary);
@@ -824,7 +834,8 @@ Reparam::writeGradientPreviousAscii(std::string output_file)
 };
 
 void
-Reparam::writeLearningRates(std::string output_file_h, std::string output_file_J)
+Reparam::writeLearningRates(std::string output_file_h,
+                            std::string output_file_J)
 {
   learning_rates.h.save(output_file_h, arma::arma_binary);
   learning_rates.J.save(output_file_J, arma::arma_binary);

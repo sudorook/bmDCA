@@ -1,7 +1,7 @@
 #include "generator.hpp"
 
-#include "sampler.hpp"
 #include "sample_stats.hpp"
+#include "sampler.hpp"
 #include "utils.hpp"
 
 Generator::Generator(potts_model params, int n, int q, std::string config_file)
@@ -136,17 +136,17 @@ bool
 Generator::checkErgodicity(void)
 {
   arma::Col<double> stats = sample_stats->getStats();
-        
+
   double e_start = stats.at(0);
   double e_end = stats.at(2);
   double e_err = stats.at(4);
-    
+
   double auto_corr = stats.at(7);
   double cross_corr = stats.at(8);
   double check_corr = stats.at(9);
-  double cross_check_err = stats.at(14); 
+  double cross_check_err = stats.at(14);
   double auto_cross_err = stats.at(13);
-    
+
   bool flag_deltat_up = true;
   bool flag_deltat_down = true;
   bool flag_twaiting_up = true;
@@ -154,24 +154,26 @@ Generator::checkErgodicity(void)
 
   if (check_corr - cross_corr <= cross_check_err) {
     flag_deltat_up = false;
-  } 
+  }
   if (auto_corr - cross_corr >= auto_cross_err) {
     flag_deltat_down = false;
-  } 
+  }
 
   if (e_start - e_end <= 2 * e_err) {
     flag_twaiting_up = false;
-  }   
+  }
   if (e_start - e_end >= -2 * e_err) {
     flag_twaiting_down = false;
   }
-      
+
   if (flag_deltat_up) {
     burn_between = (int)(round((double)burn_between * adapt_up_time));
-    std::cout << "increasing burn-between time to " << burn_between << std::endl;
+    std::cout << "increasing burn-between time to " << burn_between
+              << std::endl;
   } else if (flag_deltat_down) {
     burn_between = Max((int)(round((double)burn_between * adapt_down_time)), 1);
-    std::cout << "decreasing burn-between time to " << burn_between << std::endl;
+    std::cout << "decreasing burn-between time to " << burn_between
+              << std::endl;
   }
 
   if (flag_twaiting_up) {
@@ -191,21 +193,21 @@ Generator::checkErgodicity(void)
 
 void
 Generator::estimateBurnTime(void)
-{ 
+{
   std::uniform_int_distribution<long int> dist(0, RAND_MAX - walkers);
-  
+
   bool flag_burn = true;
   while (flag_burn) {
     double burn_reps = 24;
     double burn_count = 4;
-    arma::Mat<double> energy_burn = 
+    arma::Mat<double> energy_burn =
       arma::Mat<double>(burn_count, burn_reps, arma::fill::zeros);
 
     sampler->sampleEnergies(
       &energy_burn, burn_reps, burn_count, burn_in, burn_in, dist(rng));
 
     double e_start = arma::mean(energy_burn.row(0));
-    double e_start_sigma = arma::stddev(energy_burn.row(0), 1); 
+    double e_start_sigma = arma::stddev(energy_burn.row(0), 1);
     double e_end = (arma::mean(energy_burn.row(burn_count - 1)) +
                     arma::mean(energy_burn.row(burn_count - 2))) /
                    2;
@@ -215,7 +217,7 @@ Generator::estimateBurnTime(void)
     double e_err =
       sqrt((pow(e_start_sigma, 2) / burn_reps + pow(e_end_sigma, 2)) / 2 /
            burn_reps);
-    
+
     bool flag_twaiting_up = true;
     bool flag_twaiting_down = true;
     if (e_start - e_end <= 2 * e_err) {
@@ -235,7 +237,6 @@ Generator::estimateBurnTime(void)
     // sampler->setBurnTime(burn_in, burn_in);
   }
 };
-
 
 void
 Generator::writeNumericalSequences(std::string output_file)
@@ -264,7 +265,8 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
     samples_2d = arma::Mat<int>(walkers, N, arma::fill::zeros);
     sample_stats = new SampleStats2D(&samples_2d, &(model));
   } else {
-    samples_3d = arma::Cube<int>(samples_per_walk, N, walkers, arma::fill::zeros);
+    samples_3d =
+      arma::Cube<int>(samples_per_walk, N, walkers, arma::fill::zeros);
     sample_stats = new SampleStats3D(&samples_3d, &(model));
   }
 
@@ -277,7 +279,7 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
 
   burn_in = burn_in_start;
   burn_between = burn_between_start;
-  
+
   sampler = new Sampler(N, Q, &model);
 
   if ((samples_per_walk == 1) & update_burn_time) {
@@ -286,13 +288,13 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
     estimateBurnTime();
     std::cout << burn_in << "... " << timer.toc() << " sec" << std::endl;
   }
-  
+
   bool flag_mc = true;
   int resample_counter = 0;
   while (flag_mc) {
     std::cout << "sampling the model... " << std::flush;
     timer.tic();
-    if(samples_per_walk > 1) {
+    if (samples_per_walk > 1) {
       if (update_rule == "mh") {
         sampler->sampleSequences(&samples_3d,
                                  walkers,
@@ -302,11 +304,23 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
                                  dist(rng),
                                  temperature);
       } else if (update_rule == "z-sqrt") {
-        sampler->sampleSequencesZanella(
-          &samples_3d, walkers, samples_per_walk, burn_in, burn_between, dist(rng), "sqrt", temperature);
+        sampler->sampleSequencesZanella(&samples_3d,
+                                        walkers,
+                                        samples_per_walk,
+                                        burn_in,
+                                        burn_between,
+                                        dist(rng),
+                                        "sqrt",
+                                        temperature);
       } else if (update_rule == "z-barker") {
-        sampler->sampleSequencesZanella(
-          &samples_3d, walkers, samples_per_walk, burn_in, burn_between, dist(rng), "barker", temperature);
+        sampler->sampleSequencesZanella(&samples_3d,
+                                        walkers,
+                                        samples_per_walk,
+                                        burn_in,
+                                        burn_between,
+                                        dist(rng),
+                                        "barker",
+                                        temperature);
       } else {
         std::cerr << "ERROR: sampler '" << sampler << "' not recognized."
                   << std::endl;

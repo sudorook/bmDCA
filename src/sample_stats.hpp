@@ -8,7 +8,7 @@
 class SampleStats
 {
 public:
-  SampleStats(void) {};
+  SampleStats(void){};
   virtual ~SampleStats(void){};
 
   virtual void writeStep(int, bool = true) = 0;
@@ -35,8 +35,8 @@ public:
 
   void computeStats(void);
   void computeStatsExtra(void);
-  void writeStep(int, bool=true);
-  void writeData(std::string, bool=true);
+  void writeStep(int, bool = true);
+  void writeData(std::string, bool = true);
   void computeStatsImportance(void);
   void setMixingTime(int);
   arma::Col<double> getStats(void);
@@ -62,8 +62,8 @@ private:
   double overlap_inf;
   double overlap_inf_sigma;
 
-  potts_model *params;
-  potts_model *params_prev;
+  potts_model* params;
+  potts_model* params_prev;
   arma::Mat<int>* samples;
   arma::Col<double> energies;
 
@@ -79,8 +79,8 @@ public:
 
   void computeStats(void);
   void computeStatsExtra(void);
-  void writeStep(int, bool=true);
-  void writeData(std::string, bool=true);
+  void writeStep(int, bool = true);
+  void writeData(std::string, bool = true);
   void computeStatsImportance(void);
   void setMixingTime(int);
   arma::Col<double> getStats(void);
@@ -100,7 +100,7 @@ private:
   void writeSamples(std::string);
   void writeSampleEnergies(std::string);
   void writeSampleEnergiesRelaxation(std::string);
-  
+
   arma::Mat<double> frequency_1p_sigma;
   arma::field<arma::Mat<double>> frequency_2p_sigma;
 
@@ -132,8 +132,8 @@ private:
   double err_cross_check;
   double err_check_auto;
 
-  potts_model *params;
-  potts_model *params_prev;
+  potts_model* params;
+  potts_model* params_prev;
   arma::Cube<int>* samples;
   arma::Mat<double> energies;
 

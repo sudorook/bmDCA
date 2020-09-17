@@ -78,7 +78,8 @@ MSAStats::updateMSA(MSA* new_msa, bool verbose)
 };
 
 void
-MSAStats::computeMSAStats(MSA *msa) {
+MSAStats::computeMSAStats(MSA* msa)
+{
   frequency_1p.zeros();
   rel_entropy_1p.zeros();
   rel_entropy_pos_1p.zeros();

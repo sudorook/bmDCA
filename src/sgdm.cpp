@@ -117,7 +117,9 @@ SGDM::checkHyperparameters(void)
   // }
 }
 
-void SGDM::writeHyperparameters(std::string output_file, bool append) {
+void
+SGDM::writeHyperparameters(std::string output_file, bool append)
+{
   std::ofstream stream;
   if (append) {
     stream.open(output_file, std::ofstream::out | std::ofstream::app);
@@ -310,7 +312,9 @@ SGDM::reset()
   }
 };
 
-void SGDM::restore(int step, bool output_binary) {
+void
+SGDM::restore(int step, bool output_binary)
+{
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + std::to_string(step) + ".bin";
     std::string param_J_file = "parameters_J_" + std::to_string(step) + ".bin";
@@ -321,11 +325,11 @@ void SGDM::restore(int step, bool output_binary) {
     std::string param_prev_J_file =
       "parameters_J_" + std::to_string(step - 1) + ".bin";
     params_prev = loadPottsModel(param_prev_h_file, param_prev_J_file);
-    
+
     std::string grad_h_file = "gradients_h_" + std::to_string(step) + ".bin";
     std::string grad_J_file = "gradients_J_" + std::to_string(step) + ".bin";
     gradient = loadPottsModel(grad_h_file, grad_J_file);
-    
+
     std::string moment1_h_file = "moment1_h_" + std::to_string(step) + ".bin";
     std::string moment1_J_file = "moment1_J_" + std::to_string(step) + ".bin";
     moment1 = loadPottsModel(moment1_h_file, moment1_J_file);
@@ -355,7 +359,8 @@ SGDM::update(void)
 };
 
 void
-SGDM::updateGradients(void) {
+SGDM::updateGradients(void)
+{
   train_error_1p = 0;
   train_error_2p = 0;
   validation_error_1p = 0;
@@ -374,7 +379,7 @@ SGDM::updateGradients(void) {
     }
   }
   train_error_1p = sqrt(train_error_1p / (N * Q));
-  
+
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
       for (int aa1 = 0; aa1 < Q; aa1++) {
@@ -406,7 +411,7 @@ SGDM::updateGradients(void) {
       }
     }
     validation_error_1p = sqrt(validation_error_1p / (N * Q));
-    
+
     for (int i = 0; i < N; i++) {
       for (int j = i + 1; j < N; j++) {
         for (int aa1 = 0; aa1 < Q; aa1++) {
@@ -449,7 +454,9 @@ SGDM::updateMoments(void)
   }
 };
 
-void SGDM::updateParameters(void) {
+void
+SGDM::updateParameters(void)
+{
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
       for (int a = 0; a < Q; a++) {
@@ -467,26 +474,28 @@ void SGDM::updateParameters(void) {
   }
 };
 
-void SGDM::writeData(std::string str, bool output_binary) {
+void
+SGDM::writeData(std::string str, bool output_binary)
+{
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + str + ".bin";
     std::string param_J_file = "parameters_J_" + str + ".bin";
     writeParams(param_h_file, param_J_file);
-    
+
     std::string grad_h_file = "gradients_h_" + str + ".bin";
     std::string grad_J_file = "gradients_J_" + str + ".bin";
     writeGradient(grad_h_file, grad_J_file);
-    
+
     std::string moment1_h_file = "moment1_h_" + str + ".bin";
     std::string moment1_J_file = "moment1_J_" + str + ".bin";
     writeMoment1(moment1_h_file, moment1_J_file);
   } else {
     std::string param_file = "parameters_" + str + ".txt";
     writeParamsAscii(param_file);
-    
+
     std::string grad_file = "gradients_" + str + ".txt";
     writeGradientAscii(grad_file);
-    
+
     std::string moment1_file = "moment1_" + str + ".txt";
     writeMoment1Ascii(moment1_file);
   }
@@ -500,11 +509,11 @@ SGDM::deleteStep(int step, bool output_binary)
     file = "parameters_h_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "parameters_J_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "gradients_h_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
@@ -512,7 +521,7 @@ SGDM::deleteStep(int step, bool output_binary)
     file = "gradients_J_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "moment1_h_" + std::to_string(step) + ".bin";
     if (checkFileExists(file))
       deleteFile(file);
@@ -524,18 +533,20 @@ SGDM::deleteStep(int step, bool output_binary)
     file = "parameters_" + std::to_string(step) + ".txt";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "gradients_" + std::to_string(step) + ".txt";
     if (checkFileExists(file))
       deleteFile(file);
-    
+
     file = "moment1_" + std::to_string(step) + ".txt";
     if (checkFileExists(file))
       deleteFile(file);
   }
 };
 
-void SGDM::writeStep(int step, bool output_binary) {
+void
+SGDM::writeStep(int step, bool output_binary)
+{
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + std::to_string(step) + ".bin";
     std::string param_J_file = "parameters_J_" + std::to_string(step) + ".bin";
@@ -546,24 +557,25 @@ void SGDM::writeStep(int step, bool output_binary) {
     std::string param_prev_J_file =
       "parameters_J_" + std::to_string(step - 1) + ".bin";
     writeParamsPrevious(param_prev_h_file, param_prev_J_file);
-    
+
     std::string grad_h_file = "gradients_h_" + std::to_string(step) + ".bin";
     std::string grad_J_file = "gradients_J_" + std::to_string(step) + ".bin";
     writeGradient(grad_h_file, grad_J_file);
-    
+
     std::string moment1_h_file = "moment1_h_" + std::to_string(step) + ".bin";
     std::string moment1_J_file = "moment1_J_" + std::to_string(step) + ".bin";
     writeMoment1(moment1_h_file, moment1_J_file);
   } else {
     std::string param_file = "parameters_" + std::to_string(step) + ".txt";
     writeParamsAscii(param_file);
-    
-    std::string param_prev_file = "parameters_prev_" + std::to_string(step) + ".txt";
+
+    std::string param_prev_file =
+      "parameters_prev_" + std::to_string(step) + ".txt";
     writeParamsPreviousAscii(param_prev_file);
-    
+
     std::string grad_file = "gradients_" + std::to_string(step) + ".txt";
     writeGradientAscii(grad_file);
-    
+
     std::string moment1_file = "moment1_" + std::to_string(step) + ".txt";
     writeMoment1Ascii(moment1_file);
   }

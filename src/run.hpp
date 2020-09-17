@@ -1,13 +1,13 @@
 #ifndef BMDCA_RUN_HPP
 #define BMDCA_RUN_HPP
 
+#include "model.hpp"
 #include "msa.hpp"
 #include "msa_stats.hpp"
-#include "sampler.hpp"
-#include "sample_stats.hpp"
-#include "model.hpp"
-#include "utils.hpp"
 #include "pcg_random.hpp"
+#include "sample_stats.hpp"
+#include "sampler.hpp"
+#include "utils.hpp"
 
 class Sim
 {

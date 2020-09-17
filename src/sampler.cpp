@@ -1,6 +1,5 @@
 #include "sampler.hpp"
 
-#include <string>
 #include <armadillo>
 #include <cassert>
 #include <cmath>
@@ -10,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <random>
+#include <string>
 #include <vector>
 
 #include "pcg_random.hpp"
@@ -130,7 +130,7 @@ Sampler::sampleSequences(arma::Cube<int>* p,
 #pragma omp parallel
   {
 #pragma omp for
-    for (size_t walker = 0; walker < walkers; walker++){
+    for (size_t walker = 0; walker < walkers; walker++) {
       arma::Mat<int>* ptr = (arma::Mat<int>*)&((*p).slice(walker));
 
       pcg32 rng;
@@ -211,7 +211,7 @@ Sampler::sampleSequences(arma::Mat<int>* ptr,
 #pragma omp parallel
   {
 #pragma omp for
-    for (size_t walker = 0; walker < walkers; walker++){
+    for (size_t walker = 0; walker < walkers; walker++) {
       pcg32 rng;
       rng.seed(seed + walker);
       std::uniform_real_distribution<double> uniform(0, 1);
@@ -266,7 +266,7 @@ Sampler::sampleSequencesZanella(arma::Cube<int>* p,
 #pragma omp parallel
   {
 #pragma omp for
-    for (size_t walker = 0; walker < walkers; walker++){
+    for (size_t walker = 0; walker < walkers; walker++) {
       arma::Mat<int>* ptr = (arma::Mat<int>*)&((*p).slice(walker));
 
       pcg32 rng;
@@ -360,11 +360,13 @@ Sampler::sampleSequencesZanella(arma::Cube<int>* p,
             if (pos < i) {
               de(pos, aa) += model->J(pos, i)(conf(pos), q1) -
                              model->J(pos, i)(conf(pos), q0) -
-                             model->J(pos, i)(aa, q1) + model->J(pos, i)(aa, q0);
+                             model->J(pos, i)(aa, q1) +
+                             model->J(pos, i)(aa, q0);
             } else if (pos > i) {
               de(pos, aa) += model->J(i, pos)(q1, conf(pos)) -
                              model->J(i, pos)(q0, conf(pos)) -
-                             model->J(i, pos)(q1, aa) + model->J(i, pos)(q0, aa);
+                             model->J(i, pos)(q1, aa) +
+                             model->J(i, pos)(q0, aa);
             } else {
               if (q1 == aa) {
                 de(pos, aa) = 0;
@@ -508,7 +510,7 @@ Sampler::sampleSequencesZanella(arma::Mat<int>* ptr,
 #pragma omp parallel
   {
 #pragma omp for
-    for (size_t walker = 0; walker < walkers; walker++){
+    for (size_t walker = 0; walker < walkers; walker++) {
       pcg32 rng;
       rng.seed(seed + walker);
       std::uniform_real_distribution<double> uniform(0, 1);
@@ -600,11 +602,13 @@ Sampler::sampleSequencesZanella(arma::Mat<int>* ptr,
             if (pos < i) {
               de(pos, aa) += model->J(pos, i)(conf(pos), q1) -
                              model->J(pos, i)(conf(pos), q0) -
-                             model->J(pos, i)(aa, q1) + model->J(pos, i)(aa, q0);
+                             model->J(pos, i)(aa, q1) +
+                             model->J(pos, i)(aa, q0);
             } else if (pos > i) {
               de(pos, aa) += model->J(i, pos)(q1, conf(pos)) -
                              model->J(i, pos)(q0, conf(pos)) -
-                             model->J(i, pos)(q1, aa) + model->J(i, pos)(q0, aa);
+                             model->J(i, pos)(q1, aa) +
+                             model->J(i, pos)(q0, aa);
             } else {
               if (q1 == aa) {
                 de(pos, aa) = 0;

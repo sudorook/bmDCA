@@ -2,8 +2,8 @@
 
 #include <armadillo>
 #include <cassert>
-#include <cstdlib>
 #include <cmath>
+#include <cstdlib>
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
@@ -47,7 +47,7 @@ Sim::Sim(MSA* msa_train,
     std::cout << "done." << std::endl;
   }
   checkHyperparameters();
-  
+
   // Load model hyperparameters.
   if (train_mode == "adam") {
     model = new Adam();
@@ -82,7 +82,7 @@ Sim::Sim(MSA* msa_train,
   if (!dest_dir.empty()) {
     chdir(dest_dir.c_str());
   }
-  
+
   if ((!force_restart) & (checkFileExists(hyperparameter_file))) {
     if ((!compareHyperparameters(hyperparameter_file)) |
         (!model->compareHyperparameters(hyperparameter_file))) {
@@ -102,7 +102,8 @@ Sim::Sim(MSA* msa_train,
 };
 
 void
-Sim::initialize(void) {
+Sim::initialize(void)
+{
 
   if (!msa_validate) {
     if (cross_validate) {
@@ -169,7 +170,7 @@ Sim::initialize(void) {
 
   model->setSampleStats(sample_stats);
   model->setStep(step_offset);
-  
+
   // Initialize the sampler
   sampler = new Sampler(N, Q, &(model->params));
 };
@@ -324,7 +325,8 @@ Sim::setHyperparameter(std::string key, std::string value)
 };
 
 void
-Sim::checkHyperparameters(void){
+Sim::checkHyperparameters(void)
+{
   if ((validation_seqs < 1) & cross_validate) {
     std::cerr << "ERROR: Incompatible number of sequecnes for cross-validation."
               << std::endl;
@@ -490,7 +492,7 @@ Sim::setStepOffset(void)
           invalid_steps.push_back(idx);
         }
       }
-    } 
+    }
   }
   closedir(dp);
 
@@ -508,7 +510,7 @@ Sim::setStepOffset(void)
         break;
       }
     }
-  
+
     if (delete_files) {
       std::cout << "missing data --- clearing step " << *it_bad << std::endl;
       deleteStep(*it_bad);
@@ -530,17 +532,19 @@ Sim::setStepOffset(void)
   }
 };
 
-void Sim::deleteStep(int step) {
+void
+Sim::deleteStep(int step)
+{
   std::string file;
-  
+
   file = "samples_" + std::to_string(step) + ".txt";
   if (checkFileExists(file))
     deleteFile(file);
-  
+
   file = "energies_relax" + std::to_string(step) + ".txt";
   if (checkFileExists(file))
     deleteFile(file);
-  
+
   file = "energies_" + std::to_string(step) + ".txt";
   if (checkFileExists(file))
     deleteFile(file);
@@ -585,13 +589,13 @@ void Sim::deleteStep(int step) {
 // {
 //   DIR* dp;
 //   struct dirent* dirp;
-// 
+//
 //   std::vector<std::string> files;
 //   dp = opendir(dest_dir.c_str());
-// 
+//
 //   while ((dirp = readdir(dp)) != NULL) {
 //     std::string fname = dirp->d_name;
-// 
+//
 //     if (fname.find("parameters_"))
 //       files.push_back(fname);
 //     // else if (fname.find("parameters_avg_"))
@@ -622,7 +626,7 @@ void Sim::deleteStep(int step) {
 //       files.push_back(fname);
 //   }
 //   closedir(dp);
-// 
+//
 //   for (auto it = files.begin(); it != files.end(); ++it) {
 //     std::remove((*it).c_str());
 //   }
@@ -738,7 +742,8 @@ Sim::run(void)
                                       msa_train_stats->getEffectiveM());
     std::cout << "convergence threshold is " << stop_threshold << std::endl;
   } else if ((stop_mode == "stderr") | (stop_mode == "stderr_adj")) {
-    stop_threshold = msa_train_stats->freq_rms / sqrt(samples_per_walk * walkers);
+    stop_threshold =
+      msa_train_stats->freq_rms / sqrt(samples_per_walk * walkers);
     std::cout << "convergence threshold is " << stop_threshold << std::endl;
   }
 
@@ -836,8 +841,7 @@ Sim::run(void)
         }
       } else {
         if (update_rule == "mh") {
-          sampler->sampleSequences(
-            &samples_2d, walkers, burn_in, seed);
+          sampler->sampleSequences(&samples_2d, walkers, burn_in, seed);
         } else if (update_rule == "z-sqrt") {
           sampler->sampleSequencesZanella(
             &samples_2d, walkers, burn_in, seed, "sqrt");
@@ -852,7 +856,8 @@ Sim::run(void)
       }
       std::cout << timer.toc() << " sec" << std::endl;
 
-      std::cout << "computing sample energies and correlations... " << std::flush;
+      std::cout << "computing sample energies and correlations... "
+                << std::flush;
       timer.tic();
       sample_stats->computeStatsExtra();
       std::cout << timer.toc() << " sec" << std::endl;
@@ -880,7 +885,8 @@ Sim::run(void)
         sample_stats->computeStatsImportance();
         std::cout << timer.toc() << " sec" << std::endl;
 
-        std::cout << "updating model with 1p and 2p frequencies... " << std::flush;
+        std::cout << "updating model with 1p and 2p frequencies... "
+                  << std::flush;
         timer.tic();
         model->update();
         std::cout << timer.toc() << " sec" << std::endl;
@@ -903,7 +909,8 @@ Sim::run(void)
       sample_stats->computeStats();
       std::cout << timer.toc() << " sec" << std::endl;
 
-      std::cout << "updating model with 1p and 2p frequencies... " << std::flush;
+      std::cout << "updating model with 1p and 2p frequencies... "
+                << std::flush;
       timer.tic();
       model->update();
       std::cout << timer.toc() << " sec" << std::endl;
@@ -955,7 +962,7 @@ Sim::run(void)
       e_end = stats.at(2);
       e_end_sigma = stats.at(3);
       e_err = stats.at(4);
- 
+
       total_corr = stats.at(5);
       auto_corr = stats.at(7);
       cross_corr = stats.at(8);
@@ -1046,7 +1053,8 @@ Sim::run(void)
 };
 
 bool
-Sim::checkErgodicity(void) {
+Sim::checkErgodicity(void)
+{
   arma::Col<double> stats = sample_stats->getStats();
 
   double e_start = stats.at(0);
@@ -1080,10 +1088,12 @@ Sim::checkErgodicity(void) {
 
   if (flag_deltat_up) {
     burn_between = (int)(round((double)burn_between * adapt_up_time));
-    std::cout << "increasing burn-between time to " << burn_between << std::endl;
+    std::cout << "increasing burn-between time to " << burn_between
+              << std::endl;
   } else if (flag_deltat_down) {
     burn_between = Max((int)(round((double)burn_between * adapt_down_time)), 1);
-    std::cout << "decreasing burn-between time to " << burn_between << std::endl;
+    std::cout << "decreasing burn-between time to " << burn_between
+              << std::endl;
   }
 
   if (flag_twaiting_up) {
@@ -1194,7 +1204,7 @@ Sim::writeRunLog(int current_step, int offset, bool keep)
     if (samples_per_walk > 1) {
       stream << run_buffer(i, 4) << "\t";
     }
-      stream << run_buffer(i, 5) << "\t";
+    stream << run_buffer(i, 5) << "\t";
     if (samples_per_walk > 1) {
       stream << run_buffer(i, 6) << "\t";
       stream << run_buffer(i, 7) << "\t";

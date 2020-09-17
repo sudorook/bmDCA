@@ -7,5 +7,4 @@
 
 #include "utils.hpp"
 
-
 #endif

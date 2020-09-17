@@ -4,10 +4,10 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <string>
-#include <vector>
 #include <random>
+#include <string>
 #include <unordered_set>
+#include <vector>
 
 #include "pcg_random.hpp"
 
@@ -33,10 +33,7 @@ MSA::MSA(std::string msa_file, std::string weight_file, bool is_numeric_msa)
   }
 };
 
-MSA::MSA(arma::Mat<int> alignment,
-         int M,
-         int N,
-         int Q)
+MSA::MSA(arma::Mat<int> alignment, int M, int N, int Q)
   : alignment(alignment)
   , M(M)
   , N(N)
@@ -401,7 +398,7 @@ MSA::filterSequenceGaps(double seq_threshold)
   {
 #pragma omp for
     for (int i = 0; i < M; i++) {
-      for (int j = 0; j < N; j++ ) {
+      for (int j = 0; j < N; j++) {
         // seq_gap_counts(i) += alignment(i, Q * j);
         if (alignment(i, j) == 0) {
           seq_gap_counts(i)++;
@@ -421,8 +418,7 @@ MSA::filterSequenceGaps(double seq_threshold)
 void
 MSA::filterPositionGaps(double pos_threshold)
 {
-  arma::Col<int> pos_gap_counts =
-    arma::Col<int>(N, arma::fill::zeros);
+  arma::Col<int> pos_gap_counts = arma::Col<int>(N, arma::fill::zeros);
 
   int pos_gap_cutoff = (int)(pos_threshold * arma::sum(sequence_weights));
 
@@ -445,7 +441,6 @@ MSA::filterPositionGaps(double pos_threshold)
   alignment.shed_cols(bad_positions);
   N = (int)alignment.n_cols;
 };
-
 
 void
 MSA::computeHammingDistances(void)
@@ -500,8 +495,7 @@ MSA::sampleAlignment(int size, long int seed)
   rng.seed(seed);
 
   arma::Mat<int> alignment_T = alignment.t();
-  arma::Mat<int> sub_alignment =
-    arma::Mat<int>(N, size, arma::fill::zeros);
+  arma::Mat<int> sub_alignment = arma::Mat<int>(N, size, arma::fill::zeros);
 
   std::unordered_set<int> elems;
   for (int r = M - size; r < M; ++r) {
@@ -534,7 +528,7 @@ MSA::partitionAlignment(int validation_size, long int seed)
               << " from alignment size " << M << std::endl;
     std::exit(EXIT_FAILURE);
   }
-  
+
   arma::Mat<int> alignment_T = alignment.t();
 
   // Select sequences for the validation alignment such that the cumulative
@@ -548,19 +542,16 @@ MSA::partitionAlignment(int validation_size, long int seed)
     if (accu > (double)validation_size)
       break;
   }
-  
+
   // don't use more than a quarter of the MSA for cross-validation
-  size = Min(size, (int) M / 4);
+  size = Min(size, (int)M / 4);
 
   arma::Mat<int> sub_alignment_1 =
     arma::Mat<int>(N, M - size, arma::fill::zeros);
-  arma::Col<double> weights_1 =
-    arma::Col<double>(M - size, arma::fill::ones);
+  arma::Col<double> weights_1 = arma::Col<double>(M - size, arma::fill::ones);
 
-  arma::Mat<int> sub_alignment_2 =
-    arma::Mat<int>(N, size, arma::fill::zeros);
-  arma::Col<double> weights_2 =
-    arma::Col<double>(size, arma::fill::ones);
+  arma::Mat<int> sub_alignment_2 = arma::Mat<int>(N, size, arma::fill::zeros);
+  arma::Col<double> weights_2 = arma::Col<double>(size, arma::fill::ones);
 
 #pragma omp parallel
   {

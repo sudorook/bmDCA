@@ -10,7 +10,7 @@ class Model
 public:
   Model(void);
   virtual ~Model(){};
-  
+
   void setMSAStats(MSAStats*, MSAStats*);
   void setSampleStats(SampleStats*);
   void setStep(int);
@@ -29,7 +29,7 @@ public:
   virtual void writeStep(int, bool = true) = 0;
   virtual void deleteStep(int, bool = true) = 0;
   virtual bool isValidStep(int, bool = true) = 0;
-  
+
   virtual void loadHyperparameters(std::string) = 0;
   virtual void checkHyperparameters(void) = 0;
   virtual bool compareHyperparameters(std::string) = 0;
@@ -39,9 +39,9 @@ public:
   potts_model params_prev;
 
 protected:
-  MSAStats *training = nullptr;
-  MSAStats *validation = nullptr;
-  SampleStats *samples = nullptr;
+  MSAStats* training = nullptr;
+  MSAStats* validation = nullptr;
+  SampleStats* samples = nullptr;
 
   std::string hyperparameter_file;
 

@@ -14,11 +14,11 @@ public:
   MSA(arma::Mat<int>, arma::Col<double>, int, int, int);
   MSA(arma::Mat<int>, int, int, int);
 
-  arma::Mat<int> alignment;           // numerical multiple sequence alignment
-  int M;                              // number of sequences
-  int N;                              // number of positions
-  int Q;                              // number of amino acids
-  
+  arma::Mat<int> alignment; // numerical multiple sequence alignment
+  int M;                    // number of sequences
+  int N;                    // number of positions
+  int Q;                    // number of amino acids
+
   arma::Col<double> sequence_weights; // weights for each sequence
   arma::Col<double> hamming_distances;
 
