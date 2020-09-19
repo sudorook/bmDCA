@@ -38,6 +38,7 @@ main(int argc, char* argv[])
   std::string outfile;
   std::string outfile_weights;
 
+  bool is_verbose = false;
   bool is_numeric = false;
   bool reweight_first = false;
 
@@ -50,7 +51,7 @@ main(int argc, char* argv[])
   std::vector<int> keep_pos;
 
   char c;
-  while ((c = getopt(argc, argv, "i:n:w:rk:p:g:G:s:t:o:O:h")) != -1) {
+  while ((c = getopt(argc, argv, "i:n:w:rk:p:g:G:s:t:o:O:hv")) != -1) {
     switch (c) {
       case 'i':
         infile = optarg;
@@ -90,6 +91,9 @@ main(int argc, char* argv[])
       case 'O':
         outfile = optarg;
         break;
+      case 'v':
+        is_verbose = true;
+        break;
       case 'h':
         print_usage();
         return 0;
@@ -115,19 +119,19 @@ main(int argc, char* argv[])
 
   if ((position_gap_threshold < 1) & (position_gap_threshold >= 0)) {
     std::cout << "filter gapped positions... " << std::flush;
-    msa.filterPositionGaps(position_gap_threshold);
+    msa.filterPositionGaps(position_gap_threshold, is_verbose);
     std::cout << "done" << std::endl;
   }
 
   if ((sequence_gap_threshold < 1) & (sequence_gap_threshold >= 0)) {
     std::cout << "filter gapped sequences... " << std::flush;
-    msa.filterSequenceGaps(sequence_gap_threshold);
+    msa.filterSequenceGaps(sequence_gap_threshold, is_verbose);
     std::cout << "done" << std::endl;
   }
 
   if ((similarity_threshold < 1) & (similarity_threshold >= 0)) {
     std::cout << "filtering similar sequences... " << std::flush;
-    msa.filterSimilarSequences(similarity_threshold);
+    msa.filterSimilarSequences(similarity_threshold, is_verbose);
     std::cout << "done" << std::endl;
   }
 

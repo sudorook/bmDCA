@@ -25,9 +25,9 @@ public:
   void setKeepPositions(std::vector<int>);
   void setKeepSequences(std::vector<int>);
 
-  void filterSequenceGaps(double = 0.2);
-  void filterPositionGaps(double = 0.2);
-  void filterSimilarSequences(double = 0.8);
+  void filterSequenceGaps(double = 0.2, bool = false);
+  void filterPositionGaps(double = 0.2, bool = false);
+  void filterSimilarSequences(double = 0.8, bool = false);
   void computeSequenceWeights(double = 0.8);
   void computeHammingDistances(void);
 

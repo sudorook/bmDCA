@@ -351,7 +351,7 @@ MSA::computeSequenceWeights(double threshold)
 };
 
 void
-MSA::filterSimilarSequences(double threshold)
+MSA::filterSimilarSequences(double threshold, bool verbose)
 {
   arma::Col<int> sequence_status = arma::Col<int>(M, arma::fill::zeros);
   int sim_cutoff = (int)(N * threshold);
@@ -383,12 +383,22 @@ MSA::filterSimilarSequences(double threshold)
   for (size_t i = 0; i < seq_to_keep.size(); i++) {
     bad_sequences.shed_rows(arma::find(bad_sequences == seq_to_keep[i]));
   }
+  if (verbose) {
+    for (size_t i = 0; i < bad_sequences.size(); i++) {
+      if (i == bad_sequences.size() - 1) {
+        std::cout << bad_sequences[i] << "... ";
+      } else {
+        std::cout << bad_sequences[i] << " ";
+      }
+    }
+    std::cout << std::flush;
+  }
   alignment.shed_rows(bad_sequences);
   M = alignment.n_rows;
 };
 
 void
-MSA::filterSequenceGaps(double seq_threshold)
+MSA::filterSequenceGaps(double seq_threshold, bool verbose)
 {
   arma::Col<int> seq_gap_counts = arma::Col<int>(M, arma::fill::zeros);
 
@@ -399,7 +409,6 @@ MSA::filterSequenceGaps(double seq_threshold)
 #pragma omp for
     for (int i = 0; i < M; i++) {
       for (int j = 0; j < N; j++) {
-        // seq_gap_counts(i) += alignment(i, Q * j);
         if (alignment(i, j) == 0) {
           seq_gap_counts(i)++;
         }
@@ -411,12 +420,22 @@ MSA::filterSequenceGaps(double seq_threshold)
   for (size_t i = 0; i < seq_to_keep.size(); i++) {
     bad_sequences.shed_rows(arma::find(bad_sequences == seq_to_keep[i]));
   }
+  if (verbose) {
+    for (size_t i = 0; i < bad_sequences.size(); i++) {
+      if (i == bad_sequences.size() - 1) {
+        std::cout << bad_sequences[i] << "... ";
+      } else {
+        std::cout << bad_sequences[i] << " ";
+      }
+    }
+    std::cout << std::flush;
+  }
   alignment.shed_rows(bad_sequences);
   M = alignment.n_rows;
 };
 
 void
-MSA::filterPositionGaps(double pos_threshold)
+MSA::filterPositionGaps(double pos_threshold, bool verbose)
 {
   arma::Col<int> pos_gap_counts = arma::Col<int>(N, arma::fill::zeros);
 
@@ -437,6 +456,16 @@ MSA::filterPositionGaps(double pos_threshold)
   arma::uvec bad_positions = arma::find(pos_gap_counts > pos_gap_cutoff);
   for (size_t i = 0; i < pos_to_keep.size(); i++) {
     bad_positions.shed_rows(arma::find(bad_positions == pos_to_keep[i]));
+  }
+  if (verbose) {
+    for (size_t i = 0; i < bad_positions.size(); i++) {
+      if (i == bad_positions.size() - 1) {
+        std::cout << bad_positions[i] << "... ";
+      } else {
+        std::cout << bad_positions[i] << " ";
+      }
+    }
+    std::cout << std::flush;
   }
   alignment.shed_cols(bad_positions);
   N = (int)alignment.n_cols;
