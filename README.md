@@ -496,6 +496,10 @@ To remove sequences above 90% similarity but protect the first two sequences:
 process_msa -i <input msa> -o <output file> -s .9 -q 0 -q 1
 ```
 
+__Note:__ If pruning position and sequence gaps, gapped positions are removed
+_first_ and _then_ the sequence gap proportions are computed using the pruned
+set of positions.
+
 ## Configuration file options
 
 Inference and sampling runs can be configured using a text file (see
