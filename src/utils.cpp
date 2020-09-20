@@ -233,11 +233,11 @@ convertParametersToAscii(std::string h_file, std::string J_file)
   J.load(J_file, arma::arma_binary);
 
   if ((N != (int)J.n_rows) & (N != (int)J.n_cols)) {
-    std::cerr << "ERROR: parameters dimension mismatch." << std::endl;
+    std::cerr << "ERROR: parameters N dimension mismatch." << std::endl;
     return;
   }
   if ((Q != (int)J(0, 1).n_cols) & (Q != (int)J(0, 1).n_rows)) {
-    std::cerr << "ERROR: parameters dimension mismatch." << std::endl;
+    std::cerr << "ERROR: parameters Q dimension mismatch." << std::endl;
     std::exit(EXIT_FAILURE);
   }
 
