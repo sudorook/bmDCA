@@ -5,7 +5,6 @@
 #include <unistd.h>
 
 #include "msa.hpp"
-// #include "msa_stats.hpp"
 #include "run.hpp"
 
 void
@@ -108,13 +107,9 @@ main(int argc, char* argv[])
 
   // Parse the multiple sequence alignment.
   msa_train = new MSA(train_file, train_weight_file, is_numeric);
-  msa_train->writeSequenceWeights(dest_dir + "/msa_weights.txt");
-  msa_train->writeMatrix(dest_dir + "/msa_numerical.txt");
 
   if (!validate_file.empty()) {
     msa_validate = new MSA(validate_file, validate_weight_file, is_numeric);
-    msa_validate->writeSequenceWeights(dest_dir + "/msa_validate_weights.txt");
-    msa_validate->writeMatrix(dest_dir + "/msa_validate_numerical.txt");
   }
 
   Sim sim = Sim(msa_train, msa_validate, config_file, dest_dir, force_restart);

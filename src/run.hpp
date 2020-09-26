@@ -69,6 +69,7 @@ private:
   int burn_between = burn_between_start;
   double train_err_tot_min = 1000;
   double validate_err_tot_min = 1000;
+  double diff_avg_energy = 0;
 
   std::string hyperparameter_file = "bmdca_params.conf";
   std::string run_log_file = "bmdca_run.log";
@@ -89,6 +90,12 @@ private:
   MSA* msa_validate = nullptr;
   MSAStats* msa_train_stats = nullptr;
   MSAStats* msa_validate_stats = nullptr;
+
+  arma::Col<double> msa_train_energies;
+  arma::Col<double> msa_validate_energies;
+  void computeMSAEnergies(arma::Col<double>*, MSA*, potts_model*);
+  void writeMSAEnergies(int);
+  void writeMSAEnergies(std::string);
 
   // Training model
   Model* model;

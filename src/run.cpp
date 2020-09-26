@@ -111,21 +111,31 @@ Sim::initialize(void)
         msa_train->partitionAlignment(validation_seqs, random_seed);
       msa_train = tmp[0];
       msa_validate = tmp[1];
-      msa_validate->writeSequenceWeights("msa_validate_weights.txt");
-      msa_validate->writeMatrix("msa_validate_numerical.txt");
+      msa_validate->writeSequenceWeights("msa_weights_validate.txt");
+      msa_validate->writeMatrix("msa_numerical_validate.txt");
     }
   }
 
-  // Compute stats for input MSA
+  msa_train_energies = arma::Col<double>(msa_train->M, arma::fill::zeros);
+  msa_train->writeMatrix("msa_numerical.txt");
+  msa_train->writeSequenceWeights("msa_weights.txt");
+
+  // Compute stats for training MSA
   msa_train_stats = new MSAStats(msa_train, true);
   msa_train_stats->writeFrequency1p("msa_stat_1p.bin");
   msa_train_stats->writeFrequency2p("msa_stat_2p.bin");
   std::cout << std::endl;
 
   if (msa_validate) {
+    msa_validate_energies =
+      arma::Col<double>(msa_validate->M, arma::fill::zeros);
+    msa_validate->writeMatrix("msa_numerical_validate.txt");
+    msa_validate->writeSequenceWeights("msa_weights_validate.txt");
+
+    // Compute stats for validation MSA
     msa_validate_stats = new MSAStats(msa_validate, true);
-    msa_validate_stats->writeFrequency1p("msa_validate_stat_1p.bin");
-    msa_validate_stats->writeFrequency2p("msa_validate_stat_2p.bin");
+    msa_validate_stats->writeFrequency1p("msa_stat_1p_validate.bin");
+    msa_validate_stats->writeFrequency2p("msa_stat_2p_validate.bin");
     std::cout << std::endl;
 
     if (!cross_validate) {
@@ -663,8 +673,8 @@ Sim::restoreRunState(void)
       if (samples_per_walk > 1) {
         train_err_tot_min = std::stod(fields.at(17));
         if (cross_validate) {
-          validate_err_tot_min = std::stod(fields.at(21));
-          prev_seed = std::stol(fields.at(22));
+          validate_err_tot_min = std::stod(fields.at(22));
+          prev_seed = std::stol(fields.at(23));
         } else {
           prev_seed = std::stol(fields.at(18));
         }
@@ -672,7 +682,7 @@ Sim::restoreRunState(void)
         if (cross_validate) {
           train_err_tot_min = std::stod(fields.at(8));
           validate_err_tot_min = std::stod(fields.at(12));
-          prev_seed = std::stol(fields.at(13));
+          prev_seed = std::stol(fields.at(14));
         } else {
           train_err_tot_min = std::stod(fields.at(8));
           prev_seed = std::stol(fields.at(9));
@@ -709,7 +719,7 @@ Sim::run(void)
   std::uniform_int_distribution<long int> dist(0, RAND_MAX - step_max);
 
   // Initialize the buffer.
-  run_buffer = arma::Mat<double>(save_period, 24, arma::fill::zeros);
+  run_buffer = arma::Mat<double>(save_period, 25, arma::fill::zeros);
   int buffer_offset = 0;
 
   if (step_offset == 0) {
@@ -809,7 +819,7 @@ Sim::run(void)
       std::cout << "sampling model... " << std::flush;
       timer.tic();
       seed = dist(rng);
-      run_buffer((step - 1) % save_period, 22) = seed;
+      run_buffer((step - 1) % save_period, 23) = seed;
       if (samples_per_walk > 1) {
         if (update_rule == "mh") {
           sampler->sampleSequences(&samples_3d,
@@ -916,6 +926,14 @@ Sim::run(void)
       std::cout << timer.toc() << " sec" << std::endl;
     }
 
+    computeMSAEnergies(&msa_train_energies, msa_train, &(model->params));
+    if (msa_validate) {
+      computeMSAEnergies(
+        &msa_validate_energies, msa_validate, &(model->params));
+      diff_avg_energy =
+        arma::mean(msa_train_energies) - arma::mean(msa_validate_energies);
+    }
+
     double train_err_1p = model->train_error_1p;
     double train_err_2p = model->train_error_2p;
     double train_err_tot = train_err_1p + train_err_2p;
@@ -953,6 +971,7 @@ Sim::run(void)
     double auto_corr = 0;
     double cross_corr = 0;
     double auto_cross_err = 0;
+
     // Get sample statistics
     if (samples_per_walk > 1) {
       arma::Col<double> stats = sample_stats->getStats();
@@ -992,6 +1011,7 @@ Sim::run(void)
     run_buffer((step - 1) % save_period, 19) = validate_err_2p;
     run_buffer((step - 1) % save_period, 20) = validate_err_tot;
     run_buffer((step - 1) % save_period, 21) = validate_err_tot_min;
+    run_buffer((step - 1) % save_period, 22) = diff_avg_energy;
 
     bool converged = false;
     if (train_err_tot < stop_threshold) {
@@ -1007,7 +1027,7 @@ Sim::run(void)
     }
 
     if (converged) {
-      run_buffer((step - 1) % save_period, 23) = step_timer.toc();
+      run_buffer((step - 1) % save_period, 24) = step_timer.toc();
       std::cout << "converged! writing final results... " << std::flush;
       writeRunLog(step % save_period, buffer_offset);
       writeStep(step);
@@ -1016,7 +1036,7 @@ Sim::run(void)
       return;
     }
 
-    run_buffer((step - 1) % save_period, 23) = step_timer.toc();
+    run_buffer((step - 1) % save_period, 24) = step_timer.toc();
 
     // Save parameters
     if (step % save_period == 0) {
@@ -1028,7 +1048,7 @@ Sim::run(void)
       std::cout << timer.toc() << " sec" << std::endl;
     } else if (new_min_found & (step > save_period) & save_best_steps) {
       std::cout << "close... writing step... " << std::flush;
-      run_buffer((step - 1) % save_period, 23) = step_timer.toc();
+      run_buffer((step - 1) % save_period, 24) = step_timer.toc();
       writeRunLog(step % save_period, buffer_offset, true);
       buffer_offset = step % save_period;
       writeStep(step);
@@ -1112,10 +1132,33 @@ Sim::checkErgodicity(void)
 };
 
 void
+Sim::computeMSAEnergies(arma::Col<double>* energies,
+                        MSA* msa,
+                        potts_model* params){
+  int N = msa->N;
+  int M = msa->M;
+#pragma omp parallel
+  {
+#pragma omp for
+    for (int seq = 0; seq < M; seq++) {
+      double E = 0;
+      for (int i = 0; i < N; i++) {
+        E -= params->h(msa->alignment(seq, i), i);
+        for (int j = i + 1; j < N; j++) {
+          E -= params->J(i, j)(msa->alignment(seq, i), msa->alignment(seq, j));
+        }
+      }
+      (*energies)(seq) = E;
+    }
+  }
+};
+
+void
 Sim::writeStep(int step)
 {
   model->writeStep(step, output_binary);
   sample_stats->writeStep(step, output_binary);
+  writeMSAEnergies(step);
 };
 
 void
@@ -1123,6 +1166,59 @@ Sim::writeData(std::string id)
 {
   model->writeData(id, output_binary);
   sample_stats->writeData(id, output_binary);
+  writeMSAEnergies(id);
+};
+
+void
+Sim::writeMSAEnergies(int step)
+{
+  {
+    std::ofstream output_stream("msa_energies_" + std::to_string(step) +
+                                ".txt");
+
+    int M = msa_train->M;
+    for (int m = 0; m < M; m++) {
+      output_stream << msa_train_energies(m) << std::endl;
+    }
+
+    output_stream.close();
+  }
+  if (msa_validate) {
+    std::ofstream output_stream("msa_energies_validate_" +
+                                std::to_string(step) + ".txt");
+
+    int M = msa_validate->M;
+    for (int m = 0; m < M; m++) {
+      output_stream << msa_validate_energies(m) << std::endl;
+    }
+
+    output_stream.close();
+  }
+};
+
+void
+Sim::writeMSAEnergies(std::string id)
+{
+  {
+    std::ofstream output_stream("msa_energies_" + id + ".txt");
+
+    int M = msa_train->M;
+    for (int m = 0; m < M; m++) {
+      output_stream << msa_train_energies(m) << std::endl;
+    }
+
+    output_stream.close();
+  }
+  if (msa_validate) {
+    std::ofstream output_stream("msa_energies_validate_" + id + ".txt");
+
+    int M = msa_validate->M;
+    for (int m = 0; m < M; m++) {
+      output_stream << msa_validate_energies(m) << std::endl;
+    }
+
+    output_stream.close();
+  }
 };
 
 void
@@ -1177,6 +1273,8 @@ Sim::initializeRunLog()
            << "validate-err-tot"
            << "\t"
            << "validate-err-tot-min"
+           << "\t"
+           << "diff-avg-energy"
            << "\t";
   }
   stream << "seed"
@@ -1224,9 +1322,10 @@ Sim::writeRunLog(int current_step, int offset, bool keep)
       stream << run_buffer(i, 19) << "\t";
       stream << run_buffer(i, 20) << "\t";
       stream << run_buffer(i, 21) << "\t";
+      stream << run_buffer(i, 22) << "\t";
     }
-    stream << (long int)run_buffer(i, 22) << "\t";
-    stream << run_buffer(i, 23) << std::endl;
+    stream << (long int)run_buffer(i, 23) << "\t";
+    stream << run_buffer(i, 24) << std::endl;
   }
   if (!keep) {
     run_buffer.zeros();
