@@ -89,7 +89,7 @@ main(int argc, char* argv[])
         outfile = optarg;
         break;
       case 'O':
-        outfile = optarg;
+        outfile_weights = optarg;
         break;
       case 'v':
         is_verbose = true;
