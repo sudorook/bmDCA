@@ -1134,7 +1134,8 @@ Sim::checkErgodicity(void)
 void
 Sim::computeMSAEnergies(arma::Col<double>* energies,
                         MSA* msa,
-                        potts_model* params){
+                        potts_model* params)
+{
   int N = msa->N;
   int M = msa->M;
 #pragma omp parallel

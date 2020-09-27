@@ -48,39 +48,39 @@ Model::setZeroGauge(void)
     }
   }
 
-   // rescale couplings
-   for (int i = 0; i < N; i++) {
-     for (int j = 0; j < N; j++) {
-       if (i < j) {
-         double J_ij_mean = arma::mean(arma::mean(params.J(i, j)));
-         arma::Mat<double> J_ija_mean = arma::mean(params.J(i, j), 1);
-         arma::Mat<double> J_ijb_mean = arma::mean(params.J(i, j), 0);
-         for (int a = 0; a < Q; a++) {
-           for (int b = 0; b < Q; b++) {
-             params_zg.J(i, j)(a, b) =
-               params.J(i, j)(a, b) - J_ija_mean(a) - J_ijb_mean(b) + J_ij_mean;
-           }
-           params_zg.h(a, i) += J_ija_mean(a) - J_ij_mean;
-         }
-       } else if (i > j) {
-         double J_ij_mean = arma::mean(arma::mean(params.J(j, i)));
-         arma::Mat<double> J_ija_mean = arma::mean(params.J(j, i), 0);
-         arma::Mat<double> J_ijb_mean = arma::mean(params.J(j, i), 1);
-         for (int a = 0; a < Q; a++) {
-           params_zg.h(a, i) += J_ija_mean(a) - J_ij_mean;
-         }
-       }
-     }
-   }
+  // rescale couplings
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      if (i < j) {
+        double J_ij_mean = arma::mean(arma::mean(params.J(i, j)));
+        arma::Mat<double> J_ija_mean = arma::mean(params.J(i, j), 1);
+        arma::Mat<double> J_ijb_mean = arma::mean(params.J(i, j), 0);
+        for (int a = 0; a < Q; a++) {
+          for (int b = 0; b < Q; b++) {
+            params_zg.J(i, j)(a, b) =
+              params.J(i, j)(a, b) - J_ija_mean(a) - J_ijb_mean(b) + J_ij_mean;
+          }
+          params_zg.h(a, i) += J_ija_mean(a) - J_ij_mean;
+        }
+      } else if (i > j) {
+        double J_ij_mean = arma::mean(arma::mean(params.J(j, i)));
+        arma::Mat<double> J_ija_mean = arma::mean(params.J(j, i), 0);
+        arma::Mat<double> J_ijb_mean = arma::mean(params.J(j, i), 1);
+        for (int a = 0; a < Q; a++) {
+          params_zg.h(a, i) += J_ija_mean(a) - J_ij_mean;
+        }
+      }
+    }
+  }
 
-   // rescale fields
-   arma::Row<double> h_i_mean = arma::mean(params.h, 0);
-   for (int i = 0; i < N; i++) {
-     for (int a = 0; a < Q; a++) {
-       params_zg.h(a, i) += params.h(a, i) - h_i_mean(i);
-     }
-   }
+  // rescale fields
+  arma::Row<double> h_i_mean = arma::mean(params.h, 0);
+  for (int i = 0; i < N; i++) {
+    for (int a = 0; a < Q; a++) {
+      params_zg.h(a, i) += params.h(a, i) - h_i_mean(i);
+    }
+  }
 
-   params.h = params_zg.h;
-   params.J = params_zg.J;
+  params.h = params_zg.h;
+  params.J = params_zg.J;
 };
