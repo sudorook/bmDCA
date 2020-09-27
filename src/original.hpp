@@ -33,6 +33,7 @@ private:
   double alpha_reg = 1.0;
   std::string initial_params = "zero";
   bool set_zero_gauge = false;
+  bool allow_gap_couplings = true;
   double epsilon_h = 0.01;
   double epsilon_J = 0.001;
   double learn_rate_h_min = 1e-04;

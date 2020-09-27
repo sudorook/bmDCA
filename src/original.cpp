@@ -93,6 +93,12 @@ Original::setHyperparameter(std::string key, std::string value)
     } else {
       set_zero_gauge = (value == "true");
     }
+  } else if (key == "allow_gap_couplings") {
+    if (value.size() == 1) {
+      allow_gap_couplings = (std::stoi(value) == 1);
+    } else {
+      allow_gap_couplings = (value == "true");
+    }
   } else if (key == "epsilon_h") {
     epsilon_h = std::stod(value);
   } else if (key == "epsilon_J") {
@@ -150,6 +156,7 @@ Original::writeHyperparameters(std::string output_file, bool append)
   stream << "alpha_reg=" << alpha_reg << std::endl;
   stream << "initial_params=" << initial_params << std::endl;
   stream << "set_zero_gauge=" << set_zero_gauge << std::endl;
+  stream << "allow_gap_couplings=" << allow_gap_couplings << std::endl;
   stream << "epsilon_h=" << epsilon_h << std::endl;
   stream << "epsilon_J=" << epsilon_J << std::endl;
   stream << "learn_rate_h_min=" << learn_rate_h_min << std::endl;
@@ -182,6 +189,12 @@ Original::compareHyperparameter(std::string key, std::string value)
       same = same & (set_zero_gauge == (std::stoi(value) == 1));
     } else {
       same = same & (set_zero_gauge == (value == "true"));
+    }
+  } else if (key == "allow_gap_couplings") {
+    if (value.size() == 1) {
+      same = same & (allow_gap_couplings == (std::stoi(value) == 1));
+    } else {
+      same = same & (allow_gap_couplings == (value == "true"));
     }
   } else if (key == "epsilon_h") {
     same = same & (epsilon_h == std::stod(value));
@@ -534,16 +547,30 @@ Original::updateLearningRates(void)
 void
 Original::updateParameters(void)
 {
-  for (int i = 0; i < N; i++) {
-    for (int j = i + 1; j < N; j++) {
-      for (int a = 0; a < Q; a++) {
-        for (int b = 0; b < Q; b++) {
-          params.J(i, j)(a, b) +=
-            learning_rates.J(i, j)(a, b) * gradient.J(i, j)(a, b);
+  if (allow_gap_couplings) {
+    for (int i = 0; i < N; i++) {
+      for (int j = i + 1; j < N; j++) {
+        for (int a = 0; a < Q; a++) {
+          for (int b = 0; b < Q; b++) {
+            params.J(i, j)(a, b) +=
+              learning_rates.J(i, j)(a, b) * gradient.J(i, j)(a, b);
+          }
+        }
+      }
+    }
+  } else {
+    for (int i = 0; i < N; i++) {
+      for (int j = i + 1; j < N; j++) {
+        for (int a = 1; a < Q; a++) {
+          for (int b = 1; b < Q; b++) {
+            params.J(i, j)(a, b) +=
+              learning_rates.J(i, j)(a, b) * gradient.J(i, j)(a, b);
+          }
         }
       }
     }
   }
+
   for (int i = 0; i < N; i++) {
     for (int a = 0; a < Q; a++) {
       params.h(a, i) += learning_rates.h(a, i) * gradient.h(a, i);

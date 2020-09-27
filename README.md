@@ -565,24 +565,25 @@ individual learning rates for each fields and coupling. This is the default:
    (`alpha_reg=1`) regularization (default: 1)
 4. `initial_params` - choice of initializing the parameters (`profile` for an
    independent site profile model, zero otherwise)  (default: 'profile')
-5. `set_zero_gauge` - TBD (default: false)
-6. `epsilon_h` - initial values for the learning rates for fields (default:
+5. `set_zero_gauge` - set zero (Ising) gauge for parameters (default: false)
+6. `allow_gap_couplings` - allow inference of gap couplings (default: true)
+7. `epsilon_h` - initial values for the learning rates for fields (default:
    0.01)
-7. `epsilon_J` - initial values for the learning rates for couplings (default:
+8. `epsilon_J` - initial values for the learning rates for couplings (default:
    0.001)
-8. `learn_rate_h_min` - smallest possible values for learning rates for fields
+9. `learn_rate_h_min` - smallest possible values for learning rates for fields
    (default: 0.0001) 
-9. `learn_rate_h_max` - largest possible values for learning rates for fields
-   (default: 0.5)
-10. `learn_rate_J_min` - smallest possible values for learning rates for
+10. `learn_rate_h_max` - largest possible values for learning rates for fields
+    (default: 0.5)
+11. `learn_rate_J_min` - smallest possible values for learning rates for
     couplings (default: 0.0001) 
-11. `learn_rate_J_max` - largest possible values for learning rates for
+12. `learn_rate_J_max` - largest possible values for learning rates for
     couplings (default: 0.5)
-12. `adapt_up` - scaling factor by which learning rates can be increased
+13. `adapt_up` - scaling factor by which learning rates can be increased
     (default: 1.2)
-13. `adapt_down` - scaling factor by which learning rates are decreased. Keep
+14. `adapt_down` - scaling factor by which learning rates are decreased. Keep
     `adapt_up` x `adapt_down` less than 1 (default: 0.6)
-14. `use_pos_reg` - use position-specific regularizer derived from relative
+15. `use_pos_reg` - use position-specific regularizer derived from relative
     entropy gradient for coupling frequencies in the MSA  (default: false)
 
 #### [[reparametrization]]
@@ -595,7 +596,7 @@ Re-parametrized model described in Figliuzzi, 2018.
    (`alpha_reg=1`) regularization (default: 1)
 4. `initial_params` - choice of initializing the parameters (`profile` for an
    independent site profile model, zero otherwise)  (default: 'profile')
-5. `set_zero_gauge` - TBD (default: false)
+5. `set_zero_gauge` - set zero (Ising) gauge for parameters (default: false)
 6. `epsilon_h` - initial values for the learning rates for fields (default:
    0.01)
 7. `epsilon_J` - initial values for the learning rates for couplings (default:
@@ -626,9 +627,10 @@ Fast, but tends to overfit small alignments very quickly.
    (`alpha_reg=1`) regularization (default: 1)
 4. `initial_params` - choice of initializing the parameters (`profile` for an
    independent site profile model, zero otherwise)  (default: 'profile')
-5. `set_zero_gauge` - TBD (default: false)
-6. `learn_rate_h` - learning rate for fields (default: 0.01)
-7. `learn_rate_J` - learning rate for couplings (default: 0.01)
+5. `set_zero_gauge` - set zero (Ising) gauge for parameters (default: false)
+6. `allow_gap_couplings` - allow inference of gap couplings (default: true)
+7. `learn_rate_h` - learning rate for fields (default: 0.01)
+8. `learn_rate_J` - learning rate for couplings (default: 0.01)
 
 #### [[adamw]]
 
@@ -643,20 +645,22 @@ independent of the moments.
 3. `initial_params` - choice of initializing the parameters (`profile` for an
    independent site profile model, zero otherwise)  (default: 'profile')
 5. `set_zero_gauge` - TBD (default: false)
-6. `learn_rate_h` - learning rate for fields (default: 0.01)
-7. `learn_rate_J` - learning rate for couplings (default: 0.01)
-8. `eta_min` - minimum scaling value for annealing schedule (default: 0.1)
-9. `eta_max` - maximum scaling value for annealing schedule (default: 1)
-10. `anneal_schedule` - rule for scaling the learning rates (default: none)
+5. `set_zero_gauge` - set zero (Ising) gauge for parameters (default: false)
+6. `allow_gap_couplings` - allow inference of gap couplings (default: true)
+7. `learn_rate_h` - learning rate for fields (default: 0.01)
+8. `learn_rate_J` - learning rate for couplings (default: 0.01)
+9. `eta_min` - minimum scaling value for annealing schedule (default: 0.1)
+10. `eta_max` - maximum scaling value for annealing schedule (default: 1)
+11. `anneal_schedule` - rule for scaling the learning rates (default: none)
     - `cos`, cosine-based annealing
     - `trap`, trapezoidal (warm-up, hot, then cool-down) annealing
-11. `anneal_scale` - scaling factor for the period, extending (or shortening)
+12. `anneal_scale` - scaling factor for the period, extending (or shortening)
     the schedules over time and iterations (default: 2)
-12. `anneal_period` - period for cycling the annealing schedule (default: 40)
-13. `anneal_warm` - warm-up number of iterations to scale from `eta_min` to
+13. `anneal_period` - period for cycling the annealing schedule (default: 40)
+14. `anneal_warm` - warm-up number of iterations to scale from `eta_min` to
     `eta_max` (default: 20)
-14. `anneal_hot` - number of iterations to run at `eta_max` (default: 0)
-15. `anneal_cool` - number of iterations to decrease from `eta_max` to
+15. `anneal_hot` - number of iterations to run at `eta_max` (default: 0)
+16. `anneal_cool` - number of iterations to decrease from `eta_max` to
     `eta_min` (default: 0)
 
 #### [[radam]]
@@ -672,9 +676,10 @@ but much slower at early iterations.
    (`alpha_reg=1`) regularization (default: 1)
 4. `initial_params` - choice of initializing the parameters (`profile` for an
    independent site profile model, zero otherwise)  (default: 'profile')
-5. `set_zero_gauge` - TBD (default: false)
-6. `learn_rate_h` - learning rate for fields (default: 0.01)
-7. `learn_rate_J` - learning rate for couplings (default: 0.01)
+5. `set_zero_gauge` - set zero (Ising) gauge for parameters (default: false)
+6. `allow_gap_couplings` - allow inference of gap couplings (default: true)
+7. `learn_rate_h` - learning rate for fields (default: 0.01)
+8. `learn_rate_J` - learning rate for couplings (default: 0.01)
 
 #### [[sgdm]]
 
@@ -686,12 +691,13 @@ Stochastic gradient descent with momentum.
    (`alpha_reg=1`) regularization (default: 1)
 4. `initial_params` - choice of initializing the parameters (`profile` for an
    independent site profile model, zero otherwise)  (default: 'profile')
-5. `set_zero_gauge` - TBD (default: false)
-6. `beta_h` - decay rate for gradient running average for fields (default: 0.9)
-7. `bata_J` - decay rate for gradient running average for couplings (default:
+5. `set_zero_gauge` - set zero (Ising) gauge for parameters (default: false)
+6. `allow_gap_couplings` - allow inference of gap couplings (default: true)
+7. `beta_h` - decay rate for gradient running average for fields (default: 0.9)
+8. `bata_J` - decay rate for gradient running average for couplings (default:
    0.9)
-8. `learn_rate_h` - learning rate for fields (default: 0.01)
-9. `learn_rate_J` - learning rate for couplings (default: 0.01)
+9. `learn_rate_h` - learning rate for fields (default: 0.01)
+10. `learn_rate_J` - learning rate for couplings (default: 0.01)
 
 ### [bmDCA_sample]
 

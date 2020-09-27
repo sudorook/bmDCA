@@ -93,6 +93,12 @@ RAdam::setHyperparameter(std::string key, std::string value)
     } else {
       set_zero_gauge = (value == "true");
     }
+  } else if (key == "allow_gap_couplings") {
+    if (value.size() == 1) {
+      allow_gap_couplings = (std::stoi(value) == 1);
+    } else {
+      allow_gap_couplings = (value == "true");
+    }
   } else if (key == "learn_rate_h") {
     learn_rate_h = std::stod(value);
   } else if (key == "learn_rate_J") {
@@ -125,6 +131,7 @@ RAdam::writeHyperparameters(std::string output_file, bool append)
   stream << "alpha_reg=" << alpha_reg << std::endl;
   stream << "initial_params=" << initial_params << std::endl;
   stream << "set_zero_gauge=" << set_zero_gauge << std::endl;
+  stream << "allow_gap_couplings=" << allow_gap_couplings << std::endl;
   stream << "learn_rate_h=" << learn_rate_h << std::endl;
   stream << "learn_rate_J=" << learn_rate_J << std::endl;
 
@@ -150,6 +157,12 @@ RAdam::compareHyperparameter(std::string key, std::string value)
       same = same & (set_zero_gauge == (std::stoi(value) == 1));
     } else {
       same = same & (set_zero_gauge == (value == "true"));
+    }
+  } else if (key == "allow_gap_couplings") {
+    if (value.size() == 1) {
+      same = same & (allow_gap_couplings == (std::stoi(value) == 1));
+    } else {
+      same = same & (allow_gap_couplings == (value == "true"));
     }
   } else if (key == "learn_rate_h") {
     same = same & (learn_rate_h == std::stod(value));
@@ -479,12 +492,23 @@ RAdam::updateParameters(void)
                             ((rho_inf - 4.) * (rho_inf - 2.) * rho_t));
     for (int i = 0; i < N; i++) {
       for (int j = i + 1; j < N; j++) {
-        for (int a = 0; a < Q; a++) {
-          for (int b = 0; b < Q; b++) {
-            params.J(i, j)(a, b) +=
-              rectifier * learn_rate_J * moment1.J(i, j)(a, b) /
-              (1. - beta1_t) /
-              (sqrt(moment2.J(i, j)(a, b) / (1. - beta2_t)) + 0.00000001);
+        if (allow_gap_couplings) {
+          for (int a = 0; a < Q; a++) {
+            for (int b = 0; b < Q; b++) {
+              params.J(i, j)(a, b) +=
+                rectifier * learn_rate_J * moment1.J(i, j)(a, b) /
+                (1. - beta1_t) /
+                (sqrt(moment2.J(i, j)(a, b) / (1. - beta2_t)) + 0.00000001);
+            }
+          }
+        } else {
+          for (int a = 1; a < Q; a++) {
+            for (int b = 1; b < Q; b++) {
+              params.J(i, j)(a, b) +=
+                rectifier * learn_rate_J * moment1.J(i, j)(a, b) /
+                (1. - beta1_t) /
+                (sqrt(moment2.J(i, j)(a, b) / (1. - beta2_t)) + 0.00000001);
+            }
           }
         }
       }
@@ -499,10 +523,19 @@ RAdam::updateParameters(void)
   } else {
     for (int i = 0; i < N; i++) {
       for (int j = i + 1; j < N; j++) {
-        for (int a = 0; a < Q; a++) {
-          for (int b = 0; b < Q; b++) {
-            params.J(i, j)(a, b) +=
-              learn_rate_J * moment1.J(i, j)(a, b) / (1. - beta1_t);
+        if (allow_gap_couplings) {
+          for (int a = 0; a < Q; a++) {
+            for (int b = 0; b < Q; b++) {
+              params.J(i, j)(a, b) +=
+                learn_rate_J * moment1.J(i, j)(a, b) / (1. - beta1_t);
+            }
+          }
+        } else {
+          for (int a = 1; a < Q; a++) {
+            for (int b = 1; b < Q; b++) {
+              params.J(i, j)(a, b) +=
+                learn_rate_J * moment1.J(i, j)(a, b) / (1. - beta1_t);
+            }
           }
         }
       }

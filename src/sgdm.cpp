@@ -93,6 +93,12 @@ SGDM::setHyperparameter(std::string key, std::string value)
     } else {
       set_zero_gauge = (value == "true");
     }
+  } else if (key == "allow_gap_couplings") {
+    if (value.size() == 1) {
+      allow_gap_couplings = (std::stoi(value) == 1);
+    } else {
+      allow_gap_couplings = (value == "true");
+    }
   } else if (key == "beta_h") {
     beta_h = std::stod(value);
   } else if (key == "beta_J") {
@@ -136,6 +142,7 @@ SGDM::writeHyperparameters(std::string output_file, bool append)
   stream << "alpha_reg=" << alpha_reg << std::endl;
   stream << "initial_params=" << initial_params << std::endl;
   stream << "set_zero_gauge=" << set_zero_gauge << std::endl;
+  stream << "allow_gap_couplings=" << allow_gap_couplings << std::endl;
   stream << "beta_h=" << beta_h << std::endl;
   stream << "beta_J=" << beta_J << std::endl;
   stream << "learn_rate_h=" << learn_rate_h << std::endl;
@@ -163,6 +170,12 @@ SGDM::compareHyperparameter(std::string key, std::string value)
       same = same & (set_zero_gauge == (std::stoi(value) == 1));
     } else {
       same = same & (set_zero_gauge == (value == "true"));
+    }
+  } else if (key == "allow_gap_couplings") {
+    if (value.size() == 1) {
+      same = same & (allow_gap_couplings == (std::stoi(value) == 1));
+    } else {
+      same = same & (allow_gap_couplings == (value == "true"));
     }
   } else if (key == "beta_h") {
     same = same & (beta_h == std::stod(value));
@@ -244,14 +257,12 @@ SGDM::initialize(void)
   // Initialize the moments
   moment1.h = arma::Mat<double>(Q, N);
   moment1.h.fill(arma::fill::zeros);
-  // moment1.h.fill(0.5);
 
   moment1.J = arma::field<arma::Mat<double>>(N, N);
   for (int i = 0; i < N; i++) {
     for (int j = i + 1; j < N; j++) {
       moment1.J(i, j) = arma::Mat<double>(Q, Q);
       moment1.J(i, j).fill(arma::fill::zeros);
-      // moment1.J(i, j).fill(0.5);
     }
   }
 
@@ -460,16 +471,27 @@ SGDM::updateMoments(void)
 void
 SGDM::updateParameters(void)
 {
-  for (int i = 0; i < N; i++) {
-    for (int j = i + 1; j < N; j++) {
-      for (int a = 0; a < Q; a++) {
-        for (int b = 0; b < Q; b++) {
-          params.J(i, j)(a, b) += learn_rate_J * moment1.J(i, j)(a, b);
+  if (allow_gap_couplings) {
+    for (int i = 0; i < N; i++) {
+      for (int j = i + 1; j < N; j++) {
+        for (int a = 0; a < Q; a++) {
+          for (int b = 0; b < Q; b++) {
+            params.J(i, j)(a, b) += learn_rate_J * moment1.J(i, j)(a, b);
+          }
+        }
+      }
+    }
+  } else {
+    for (int i = 0; i < N; i++) {
+      for (int j = i + 1; j < N; j++) {
+        for (int a = 1; a < Q; a++) {
+          for (int b = 1; b < Q; b++) {
+            params.J(i, j)(a, b) += learn_rate_J * moment1.J(i, j)(a, b);
+          }
         }
       }
     }
   }
-
   for (int i = 0; i < N; i++) {
     for (int a = 0; a < Q; a++) {
       params.h(a, i) += learn_rate_h * moment1.h(a, i);

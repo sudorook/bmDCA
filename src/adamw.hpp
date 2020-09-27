@@ -32,6 +32,7 @@ private:
   double lambda_decay_J = 0.01;
   std::string initial_params = "zero";
   bool set_zero_gauge = false;
+  bool allow_gap_couplings = true;
   double learn_rate_h = 0.01;
   double learn_rate_J = 0.01;
 
