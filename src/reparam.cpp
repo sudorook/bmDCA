@@ -394,6 +394,9 @@ Reparam::update(void)
   updateGradients();
   updateLearningRates();
   updateParameters();
+  if (set_zero_gauge) {
+    setZeroGauge();
+  }
 };
 
 void

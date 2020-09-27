@@ -412,6 +412,9 @@ Original::update(void)
   updateLearningRates();
   params_prev = params;
   updateParameters();
+  if (set_zero_gauge) {
+    setZeroGauge();
+  }
 };
 
 void

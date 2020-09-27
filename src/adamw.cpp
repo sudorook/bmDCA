@@ -396,6 +396,9 @@ AdamW::update(void)
   updateGradients();
   updateMoments();
   updateParameters();
+  if (set_zero_gauge) {
+    setZeroGauge();
+  }
 };
 
 void
