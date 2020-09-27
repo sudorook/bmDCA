@@ -811,9 +811,11 @@ The columns in the run log correspond to:
 21. `validate-err-tot` - total RMSE for validation MSA
 22. `validate-err-tot-min` - smallest total RMSE found so far for the
     validation MSA
-23. `seed` - random seed at the current step (used for restoring states when
+23. `diff-avg-energy` - difference between mean training and validation MSA
+    energies
+24. `seed` - random seed at the current step (used for restoring states when
     re-starting bmDCA)
-24. `duration` - elapsed time for the current step
+25. `duration` - elapsed time for the current step
 
 Some columns may or may not be present in your log file depending on the
 settings used for inference. For example, if only 1 sequence is sampled from
