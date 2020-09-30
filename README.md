@@ -665,10 +665,9 @@ independent of the moments.
 
 #### [[radam]]
 
-Variant of Adam with rectified initial iterations that are more Adam-like and
-later iterations that more closely resemble ordinary stochastic gradient
-descent with momentum, which generally appears to be more accurate than Adam
-but much slower at early iterations.
+Variant of Adam with rectified initial iterations so that the early updates,
+where there are too few points to compute the second moment, follow SGDM, and
+later ones use Adam's adaptive moments.
 
 1. `lambda_reg_h` - regularization strength for fields (default: 0.01)
 2. `lambda_reg_J` - regularization strength for couplings (default: 0.01)
