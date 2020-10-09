@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef MSA_STATS_HPP
 #define MSA_STATS_HPP
 
@@ -5,6 +22,11 @@
 
 #include <armadillo>
 
+/**
+ * @brief Class for computing the sequence statistics for a MSA.
+ *
+ * Compute the 1p and 2p statistics, nothing higher.
+ */
 class MSAStats
 {
 public:
@@ -29,28 +51,29 @@ public:
   void writeFrequency1pAscii(std::string);
   void writeFrequency2pAscii(std::string);
 
-  arma::Mat<double> frequency_1p;
-  arma::field<arma::Mat<double>> frequency_2p;
-  arma::Mat<double> rel_entropy_1p;
-  arma::Col<double> rel_entropy_pos_1p;
-  arma::Mat<double> rel_entropy_grad_1p;
+  arma::Mat<double> frequency_1p;              ///< single-position frequencies
+  arma::field<arma::Mat<double>> frequency_2p; ///< 2-position frequencies
+  arma::Mat<double> rel_entropy_1p;            ///< relative entropy (1p)
+  arma::Col<double> rel_entropy_pos_1p;        ///< total 1p relative entropy
+  arma::Mat<double> rel_entropy_grad_1p;       ///< 1p relative entropy gradient
 
-  double freq_rms;
-  arma::Col<double> msa_rms;
+  double freq_rms;           ///< multinomial standard error estimate of MSA
+  arma::Col<double> msa_rms; ///< RMSE of two equal subset of the MSA
 
 private:
-  const double pseudocount = 0.03;
+  const double pseudocount = 0.03; ///< pseudocount for missing data
 
-  int M;              // number of sequences
-  int N;              // number of positions
-  int Q;              // amino acid alphabet size
-  double M_effective; // effect number of sequences
+  int M;              ///< number of sequences
+  int N;              ///< number of positions
+  int Q;              ///< amino acid alphabet size
+  double M_effective; ///< effect number of sequences
 
-  MSA* msa;
+  MSA* msa; ///< address of MSA for which to compute stats
 
-  void computeMSAStats(MSA*);
+  // void computeMSAStats(MSA*);
+  void computeMSAStats();
 
-  arma::Col<double> aa_background_frequencies;
+  arma::Col<double> aa_background_frequencies; ///< background aa frequencies
 };
 
 #endif

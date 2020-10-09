@@ -1,12 +1,37 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "adam.hpp"
 
 #include <armadillo>
 
 #include "utils.hpp"
 
+/**
+ * @brief Adam constructor.
+ */
 Adam::Adam()
   : Model(){};
 
+/**
+ * @brief Load model hyperparameters from config file.
+ *
+ * @param file_name config file string
+ */
 void
 Adam::loadHyperparameters(std::string file_name)
 {
@@ -40,6 +65,13 @@ Adam::loadHyperparameters(std::string file_name)
   }
 };
 
+/**
+ * @brief Check that hyperparameters in config file are same as stored values.
+ *
+ * @param file_name config file string
+ *
+ * @return (bool) flag that all hyperparameters are equivalent
+ */
 bool
 Adam::compareHyperparameters(std::string file_name)
 {
@@ -74,6 +106,12 @@ Adam::compareHyperparameters(std::string file_name)
   return all_same;
 };
 
+/**
+ * @brief Set a hyperparameter to a specific value.
+ *
+ * @param key hyperparameter to set
+ * @param value value at which to set hyperparameter
+ */
 void
 Adam::setHyperparameter(std::string key, std::string value)
 {
@@ -109,16 +147,22 @@ Adam::setHyperparameter(std::string key, std::string value)
   }
 };
 
+/**
+ * @brief Check additional constraints for hyperparameter values.
+ *
+ * Function for checking any constraints on the possible values for the model
+ * hyperparameters. Empty by default.
+ */
 void
-Adam::checkHyperparameters(void)
-{
-  // if ((anneal_period < 1) & (anneal_schedule == "cos")) {
-  //   std::cerr << "ERROR: period " << anneal_period
-  //             << " invalid for 'cos' schedule." << std::endl;
-  //   std::exit(EXIT_FAILURE);
-  // }
-}
+Adam::checkHyperparameters(void){};
 
+/**
+ * @brief Write stored hyperparameters to file
+ *
+ * @param output_file config file string
+ * @param append flag for whether or not to append the hyperparameters to the
+ * file or overwrite it
+ */
 void
 Adam::writeHyperparameters(std::string output_file, bool append)
 {
@@ -145,6 +189,14 @@ Adam::writeHyperparameters(std::string output_file, bool append)
   stream.close();
 };
 
+/**
+ * @brief Compare the value of a specific hyperparameter against a given value.
+ *
+ * @param key name of the hyperparameter to check
+ * @param value value against which to check the 'key' hyperparameter.
+ *
+ * @return (bool) flag for whether the stored and given values are equal
+ */
 bool
 Adam::compareHyperparameter(std::string key, std::string value)
 {
@@ -182,6 +234,15 @@ Adam::compareHyperparameter(std::string key, std::string value)
   return same;
 };
 
+/**
+ * @brief Check that all the necessary data exists to reload a given step.
+ *
+ * @param step iteration to check
+ * @param output_binary flag for whether to look for binary data (.bin) or text
+ * (.txt)
+ *
+ * @return (bool) flag for whether the necessary files were found
+ */
 bool
 Adam::isValidStep(int step, bool output_binary)
 {
@@ -211,6 +272,9 @@ Adam::isValidStep(int step, bool output_binary)
   return valid;
 };
 
+/**
+ * @brief Initialize the model parameters.
+ */
 void
 Adam::initialize(void)
 {
@@ -274,6 +338,9 @@ Adam::initialize(void)
   gradient.h = arma::Mat<double>(Q, N, arma::fill::zeros);
 };
 
+/**
+ * @brief Re-initialize the model.
+ */
 void
 Adam::reset()
 {
@@ -323,6 +390,13 @@ Adam::reset()
   }
 };
 
+/**
+ * @brief Re-load the model at a given step.
+ *
+ * @param step iteration to check
+ * @param output_binary flag for whether to look for binary data (.bin) or text
+ * (.txt)
+ */
 void
 Adam::restore(int step, bool output_binary)
 {
@@ -367,6 +441,9 @@ Adam::restore(int step, bool output_binary)
   }
 };
 
+/**
+ * @brief Update the model parameters using the sampled sequence statistics.
+ */
 void
 Adam::update(void)
 {
@@ -379,6 +456,9 @@ Adam::update(void)
   }
 };
 
+/**
+ * @brief Update the gradients and compute the 1p/2p RMS error.
+ */
 void
 Adam::updateGradients(void)
 {
@@ -454,6 +534,9 @@ Adam::updateGradients(void)
   return;
 };
 
+/**
+ * @brief Update the first moment and second moment estimates.
+ */
 void
 Adam::updateMoments(void)
 {
@@ -483,6 +566,9 @@ Adam::updateMoments(void)
   }
 };
 
+/**
+ * @brief Update the model parameters using the updated gradients and moments.
+ */
 void
 Adam::updateParameters(void)
 {
@@ -528,6 +614,12 @@ Adam::updateParameters(void)
   }
 };
 
+/**
+ * @brief Write the current data to disk.
+ *
+ * @param str ID string for the output files.
+ * @param output_binary flag for whether to write text or binary files.
+ */
 void
 Adam::writeData(std::string str, bool output_binary)
 {
@@ -562,6 +654,16 @@ Adam::writeData(std::string str, bool output_binary)
   }
 };
 
+/**
+ * @brief Delete the existing model data files for a given step.
+ *
+ * @param step iteration to check
+ * @param output_binary flag for whether to look for binary data (.bin) or text
+ * (.txt)
+ *
+ * This function is for clearing out steps with missing or incomplete data,
+ * such as when the program is terminated in the middle of disk writes.
+ */
 void
 Adam::deleteStep(int step, bool output_binary)
 {
@@ -617,6 +719,16 @@ Adam::deleteStep(int step, bool output_binary)
   }
 };
 
+/**
+ * @brief Write the necessary data to be able to restart the inference.
+ *
+ * @param step current inference iteration
+ * @param output_binary flag for whether to write text or binary files.
+ *
+ * This function is used to write all the data for restarting a given step,
+ * which for Adam is the current and previous parameters, gradients, and 1st
+ * and 2nd moments.
+ */
 void
 Adam::writeStep(int step, bool output_binary)
 {
@@ -661,6 +773,12 @@ Adam::writeStep(int step, bool output_binary)
   }
 };
 
+/**
+ * @brief Write the parameters to disk in arma::binary format.
+ *
+ * @param output_file_h file string for fields
+ * @param output_file_J file string for couplings
+ */
 void
 Adam::writeParams(std::string output_file_h, std::string output_file_J)
 {
@@ -668,6 +786,11 @@ Adam::writeParams(std::string output_file_h, std::string output_file_J)
   params.J.save(output_file_J, arma::arma_binary);
 };
 
+/**
+ * @brief Write the parameters to disk in text format (all 1 file).
+ *
+ * @param output_file file string for fields and couplings
+ */
 void
 Adam::writeParamsAscii(std::string output_file)
 {
@@ -697,6 +820,12 @@ Adam::writeParamsAscii(std::string output_file)
   }
 };
 
+/**
+ * @brief Write the previous step parameters to disk in arma::binary format.
+ *
+ * @param output_file_h file string for fields
+ * @param output_file_J file string for couplings
+ */
 void
 Adam::writeParamsPrevious(std::string output_file_h, std::string output_file_J)
 {
@@ -704,6 +833,11 @@ Adam::writeParamsPrevious(std::string output_file_h, std::string output_file_J)
   params_prev.J.save(output_file_J, arma::arma_binary);
 };
 
+/**
+ * @brief Write the previous step parameters to disk in text format (1 file).
+ *
+ * @param output_file file string for fields and couplings
+ */
 void
 Adam::writeParamsPreviousAscii(std::string output_file)
 {
@@ -733,6 +867,12 @@ Adam::writeParamsPreviousAscii(std::string output_file)
   }
 };
 
+/**
+ * @brief Write the 1st moment to disk in arma::binary format.
+ *
+ * @param output_file_h file string for fields
+ * @param output_file_J file string for couplings
+ */
 void
 Adam::writeMoment1(std::string output_file_h, std::string output_file_J)
 {
@@ -740,6 +880,12 @@ Adam::writeMoment1(std::string output_file_h, std::string output_file_J)
   moment1.J.save(output_file_J, arma::arma_binary);
 };
 
+/**
+ * @brief Write the 2nd moment to disk in arma::binary format.
+ *
+ * @param output_file_h file string for fields
+ * @param output_file_J file string for couplings
+ */
 void
 Adam::writeMoment2(std::string output_file_h, std::string output_file_J)
 {
@@ -747,6 +893,11 @@ Adam::writeMoment2(std::string output_file_h, std::string output_file_J)
   moment2.J.save(output_file_J, arma::arma_binary);
 };
 
+/**
+ * @brief Write the 1st moment to disk in text format (all 1 file).
+ *
+ * @param output_file file string for fields and couplings
+ */
 void
 Adam::writeMoment1Ascii(std::string output_file)
 {
@@ -776,6 +927,11 @@ Adam::writeMoment1Ascii(std::string output_file)
   }
 };
 
+/**
+ * @brief Write the 2nd moment to disk in text format (all 1 file).
+ *
+ * @param output_file file string for fields and couplings
+ */
 void
 Adam::writeMoment2Ascii(std::string output_file)
 {
@@ -805,6 +961,12 @@ Adam::writeMoment2Ascii(std::string output_file)
   }
 };
 
+/**
+ * @brief Write the gradients to disk in arma::binary format.
+ *
+ * @param output_file_h file string for fields
+ * @param output_file_J file string for couplings
+ */
 void
 Adam::writeGradient(std::string output_file_h, std::string output_file_J)
 {
@@ -812,6 +974,11 @@ Adam::writeGradient(std::string output_file_h, std::string output_file_J)
   gradient.J.save(output_file_J, arma::arma_binary);
 };
 
+/**
+ * @brief Write the gradients to disk in text format (all 1 file).
+ *
+ * @param output_file file string for fields and couplings
+ */
 void
 Adam::writeGradientAscii(std::string output_file)
 {

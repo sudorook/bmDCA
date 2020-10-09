@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "sampler.hpp"
 
 #include <armadillo>
@@ -14,21 +31,50 @@
 
 #include "pcg_random.hpp"
 
+/**
+ * @brief Constructor for sampler abstract class.
+ *
+ * @param N number of positions
+ * @param Q number of states
+ */
 Sampler::Sampler(size_t N, size_t Q)
   : N(N)
   , Q(Q){};
 
+/**
+ * @brief Constructor for sampler abstract class.
+ *
+ * @param N number of positions
+ * @param Q number of states
+ * @param m address of Potts parameters struct
+ */
 Sampler::Sampler(size_t N, size_t Q, potts_model* m)
   : N(N)
   , Q(Q)
   , model(m){};
 
+/**
+ * @brief Set the address of the Potts parameters
+ *
+ * @param m address of Potts parameters struct
+ */
 void
 Sampler::setModel(potts_model* m)
 {
   model = m;
 };
 
+/**
+ * @brief Sample MCMC sequences but only return sequences energies.
+ *
+ * @param p address of arma::Mat where output is stored
+ * @param walkers number of independent trajectories
+ * @param samples_per_walk number of samples per trajectory
+ * @param burn_in burn-in time
+ * @param burn_between burn-between time
+ * @param seed random seed for RNG
+ * @param temperature sampling temperature
+ */
 void
 Sampler::sampleEnergies(arma::Mat<double>* p,
                         size_t walkers,
@@ -118,6 +164,17 @@ Sampler::sampleEnergies(arma::Mat<double>* p,
   return;
 };
 
+/**
+ * @brief Sample MCMC trajectories of sequences (Metropolis-Hastings).
+ *
+ * @param p address of arma::Cube where sampled sequeces are stored
+ * @param walkers number of independent trajectories
+ * @param samples_per_walk number of samples per trajectory
+ * @param burn_in burn-in time
+ * @param burn_between burn-between time
+ * @param seed random seed for RNG
+ * @param temperature sampling temperature
+ */
 void
 Sampler::sampleSequences(arma::Cube<int>* p,
                          size_t walkers,
@@ -201,6 +258,15 @@ Sampler::sampleSequences(arma::Cube<int>* p,
   return;
 };
 
+/**
+ * @brief Sample independent sequences (Metropolis-Hastings).
+ *
+ * @param ptr address of arma::Mat where sampled sequeces are stored
+ * @param walkers number of independent trajectories
+ * @param burn_in burn-in time
+ * @param seed random seed for RNG
+ * @param temperature sampling temperature
+ */
 void
 Sampler::sampleSequences(arma::Mat<int>* ptr,
                          size_t walkers,
@@ -253,6 +319,18 @@ Sampler::sampleSequences(arma::Mat<int>* ptr,
   return;
 };
 
+/**
+ * @brief Sample MCMC trajectories of sequences (Zanella).
+ *
+ * @param p address of arma::Cube where sampled sequeces are stored
+ * @param walkers number of independent trajectories
+ * @param samples_per_walk number of samples per trajectory
+ * @param burn_in burn-in time
+ * @param burn_between burn-between time
+ * @param seed random seed for RNG
+ * @param mode transform mode (sqrt or barker)
+ * @param temperature sampling temperature
+ */
 void
 Sampler::sampleSequencesZanella(arma::Cube<int>* p,
                                 size_t walkers,
@@ -499,6 +577,16 @@ Sampler::sampleSequencesZanella(arma::Cube<int>* p,
   return;
 };
 
+/**
+ * @brief Sample independent sequences (Zanella).
+ *
+ * @param ptr address of arma::Mat where sampled sequeces are stored
+ * @param walkers number of independent trajectories
+ * @param burn_in burn-in time
+ * @param seed random seed for RNG
+ * @param mode transform mode (sqrt or barker)
+ * @param temperature sampling temperature
+ */
 void
 Sampler::sampleSequencesZanella(arma::Mat<int>* ptr,
                                 size_t walkers,

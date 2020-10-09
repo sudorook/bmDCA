@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <armadillo>
 #include <cstdlib>
 #include <fstream>
@@ -8,6 +25,9 @@
 
 #include "msa.hpp"
 
+/**
+ * @brief Print command line usage.
+ */
 void
 print_usage(void)
 {
@@ -29,6 +49,14 @@ print_usage(void)
   std::cout << "  -h: print usage (i.e. this message)" << std::endl;
 }
 
+/**
+ * @brief Process a multiple sequence alignment
+ *
+ * @return return status
+ *
+ * Compute sequence weights, filter similar sequences, and remove gapped
+ * sequences and positions.
+ */
 int
 main(int argc, char* argv[])
 {
@@ -67,7 +95,7 @@ main(int argc, char* argv[])
       case 'r':
         reweight_first = true;
         break;
-      case 'k':
+      case 'q':
         keep_seq.push_back(std::stoi(optarg));
         break;
       case 'p':
@@ -108,6 +136,14 @@ main(int argc, char* argv[])
   std::cout << "reading sequences... " << std::flush;
   MSA msa = MSA(infile, weight_file, is_numeric);
   std::cout << "done" << std::endl;
+
+  if (keep_seq.size() > 0) {
+    msa.setKeepSequences(keep_seq);
+  }
+
+  if (keep_pos.size() > 0) {
+    msa.setKeepPositions(keep_pos);
+  }
 
   if (reweight_first) {
     if ((reweighting_threshold < 1) & (similarity_threshold >= 0)) {

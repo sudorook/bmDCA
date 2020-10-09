@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
@@ -6,36 +23,48 @@
 
 #define BINS 201
 
+/**
+ * @brief Structure for storing 1D histograms.
+ */
 typedef struct
 {
-  arma::Mat<unsigned long long int> range;
-  int bins = BINS;
-  double bin_width;
-  double min = 0;
-  double max = 1;
+  arma::Mat<unsigned long long int> range; ///< histogram counts
+  int bins = BINS;                         ///< number of bins in histogram
+  double bin_width;                        ///< width of bins
+  double min = 0;                          ///< minimum value
+  double max = 1;                          ///< maximum value
 } histogram1d;
 
+/**
+ * @brief Structure for storing 2D histograms.
+ */
 typedef struct
 {
-  arma::Mat<unsigned long long int> grid;
-  int bins = BINS;
-  double bin_width;
-  double min = 0;
-  double max = 1;
+  arma::Mat<unsigned long long int> grid; ///< histogram counts
+  int bins = BINS;                        ///< number of bins in histogram
+  double bin_width;                       ///< width of bins
+  double min = 0;                         ///< minimum value
+  double max = 1;                         ///< maximum value
 } histogram2d;
 
+/**
+ * @brief Structure for parameters of linear fit.
+ */
 typedef struct
 {
-  double a;
-  double b;
-  double R2;
+  double a;  ///< intercept
+  double b;  ///< slope
+  double R2; ///< r^2
 } linear_model;
 
+/**
+ * @brief Wrapper class for storing a FASTA sequence.
+ */
 class SeqRecord
 {
 private:
-  const std::string header;
-  const std::string sequence;
+  const std::string header;   ///< sequence header
+  const std::string sequence; ///< sequence
 
 public:
   SeqRecord(std::string, std::string);
@@ -45,10 +74,13 @@ public:
   std::string getSequence();
 };
 
+/**
+ * @brief Structure for storing Potts models.
+ */
 typedef struct
 {
-  arma::field<arma::Mat<double>> J;
-  arma::Mat<double> h;
+  arma::field<arma::Mat<double>> J; ///< couplings
+  arma::Mat<double> h;              ///< fields
 } potts_model;
 
 potts_model loadPottsModel(std::string, std::string);

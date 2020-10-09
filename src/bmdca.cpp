@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <iostream>
 #include <string>
 #include <sys/stat.h>
@@ -7,6 +24,9 @@
 #include "msa.hpp"
 #include "run.hpp"
 
+/**
+ * @brief Print command line usage.
+ */
 void
 print_usage(void)
 {
@@ -26,17 +46,22 @@ print_usage(void)
   std::cout << "  -f: force a restart of the inference loop" << std::endl;
 };
 
+/**
+ * @brief Run inference loop with input MSA(s).
+ *
+ * @return return status
+ */
 int
 main(int argc, char* argv[])
 {
-  std::string train_file;
-  std::string train_weight_file;
+  std::string train_file;           // file string for training MSA
+  std::string train_weight_file;    // file string for training sequence weights
 
-  std::string validate_file;
-  std::string validate_weight_file;
+  std::string validate_file;        // file string for validation MSA
+  std::string validate_weight_file; // file string for validation weights
 
-  std::string config_file;
-  std::string dest_dir = ".";
+  std::string config_file;          // file string for bmDCA config file
+  std::string dest_dir = ".";       // output destination directory
 
   bool is_numeric = false;
   bool force_restart = false;
@@ -108,12 +133,13 @@ main(int argc, char* argv[])
   // Parse the multiple sequence alignment.
   msa_train = new MSA(train_file, train_weight_file, is_numeric);
 
+  // Only load the validation MSA if a validation MSA file is given.
   if (!validate_file.empty()) {
     msa_validate = new MSA(validate_file, validate_weight_file, is_numeric);
   }
 
   Sim sim = Sim(msa_train, msa_validate, config_file, dest_dir, force_restart);
-  sim.run();
+  sim.run(); // run inference loop
 
   delete msa_train;
   delete msa_validate;

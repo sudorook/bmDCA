@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "msa.hpp"
 
 #include <armadillo>
@@ -15,6 +32,13 @@
 #define AA_ALPHABET_SIZE 21
 #endif
 
+/**
+ * @brief Constructor for reading MSA (and weights) from file.
+ *
+ * @param msa_file file string for input MSA
+ * @param weight_file file string for input MSA weights
+ * @param is_numeric_msa (bool) flag for input MSA format
+ */
 MSA::MSA(std::string msa_file, std::string weight_file, bool is_numeric_msa)
 {
   if (is_numeric_msa) {
@@ -33,6 +57,14 @@ MSA::MSA(std::string msa_file, std::string weight_file, bool is_numeric_msa)
   }
 };
 
+/**
+ * @brief Constructor for existing MSA matrix (arma::Mat).
+ *
+ * @param alignment arma::Mat containing numerical alignment
+ * @param M number of sequences
+ * @param N number of positions
+ * @param Q number of states
+ */
 MSA::MSA(arma::Mat<int> alignment, int M, int N, int Q)
   : alignment(alignment)
   , M(M)
@@ -42,6 +74,15 @@ MSA::MSA(arma::Mat<int> alignment, int M, int N, int Q)
   sequence_weights = arma::Col<double>(M, arma::fill::ones);
 };
 
+/**
+ * @brief Constructor for existing MSA matrix and weights vector.
+ *
+ * @param alignment arma::Mat containing numerical alignment
+ * @param weights arma::Col containing sequence weights
+ * @param M number of sequences
+ * @param N number of positions
+ * @param Q number of states
+ */
 MSA::MSA(arma::Mat<int> alignment,
          arma::Col<double> weights,
          int M,
@@ -53,6 +94,11 @@ MSA::MSA(arma::Mat<int> alignment,
   , Q(Q)
   , sequence_weights(weights){};
 
+/**
+ * @brief Read numerical MSA from file.
+ *
+ * @param numeric_msa_file input numeric msa file string
+ */
 void
 MSA::readInputNumericMSA(std::string numeric_msa_file)
 {
@@ -64,7 +110,7 @@ MSA::readInputNumericMSA(std::string numeric_msa_file)
     std::exit(EXIT_FAILURE);
   }
 
-  input_stream >> M >> N >> Q;
+  input_stream >> M >> N >> Q; // read header
   alignment = arma::Mat<int>(M, N);
 
   int counter = 0;
@@ -84,6 +130,11 @@ MSA::readInputNumericMSA(std::string numeric_msa_file)
   }
 }
 
+/**
+ * @brief Read sequence weights from file.
+ *
+ * @param weights_file file string for input sequence weights.
+ */
 void
 MSA::readSequenceWeights(std::string weights_file)
 {
@@ -110,6 +161,11 @@ MSA::readSequenceWeights(std::string weights_file)
   }
 }
 
+/**
+ * @brief Read FASTA-format input MSA.
+ *
+ * @param msa_file file string for input MSA.
+ */
 void
 MSA::readInputMSA(std::string msa_file)
 {
@@ -145,6 +201,9 @@ MSA::readInputMSA(std::string msa_file)
   input_stream.close();
 };
 
+/**
+ * @brief Convert a FASTA-formatted alignment into a numerical matrix.
+ */
 void
 MSA::makeNumericalMatrix(void)
 {
@@ -252,6 +311,11 @@ MSA::makeNumericalMatrix(void)
   }
 };
 
+/**
+ * @brief Write numerical alignment to disk.
+ *
+ * @param output_file file string for output file
+ */
 void
 MSA::writeMatrix(std::string output_file)
 {
@@ -268,6 +332,9 @@ MSA::writeMatrix(std::string output_file)
   }
 };
 
+/**
+ * @brief Print the sequences.
+ */
 void
 MSA::printAlignment(void)
 {
@@ -278,6 +345,13 @@ MSA::printAlignment(void)
   }
 };
 
+/**
+ * @brief Count the number of valid positions in a sequence.
+ *
+ * @param sequence sequence string
+ *
+ * @return number of positions
+ */
 int
 MSA::getSequenceLength(std::string sequence)
 {
@@ -319,12 +393,20 @@ MSA::getSequenceLength(std::string sequence)
   return valid_aa_count;
 };
 
+/**
+ * @brief Compute sequence weights based on a similarity threshold.
+ *
+ * @param threshold for the fraction of allowable sequence similarity
+ */
 void
 MSA::computeSequenceWeights(double threshold)
 {
   sequence_weights = arma::Col<double>(M, arma::fill::ones);
   arma::Mat<int> alignment_T = alignment.t();
 
+  // arma::Mat is stored in column-major format, but sequences are stored in
+  // rows. Run operations on transposed alignment matrix to keep things in the
+  // same cache lines.
 #pragma omp parallel
   {
 #pragma omp for
@@ -350,6 +432,15 @@ MSA::computeSequenceWeights(double threshold)
   sequence_weights = 1. / sequence_weights;
 };
 
+/**
+ * @brief Remove sequences above a threshold sequence similarity.
+ *
+ * @param threshold similarity threshold
+ * @param verbose flag to print which sequences are pruned
+ *
+ * If two (or more) sequences are too similary, _both_ (or _all_) are removed
+ * from the alignment.
+ */
 void
 MSA::filterSimilarSequences(double threshold, bool verbose)
 {
@@ -379,6 +470,8 @@ MSA::filterSimilarSequences(double threshold, bool verbose)
     }
   }
 
+  // Collect row indices for sequences to remove, but first make sure to keep
+  // sequences that are explicitly protected.
   arma::uvec bad_sequences = arma::find(sequence_status == 1);
   for (size_t i = 0; i < seq_to_keep.size(); i++) {
     bad_sequences.shed_rows(arma::find(bad_sequences == seq_to_keep[i]));
@@ -393,10 +486,48 @@ MSA::filterSimilarSequences(double threshold, bool verbose)
     }
     std::cout << std::flush;
   }
-  alignment.shed_rows(bad_sequences);
-  M = alignment.n_rows;
+  alignment.shed_rows(bad_sequences); // drop too-similar sequences
+  M = alignment.n_rows; // re-set the number of sequences
+
+  // Once sequences are removed, the indices for sequences to keep need to be
+  // updated.
+  for (size_t i = 0; i < seq_to_keep.size(); i++) {
+    int offset = 0;
+    for (size_t j = 0; j < bad_sequences.size(); j++) {
+      if (bad_sequences.at(j) < seq_to_keep.at(i)) {
+        offset++;
+      }
+    }
+    seq_to_keep.at(i) -= offset;
+  }
 };
 
+/**
+ * @brief Set position indicies to protect from processing.
+ *
+ * @param keep vector of indices
+ */
+void
+MSA::setKeepPositions(std::vector<int> keep) {
+  pos_to_keep = keep;
+};
+
+/**
+ * @brief Set sequence indicies to protect from processing.
+ *
+ * @param keep vector of indices
+ */
+void
+MSA::setKeepSequences(std::vector<int> keep) {
+  seq_to_keep = keep;
+};
+
+/**
+ * @brief Remove sequences that have too many gaps.
+ *
+ * @param seq_threshold maximum tolerable fraction of gaps
+ * @param verbose flag to print which sequences are removed
+ */
 void
 MSA::filterSequenceGaps(double seq_threshold, bool verbose)
 {
@@ -416,6 +547,8 @@ MSA::filterSequenceGaps(double seq_threshold, bool verbose)
     }
   }
 
+  // Collect row indices for sequences to remove, but first make sure to keep
+  // sequences that are explicitly protected.
   arma::uvec bad_sequences = arma::find(seq_gap_counts > seq_gap_cutoff);
   for (size_t i = 0; i < seq_to_keep.size(); i++) {
     bad_sequences.shed_rows(arma::find(bad_sequences == seq_to_keep[i]));
@@ -430,10 +563,28 @@ MSA::filterSequenceGaps(double seq_threshold, bool verbose)
     }
     std::cout << std::flush;
   }
-  alignment.shed_rows(bad_sequences);
-  M = alignment.n_rows;
+  alignment.shed_rows(bad_sequences); // drop overly-gapped sequences
+  M = alignment.n_rows; // re-set the number of sequences
+
+  // Once sequences are removed, the indices for sequences to keep need to be
+  // updated.
+  for (size_t i = 0; i < seq_to_keep.size(); i++) {
+    int offset = 0;
+    for (size_t j = 0; j < bad_sequences.size(); j++) {
+      if (bad_sequences.at(j) < seq_to_keep.at(i)) {
+        offset++;
+      }
+    }
+    seq_to_keep.at(i) -= offset;
+  }
 };
 
+/**
+ * @brief Remove positions with too many gaps.
+ *
+ * @param pos_threshold maximum tolerable fraction of gaps
+ * @param verbose flag to print the positions removed
+ */
 void
 MSA::filterPositionGaps(double pos_threshold, bool verbose)
 {
@@ -453,6 +604,8 @@ MSA::filterPositionGaps(double pos_threshold, bool verbose)
     }
   }
 
+  // Collect column indices for positions to remove, but first make sure to
+  // keep positions that are explicitly protected.
   arma::uvec bad_positions = arma::find(pos_gap_counts > pos_gap_cutoff);
   for (size_t i = 0; i < pos_to_keep.size(); i++) {
     bad_positions.shed_rows(arma::find(bad_positions == pos_to_keep[i]));
@@ -467,10 +620,25 @@ MSA::filterPositionGaps(double pos_threshold, bool verbose)
     }
     std::cout << std::flush;
   }
-  alignment.shed_cols(bad_positions);
-  N = (int)alignment.n_cols;
+  alignment.shed_cols(bad_positions); // drop overly-gapped positions
+  N = (int)alignment.n_cols; // re-set the number of positions
+
+  // Once positions are removed, the indices for positions to keep need to be
+  // updated.
+  for (size_t i = 0; i < pos_to_keep.size(); i++) {
+    int offset = 0;
+    for (size_t j = 0; j < bad_positions.size(); j++) {
+      if (bad_positions.at(j) < pos_to_keep.at(i)) {
+        offset++;
+      }
+    }
+    pos_to_keep.at(i) -= offset;
+  }
 };
 
+/**
+ * @brief Compute maximum sequence similarity for each sequence.
+ */
 void
 MSA::computeHammingDistances(void)
 {
@@ -499,6 +667,11 @@ MSA::computeHammingDistances(void)
   }
 };
 
+/**
+ * @brief Write sequence weights to disk.
+ *
+ * @param output_file file string for output
+ */
 void
 MSA::writeSequenceWeights(std::string output_file)
 {
@@ -508,6 +681,11 @@ MSA::writeSequenceWeights(std::string output_file)
   }
 };
 
+/**
+ * @brief Write max sequence similarities to file.
+ *
+ * @param output_file file string for output
+ */
 void
 MSA::writeHammingDistances(std::string output_file)
 {
@@ -517,6 +695,14 @@ MSA::writeHammingDistances(std::string output_file)
   }
 };
 
+/**
+ * @brief Sample a random set of sequences from the alignment.
+ *
+ * @param size number of sequences to sample
+ * @param seed random seed for the RNG
+ *
+ * @return MSA instance with subset of sequences
+ */
 MSA
 MSA::sampleAlignment(int size, long int seed)
 {
@@ -547,6 +733,19 @@ MSA::sampleAlignment(int size, long int seed)
   return MSA(sub_alignment.t(), size, N, Q);
 };
 
+/**
+ * @brief Split an alignment into two random sets
+ *
+ * @param validation_size number of sequences in second set
+ * @param seed random seed for RNG
+ *
+ * @return vector of two MSA objects for each subset
+ *
+ * This function is used for splitting an MSA into a training set and a
+ * validation set. The validation_size corresponds to the effective number of
+ * sequences in the validation set. Weights in the two subsets correspond to
+ * the weights in the original full MSA.
+ */
 std::vector<MSA*>
 MSA::partitionAlignment(int validation_size, long int seed)
 {

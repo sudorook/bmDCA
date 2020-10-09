@@ -1,12 +1,37 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "radam.hpp"
 
 #include <armadillo>
 
 #include "utils.hpp"
 
+/**
+ * @brief RAdam constructor.
+ */
 RAdam::RAdam(void)
   : Model(){};
 
+/**
+ * @brief Load model hyperparameters from config file.
+ *
+ * @param file_name config file string
+ */
 void
 RAdam::loadHyperparameters(std::string file_name)
 {
@@ -40,6 +65,13 @@ RAdam::loadHyperparameters(std::string file_name)
   }
 };
 
+/**
+ * @brief Check that hyperparameters in config file are same as stored values.
+ *
+ * @param file_name config file string
+ *
+ * @return (bool) flag that all hyperparameters are equivalent
+ */
 bool
 RAdam::compareHyperparameters(std::string file_name)
 {
@@ -74,6 +106,12 @@ RAdam::compareHyperparameters(std::string file_name)
   return all_same;
 };
 
+/**
+ * @brief Set a hyperparameter to a specific value.
+ *
+ * @param key hyperparameter to set
+ * @param value value at which to set hyperparameter
+ */
 void
 RAdam::setHyperparameter(std::string key, std::string value)
 {
@@ -109,9 +147,22 @@ RAdam::setHyperparameter(std::string key, std::string value)
   }
 };
 
+/**
+ * @brief Check additional constraints for hyperparameter values.
+ *
+ * Function for checking any constraints on the possible values for the model
+ * hyperparameters. Empty by default.
+ */
 void
 RAdam::checkHyperparameters(void){};
 
+/**
+ * @brief Write stored hyperparameters to file
+ *
+ * @param output_file config file string
+ * @param append flag for whether or not to append the hyperparameters to the
+ * file or overwrite it
+ */
 void
 RAdam::writeHyperparameters(std::string output_file, bool append)
 {
@@ -138,6 +189,14 @@ RAdam::writeHyperparameters(std::string output_file, bool append)
   stream.close();
 };
 
+/**
+ * @brief Compare the value of a specific hyperparameter against a given value.
+ *
+ * @param key name of the hyperparameter to check
+ * @param value value against which to check the 'key' hyperparameter.
+ *
+ * @return (bool) flag for whether the stored and given values are equal
+ */
 bool
 RAdam::compareHyperparameter(std::string key, std::string value)
 {
@@ -175,6 +234,15 @@ RAdam::compareHyperparameter(std::string key, std::string value)
   return same;
 };
 
+/**
+ * @brief Check that all the necessary data exists to reload a given step.
+ *
+ * @param step iteration to check
+ * @param output_binary flag for whether to look for binary data (.bin) or text
+ * (.txt)
+ *
+ * @return (bool) flag for whether the necessary files were found
+ */
 bool
 RAdam::isValidStep(int step, bool output_binary)
 {
@@ -204,6 +272,9 @@ RAdam::isValidStep(int step, bool output_binary)
   return valid;
 };
 
+/**
+ * @brief Initialize the model parameters.
+ */
 void
 RAdam::initialize(void)
 {
@@ -267,6 +338,9 @@ RAdam::initialize(void)
   gradient.h = arma::Mat<double>(Q, N, arma::fill::zeros);
 };
 
+/**
+ * @brief Re-initialize the model.
+ */
 void
 RAdam::reset()
 {
@@ -316,6 +390,13 @@ RAdam::reset()
   }
 };
 
+/**
+ * @brief Re-load the model at a given step.
+ *
+ * @param step iteration to check
+ * @param output_binary flag for whether to look for binary data (.bin) or text
+ * (.txt)
+ */
 void
 RAdam::restore(int step, bool output_binary)
 {
@@ -360,6 +441,9 @@ RAdam::restore(int step, bool output_binary)
   }
 };
 
+/**
+ * @brief Update the model parameters using the sampled sequence statistics.
+ */
 void
 RAdam::update(void)
 {
@@ -372,6 +456,9 @@ RAdam::update(void)
   }
 };
 
+/**
+ * @brief Update the gradients and compute the 1p/2p RMS error.
+ */
 void
 RAdam::updateGradients(void)
 {
@@ -447,6 +534,9 @@ RAdam::updateGradients(void)
   return;
 };
 
+/**
+ * @brief Update the first moment and second moment estimates.
+ */
 void
 RAdam::updateMoments(void)
 {
@@ -476,6 +566,9 @@ RAdam::updateMoments(void)
   }
 };
 
+/**
+ * @brief Update the model parameters using the updated gradients and moments.
+ */
 void
 RAdam::updateParameters(void)
 {
@@ -549,6 +642,12 @@ RAdam::updateParameters(void)
   }
 };
 
+/**
+ * @brief Write the current data to disk.
+ *
+ * @param str ID string for the output files.
+ * @param output_binary flag for whether to write text or binary files.
+ */
 void
 RAdam::writeData(std::string str, bool output_binary)
 {
@@ -583,6 +682,16 @@ RAdam::writeData(std::string str, bool output_binary)
   }
 };
 
+/**
+ * @brief Delete the existing model data files for a given step.
+ *
+ * @param step iteration to check
+ * @param output_binary flag for whether to look for binary data (.bin) or text
+ * (.txt)
+ *
+ * This function is for clearing out steps with missing or incomplete data,
+ * such as when the program is terminated in the middle of disk writes.
+ */
 void
 RAdam::deleteStep(int step, bool output_binary)
 {
@@ -638,6 +747,16 @@ RAdam::deleteStep(int step, bool output_binary)
   }
 };
 
+/**
+ * @brief Write the necessary data to be able to restart the inference.
+ *
+ * @param step current inference iteration
+ * @param output_binary flag for whether to write text or binary files.
+ *
+ * This function is used to write all the data for restarting a given step,
+ * which for Adam is the current and previous parameters, gradients, and 1st
+ * and 2nd moments.
+ */
 void
 RAdam::writeStep(int step, bool output_binary)
 {
@@ -682,6 +801,12 @@ RAdam::writeStep(int step, bool output_binary)
   }
 };
 
+/**
+ * @brief Write the parameters to disk in arma::binary format.
+ *
+ * @param output_file_h file string for fields
+ * @param output_file_J file string for couplings
+ */
 void
 RAdam::writeParams(std::string output_file_h, std::string output_file_J)
 {
@@ -689,6 +814,11 @@ RAdam::writeParams(std::string output_file_h, std::string output_file_J)
   params.J.save(output_file_J, arma::arma_binary);
 };
 
+/**
+ * @brief Write the parameters to disk in text format (all 1 file).
+ *
+ * @param output_file file string for fields and couplings
+ */
 void
 RAdam::writeParamsAscii(std::string output_file)
 {
@@ -718,6 +848,12 @@ RAdam::writeParamsAscii(std::string output_file)
   }
 };
 
+/**
+ * @brief Write the previous step parameters to disk in arma::binary format.
+ *
+ * @param output_file_h file string for fields
+ * @param output_file_J file string for couplings
+ */
 void
 RAdam::writeParamsPrevious(std::string output_file_h, std::string output_file_J)
 {
@@ -725,6 +861,11 @@ RAdam::writeParamsPrevious(std::string output_file_h, std::string output_file_J)
   params_prev.J.save(output_file_J, arma::arma_binary);
 };
 
+/**
+ * @brief Write the previous step parameters to disk in text format (1 file).
+ *
+ * @param output_file file string for fields and couplings
+ */
 void
 RAdam::writeParamsPreviousAscii(std::string output_file)
 {
@@ -754,6 +895,12 @@ RAdam::writeParamsPreviousAscii(std::string output_file)
   }
 };
 
+/**
+ * @brief Write the 1st moment to disk in arma::binary format.
+ *
+ * @param output_file_h file string for fields
+ * @param output_file_J file string for couplings
+ */
 void
 RAdam::writeMoment1(std::string output_file_h, std::string output_file_J)
 {
@@ -761,6 +908,12 @@ RAdam::writeMoment1(std::string output_file_h, std::string output_file_J)
   moment1.J.save(output_file_J, arma::arma_binary);
 };
 
+/**
+ * @brief Write the 2nd moment to disk in arma::binary format.
+ *
+ * @param output_file_h file string for fields
+ * @param output_file_J file string for couplings
+ */
 void
 RAdam::writeMoment2(std::string output_file_h, std::string output_file_J)
 {
@@ -768,6 +921,11 @@ RAdam::writeMoment2(std::string output_file_h, std::string output_file_J)
   moment2.J.save(output_file_J, arma::arma_binary);
 };
 
+/**
+ * @brief Write the 1st moment to disk in text format (all 1 file).
+ *
+ * @param output_file file string for fields and couplings
+ */
 void
 RAdam::writeMoment1Ascii(std::string output_file)
 {
@@ -797,6 +955,11 @@ RAdam::writeMoment1Ascii(std::string output_file)
   }
 };
 
+/**
+ * @brief Write the 2nd moment to disk in text format (all 1 file).
+ *
+ * @param output_file file string for fields and couplings
+ */
 void
 RAdam::writeMoment2Ascii(std::string output_file)
 {
@@ -826,6 +989,12 @@ RAdam::writeMoment2Ascii(std::string output_file)
   }
 };
 
+/**
+ * @brief Write the gradients to disk in arma::binary format.
+ *
+ * @param output_file_h file string for fields
+ * @param output_file_J file string for couplings
+ */
 void
 RAdam::writeGradient(std::string output_file_h, std::string output_file_J)
 {
@@ -833,6 +1002,11 @@ RAdam::writeGradient(std::string output_file_h, std::string output_file_J)
   gradient.J.save(output_file_J, arma::arma_binary);
 };
 
+/**
+ * @brief Write the gradients to disk in text format (all 1 file).
+ *
+ * @param output_file file string for fields and couplings
+ */
 void
 RAdam::writeGradientAscii(std::string output_file)
 {

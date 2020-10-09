@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "utils.hpp"
 
 #include <cstdio>
@@ -7,10 +24,19 @@
 #include <string>
 #include <sys/types.h>
 
+/**
+ * @brief SeqRecord constructor.
+ *
+ * @param h header from FASTA file
+ * @param s sequence from FASTA file
+ */
 SeqRecord::SeqRecord(std::string h, std::string s)
   : header(h)
   , sequence(s){};
 
+/**
+ * @brief Print SeqRecord header and sequences to std out.
+ */
 void
 SeqRecord::print(void)
 {
@@ -18,6 +44,11 @@ SeqRecord::print(void)
   std::cout << sequence << std::endl;
 };
 
+/**
+ * @brief Combine header and sequences into one string.
+ *
+ * @return header + sequence string
+ */
 std::string
 SeqRecord::getRecord(void)
 {
@@ -25,18 +56,36 @@ SeqRecord::getRecord(void)
   return record_string;
 };
 
+/**
+ * @brief Getter function for SeqRecord header.
+ *
+ * @return sequence header
+ */
 std::string
 SeqRecord::getHeader(void)
 {
   return header;
 };
 
+/**
+ * @brief Getter function for SeqRecord sequence.
+ *
+ * @return sequence
+ */
 std::string
 SeqRecord::getSequence(void)
 {
   return sequence;
 };
 
+/**
+ * @brief Load binary Potts model into memory.
+ *
+ * @param h_file file string for fields input
+ * @param J_file file string for couplings input
+ *
+ * @return potts_model structure with fields and couplings
+ */
 potts_model
 loadPottsModel(std::string h_file, std::string J_file)
 {
@@ -46,6 +95,13 @@ loadPottsModel(std::string h_file, std::string J_file)
   return params;
 };
 
+/**
+ * @brief Load ASCII Potts model into memory.
+ *
+ * @param parameters_file file string for input parameters
+ *
+ * @return potts_model structure with fields and couplings
+ */
 potts_model
 loadPottsModelAscii(std::string parameters_file)
 {
@@ -60,6 +116,9 @@ loadPottsModelAscii(std::string parameters_file)
   int N = 0;
   int Q = 0;
 
+  // First, run through the file to figure out the number of states and number
+  // of positions. Necessary for knowing how much memory to allocate for the
+  // potts_model before populating it.
   int count = 1;
   int n1, n2, aa1, aa2;
   double value;
@@ -85,6 +144,8 @@ loadPottsModelAscii(std::string parameters_file)
   input_stream.clear();
   input_stream.seekg(0);
 
+  // Do a second pass to load the parameters to the correct positions in the
+  // potts_model structure.
   potts_model params;
   params.h = arma::Mat<double>(Q, N, arma::fill::zeros);
   params.J = arma::field<arma::Mat<double>>(N, N);
@@ -110,6 +171,11 @@ loadPottsModelAscii(std::string parameters_file)
   return params;
 };
 
+/**
+ * @brief Convert binary stats file into text format.
+ *
+ * @param stats_file file string for output
+ */
 void
 convertFrequencyToAscii(std::string stats_file)
 {
@@ -204,10 +270,15 @@ convertFrequencyToAscii(std::string stats_file)
   }
 };
 
+/**
+ * @brief Convert binary parameters to text.
+ *
+ * @param h_file file string for fields input
+ * @param J_file file string for couplings input
+ */
 void
 convertParametersToAscii(std::string h_file, std::string J_file)
 {
-
   // Check file extensions and parse out file names.
   int idx = h_file.find_last_of(".");
   std::string h_name = h_file.substr(0, idx);
@@ -275,6 +346,13 @@ convertParametersToAscii(std::string h_file, std::string J_file)
   return;
 };
 
+/**
+ * @brief Step function.
+ *
+ * @param x input value
+ *
+ * @return 1 or 0
+ */
 int
 Theta(double x)
 {
@@ -283,6 +361,13 @@ Theta(double x)
   return 0;
 };
 
+/**
+ * @brief Delta function.
+ *
+ * @param x input value
+ *
+ * @return 1 or 0
+ */
 int
 Delta(double x)
 {
@@ -291,6 +376,14 @@ Delta(double x)
   return 0;
 };
 
+/**
+ * @brief Return larger of two values
+ *
+ * @param a first value
+ * @param b second value
+ *
+ * @return larger of a or b
+ */
 double
 Max(double a, double b)
 {
@@ -299,6 +392,14 @@ Max(double a, double b)
   return b;
 };
 
+/**
+ * @brief Return smaller of two values
+ *
+ * @param a first value
+ * @param b second value
+ *
+ * @return smaller of a or b
+ */
 double
 Min(double a, double b)
 {
@@ -307,6 +408,13 @@ Min(double a, double b)
   return b;
 };
 
+/**
+ * @brief Delete a file.
+ *
+ * @param filename file string for input
+ *
+ * @return 0 (success) or 1 (failure)
+ */
 int
 deleteFile(std::string filename)
 {
@@ -322,6 +430,13 @@ deleteFile(std::string filename)
   return 0;
 };
 
+/**
+ * @brief Check that file exists in filesystem.
+ *
+ * @param filename file string for input
+ *
+ * @return 0 (success) or 1 (failure)
+ */
 bool
 checkFileExists(std::string filename)
 {
@@ -336,6 +451,11 @@ checkFileExists(std::string filename)
   }
 };
 
+/**
+ * @brief Delete all files within a directory.
+ *
+ * @param directory input directory
+ */
 void
 deleteAllFiles(std::string directory)
 {
@@ -358,6 +478,13 @@ deleteAllFiles(std::string directory)
   return;
 };
 
+/**
+ * @brief Map integer to amino acid (char).
+ *
+ * @param n (int) input amino acid
+ *
+ * @return  (char)amino acid
+ */
 char
 convertAA(int n)
 {
@@ -430,6 +557,12 @@ convertAA(int n)
   return aa;
 };
 
+/**
+ * @brief Write the counts of a 1D histogram to a file.
+ *
+ * @param file file name for output
+ * @param hist histogram1d structure to write
+ */
 void
 writeHistogram1D(std::string file, histogram1d hist)
 {
@@ -443,12 +576,20 @@ writeHistogram1D(std::string file, histogram1d hist)
   return;
 };
 
+/**
+ * @brief Write the counts of a 2D histogram to disk.
+ *
+ * @param file file name for output
+ * @param hist histogram2d structure to write
+ */
 void
 writeHistogram2D(std::string file, histogram2d hist)
 {
   std::ofstream output_stream(file);
   int N1 = hist.grid.n_rows;
   int N2 = hist.grid.n_cols;
+
+  // Store as 'X\tY\tvalue'
   for (int i = 0; i < N1; i++) {
     for (int j = 0; j < N2; j++) {
       output_stream << hist.min + i * hist.bin_width << "\t"
@@ -460,6 +601,12 @@ writeHistogram2D(std::string file, histogram2d hist)
   return;
 };
 
+/**
+ * @brief Write parameters for linear fit to disk.
+ *
+ * @param file file name for output
+ * @param model linear model to save
+ */
 void
 writeLinearModel(std::string file, linear_model model)
 {

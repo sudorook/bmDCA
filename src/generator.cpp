@@ -1,9 +1,34 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "generator.hpp"
 
 #include "sample_stats.hpp"
 #include "sampler.hpp"
 #include "utils.hpp"
 
+/**
+ * @brief Generator constructor.
+ *
+ * @param params input parameters
+ * @param n number of positions
+ * @param q number of states
+ * @param config_file file string for hyperparameter file
+ */
 Generator::Generator(potts_model params, int n, int q, std::string config_file)
   : N(n)
   , Q(q)
@@ -14,15 +39,29 @@ Generator::Generator(potts_model params, int n, int q, std::string config_file)
   }
 };
 
+/**
+ * @brief Generator destructor.
+ */
 Generator::~Generator(void)
 {
   delete sample_stats;
   delete sampler;
 };
 
+/**
+ * @brief Function for where hyperparameter checks can go...
+ *
+ * Empty for now, but if checks for whether the input hyperparameters are
+ * sensible are desired in future, this is where they go.
+ */
 void
 Generator::checkParameters(void){};
 
+/**
+ * @brief Load sampler hyperparameters from config file.
+ *
+ * @param file_name config file string
+ */
 void
 Generator::loadParameters(std::string file_name)
 {
@@ -55,6 +94,12 @@ Generator::loadParameters(std::string file_name)
   }
 };
 
+/**
+ * @brief Set a hyperparameter to a specific value.
+ *
+ * @param key hyperparameter to set
+ * @param value value at which to set hyperparameter
+ */
 void
 Generator::setParameter(std::string key, std::string value)
 {
@@ -89,9 +134,21 @@ Generator::setParameter(std::string key, std::string value)
   }
 };
 
+/**
+ * @brief Write sampled sequences in a FASTA files.
+ *
+ * @param output_file file string for output file
+ *
+ * Converts numerical sequences to letters and stores the output in FASTA
+ * format.
+ */
 void
 Generator::writeAASequences(std::string output_file)
 {
+  // Label each sequence such that each sequence has a unique number in the
+  // FASTA header.  If more than 1 sequence was sampled in each trajectory, use
+  // replicate x count_per_replicate + count as the label. Otherwise, just use
+  // the array index number.
   if (samples_per_walk > 1) {
     int M = samples_3d.n_rows;
     int N = samples_3d.n_cols;
@@ -132,36 +189,58 @@ Generator::writeAASequences(std::string output_file)
   }
 };
 
+/**
+ * @brief Update the burn-in and burn-between times.
+ *
+ * @return (bool) flag for whether to resample the sequences.
+ *
+ * This function is called when M > 1 sequences are sampled per MC trajectory.
+ * If sequences along a trajectory are too correlated, burn-beteween time is
+ * increased. If energy after burn-in and after burn-in + M x burn-between is
+ * too much lower, then burn-in time is increased.
+ */
 bool
 Generator::checkErgodicity(void)
 {
   arma::Col<double> stats = sample_stats->getStats();
 
-  double e_start = stats.at(0);
-  double e_end = stats.at(2);
-  double e_err = stats.at(4);
+  double e_start = stats.at(0); // average starting energy for MC trajectory
+  double e_end = stats.at(2);   // average ending energy
+  double e_err = stats.at(4);   // combined starting and ending variance
 
-  double auto_corr = stats.at(7);
-  double cross_corr = stats.at(8);
-  double check_corr = stats.at(9);
-  double cross_check_err = stats.at(14);
-  double auto_cross_err = stats.at(13);
+  double auto_corr = stats.at(7);        // sequence correlations for trajectory start/end
+  double cross_corr = stats.at(8);       // correlations between trajectories
+  double check_corr = stats.at(9);       // correlations for mid-trajectory (length/10) and end
+  double cross_check_err = stats.at(14); // combined auto+cross variance
+  double auto_cross_err = stats.at(13);  // combined check+cross variance
 
-  bool flag_deltat_up = true;
-  bool flag_deltat_down = true;
-  bool flag_twaiting_up = true;
-  bool flag_twaiting_down = true;
+  bool flag_deltat_up = true;     // flag to increase burn-between time
+  bool flag_deltat_down = true;   // flag to decrease burn-between time
+  bool flag_twaiting_up = true;   // flag to increase burn-in time
+  bool flag_twaiting_down = true; // flag to decrease burn-in time
 
+  // If the difference in sequence correlations within and between trajectories
+  // is less than the variance, don't increase waiting time.
   if (check_corr - cross_corr <= cross_check_err) {
     flag_deltat_up = false;
   }
+
+  // If the difference in sequence correlations within and between trajectories
+  // is grater than the variance, don't decrease waiting time.
   if (auto_corr - cross_corr >= auto_cross_err) {
     flag_deltat_down = false;
   }
 
+  // If the difference in average starting (burn-in) and ending (burn-in +
+  // n_sequences x burn-between) energies along a trajectory is less than twice
+  // the variance, don't increase burn-in time.
   if (e_start - e_end <= 2 * e_err) {
     flag_twaiting_up = false;
   }
+
+  // If the difference in average ending (burn-in + n_sequences x burn-between)
+  // and starting (burn-in) energies along a trajectory is less than twice the
+  // variance, don't decrease burn-in time.
   if (e_start - e_end >= -2 * e_err) {
     flag_twaiting_down = false;
   }
@@ -184,6 +263,8 @@ Generator::checkErgodicity(void)
     std::cout << "decreasing burn-in time to " << burn_in << std::endl;
   }
 
+  // If burn-in or burn-between times were increased, then the sequences need
+  // to be resampled to ensure proper mixing.
   bool flag_mc = true;
   if (not flag_deltat_up and not flag_twaiting_up) {
     flag_mc = false;
@@ -191,6 +272,14 @@ Generator::checkErgodicity(void)
   return flag_mc;
 };
 
+/**
+ * @brief Estimate the appropriate burn-in time.
+ *
+ * Function is called when M==1 sequences are sampled per MC trajectory. It
+ * samples a small set of dummy sequences, checking the value of burn-in where
+ * mean energy after one burn-in length stable relative to multiples of that
+ * burn-in lengthn.
+ */
 void
 Generator::estimateBurnTime(void)
 {
@@ -210,7 +299,7 @@ Generator::estimateBurnTime(void)
     double e_start_sigma = arma::stddev(energy_burn.row(0), 1);
     double e_end = (arma::mean(energy_burn.row(burn_count - 1)) +
                     arma::mean(energy_burn.row(burn_count - 2))) /
-                   2;
+                   2; // lazy way to double the number of sequences from the end step
     double e_end_sigma =
       sqrt(pow(arma::stddev(energy_burn.row(burn_count - 1), 1), 2) +
            pow(arma::stddev(energy_burn.row(burn_count - 2), 1), 2));
@@ -220,24 +309,39 @@ Generator::estimateBurnTime(void)
 
     bool flag_twaiting_up = true;
     bool flag_twaiting_down = true;
+
+    // If the difference in average starting (burn-in) and ending (burn-in +
+    // n_sequences x burn-between) energies along a trajectory is less than
+    // twice the variance, don't increase burn-in time.
     if (e_start - e_end <= 2 * e_err) {
       flag_twaiting_up = false;
     }
+
+    // If the difference in average ending (burn-in + n_sequences x
+    // burn-between) and starting (burn-in) energies along a trajectory is less
+    // than twice the variance, don't decrease burn-in time.
     if (e_start - e_end >= -2 * e_err) {
       flag_twaiting_down = false;
     }
+
     if (flag_twaiting_up) {
       burn_in = (int)(round((double)burn_in * adapt_up_time));
     } else if (flag_twaiting_down) {
       burn_in = Max((int)(round((double)burn_in * adapt_down_time)), 1);
     }
+
+    // If burn-in was increased, then keep resample at the longer time.
     if (!flag_twaiting_up) {
       flag_burn = false;
     }
-    // sampler->setBurnTime(burn_in, burn_in);
   }
 };
 
+/**
+ * @brief Write the output sequences in numerical format.
+ *
+ * @param output_file file string for output file
+ */
 void
 Generator::writeNumericalSequences(std::string output_file)
 {
@@ -248,6 +352,13 @@ Generator::writeNumericalSequences(std::string output_file)
   sample_stats->writeSampleEnergies(raw_file + "_energies.txt");
 }
 
+/**
+ * @brief Run the sampler.
+ *
+ * @param n_indep_runs number of independent trajectories
+ * @param n_per_run number of samples per trajectory
+ * @param output_file file string for the output file for the sequences
+ */
 void
 Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
 {
@@ -261,6 +372,8 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
 
   checkParameters();
 
+  // Use the 2d (arma::Mat) to store sequences if only one sample per walk. Use
+  // the 3d (arma::Cube) if more than 1 sampled.
   if (samples_per_walk == 1) {
     samples_2d = arma::Mat<int>(walkers, N, arma::fill::zeros);
     sample_stats = new SampleStats2D(&samples_2d, &(model));

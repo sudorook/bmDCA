@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "sample_stats.hpp"
 
 #include <armadillo>
@@ -5,6 +22,13 @@
 
 #include "utils.hpp"
 
+/**
+ * @brief Constructor for SampleStats2D.
+ *
+ * @param s pointer to sequences (arma::Mat)
+ * @param p pointer to Potts model
+ * @param p_prev pointer to previous Potts model
+ */
 SampleStats2D::SampleStats2D(arma::Mat<int>* s,
                              potts_model* p,
                              potts_model* p_prev)
@@ -18,12 +42,18 @@ SampleStats2D::SampleStats2D(arma::Mat<int>* s,
   params_prev = p_prev;
 };
 
+/**
+ * @brief Wrapper for computing 1p/2p statistics.
+ */
 void
 SampleStats2D::computeStats(void)
 {
   computeSampleStats();
 };
 
+/**
+ * @brief Wrapper for computing sequence energies and correlations.
+ */
 void
 SampleStats2D::computeStatsExtra(void)
 {
@@ -31,18 +61,32 @@ SampleStats2D::computeStatsExtra(void)
   computeCorrelations();
 };
 
+/**
+ * @brief Wrapper for importance sampling loop.
+ */
 void
 SampleStats2D::computeStatsImportance(void)
 {
   computeSampleStatsImportance();
 };
 
+/**
+ * @brief Set burn-between time used for sampling.
+ *
+ * @param m burn-between time
+ */
 void
 SampleStats2D::setMixingTime(int m)
 {
   mixing_time = m;
 }
 
+/**
+ * @brief Write sample statistics for a step.
+ *
+ * @param step iteration number
+ * @param output_binary flag to write arma::binary or text files
+ */
 void
 SampleStats2D::writeStep(int step, bool output_binary)
 {
@@ -58,6 +102,12 @@ SampleStats2D::writeStep(int step, bool output_binary)
   writeSampleEnergies("energies_" + std::to_string(step) + ".txt");
 };
 
+/**
+ * @brief Write sample statistics.
+ *
+ * @param str label for output data
+ * @param output_binary flag to write arma::binary or text files
+ */
 void
 SampleStats2D::writeData(std::string str, bool output_binary)
 {
@@ -73,6 +123,12 @@ SampleStats2D::writeData(std::string str, bool output_binary)
   writeSampleEnergies("energies_" + str + ".txt");
 };
 
+/**
+ * @brief Return key statistics for the sampled sequences.
+ *
+ * @return arma::Col containing sequence correlations, correlation variance,
+ * and importance sampling stats.
+ */
 arma::Col<double>
 SampleStats2D::getStats(void)
 {
@@ -85,6 +141,9 @@ SampleStats2D::getStats(void)
   return stats;
 };
 
+/**
+ * @brief Compute sequence energies.
+ */
 void
 SampleStats2D::computeEnergies(void)
 {
@@ -105,6 +164,9 @@ SampleStats2D::computeEnergies(void)
   }
 };
 
+/**
+ * @brief Compute 1p and 2p statistics.
+ */
 void
 SampleStats2D::computeSampleStats(void)
 {
@@ -146,6 +208,9 @@ SampleStats2D::computeSampleStats(void)
   }
 };
 
+/**
+ * @brief Importance sampling.
+ */
 void
 SampleStats2D::computeSampleStatsImportance(void)
 {
@@ -237,6 +302,9 @@ SampleStats2D::computeSampleStatsImportance(void)
   }
 };
 
+/**
+ * @brief Compute sequence correlations.
+ */
 void
 SampleStats2D::computeCorrelations(void)
 {
@@ -270,12 +338,22 @@ SampleStats2D::computeCorrelations(void)
                            pow(2.0 * dinf / (double)(M * (M - 1)), 2));
 };
 
+/**
+ * @brief Write 1p frequencies in binary format.
+ *
+ * @param output_file file string for output
+ */
 void
 SampleStats2D::writeFrequency1p(std::string output_file)
 {
   frequency_1p.save(output_file, arma::arma_binary);
 };
 
+/**
+ * @brief Write 1p frequencies in text format.
+ *
+ * @param output_file file string for output
+ */
 void
 SampleStats2D::writeFrequency1pAscii(std::string output_file)
 {
@@ -290,12 +368,22 @@ SampleStats2D::writeFrequency1pAscii(std::string output_file)
   }
 };
 
+/**
+ * @brief Write 2p frequencies in binary format.
+ *
+ * @param output_file file string for output
+ */
 void
 SampleStats2D::writeFrequency2p(std::string output_file)
 {
   frequency_2p.save(output_file, arma::arma_binary);
 };
 
+/**
+ * @brief Write 2p frequencies in text format.
+ *
+ * @param output_file file string for output
+ */
 void
 SampleStats2D::writeFrequency2pAscii(std::string output_file)
 {
@@ -314,6 +402,11 @@ SampleStats2D::writeFrequency2pAscii(std::string output_file)
   }
 };
 
+/**
+ * @brief Write samples to disk.
+ *
+ * @param output_file file string for output
+ */
 void
 SampleStats2D::writeSamples(std::string output_file)
 {
@@ -329,6 +422,11 @@ SampleStats2D::writeSamples(std::string output_file)
   }
 };
 
+/**
+ * @brief Write sampled sequence energies to disk.
+ *
+ * @param output_file file string for output.
+ */
 void
 SampleStats2D::writeSampleEnergies(std::string output_file)
 {
@@ -339,6 +437,13 @@ SampleStats2D::writeSampleEnergies(std::string output_file)
   }
 };
 
+/**
+ * @brief Constructor for SampleStats3D.
+ *
+ * @param s pointer to sequences (arma::Cube)
+ * @param p pointer to Potts model
+ * @param p_prev pointer to previous Potts model
+ */
 SampleStats3D::SampleStats3D(arma::Cube<int>* s,
                              potts_model* p,
                              potts_model* p_prev)
@@ -353,12 +458,18 @@ SampleStats3D::SampleStats3D(arma::Cube<int>* s,
   params_prev = p_prev;
 };
 
+/**
+ * @brief Wrapper for computing 1p/2p statistics.
+ */
 void
 SampleStats3D::computeStats(void)
 {
   computeSampleStats();
 };
 
+/**
+ * @brief Wrapper for computing sequence energies and correlations.
+ */
 void
 SampleStats3D::computeStatsExtra(void)
 {
@@ -367,18 +478,32 @@ SampleStats3D::computeStatsExtra(void)
   computeCorrelations();
 };
 
+/**
+ * @brief Wrapper for importance sampling loop.
+ */
 void
 SampleStats3D::computeStatsImportance(void)
 {
   computeSampleStatsImportance();
 };
 
+/**
+ * @brief Set burn-between time used for sampling.
+ *
+ * @param m burn-between time
+ */
 void
 SampleStats3D::setMixingTime(int m)
 {
   mixing_time = m;
 }
 
+/**
+ * @brief Write sample statistics for a step.
+ *
+ * @param step iteration number
+ * @param output_binary flag to write arma::binary or text files
+ */
 void
 SampleStats3D::writeStep(int step, bool output_binary)
 {
@@ -402,6 +527,12 @@ SampleStats3D::writeStep(int step, bool output_binary)
                                 ".txt");
 };
 
+/**
+ * @brief Write sample statistics.
+ *
+ * @param str label for output data
+ * @param output_binary flag to write arma::binary or text files
+ */
 void
 SampleStats3D::writeData(std::string str, bool output_binary)
 {
@@ -422,6 +553,12 @@ SampleStats3D::writeData(std::string str, bool output_binary)
   writeSampleEnergiesRelaxation("energies_relax_" + str + ".txt");
 };
 
+/**
+ * @brief Return key statistics for the sampled sequences.
+ *
+ * @return arma::Col containing sequence correlations, correlation variance,
+ * and importance sampling stats.
+ */
 arma::Col<double>
 SampleStats3D::getStats()
 {
@@ -450,6 +587,9 @@ SampleStats3D::getStats()
   return stats;
 };
 
+/**
+ * @brief Compute sequence energies.
+ */
 void
 SampleStats3D::computeEnergies(void)
 {
@@ -473,6 +613,9 @@ SampleStats3D::computeEnergies(void)
   }
 };
 
+/**
+ * @brief Compute energy statistics along MCMC trajectories.
+ */
 void
 SampleStats3D::computeEnergiesStats(void)
 {
@@ -490,6 +633,9 @@ SampleStats3D::computeEnergiesStats(void)
   energies_relax_sigma = arma::stddev(energies, 1, 0);
 };
 
+/**
+ * @brief Compute sequence correlations.
+ */
 void
 SampleStats3D::computeCorrelations(void)
 {
@@ -589,6 +735,9 @@ SampleStats3D::computeCorrelations(void)
   err_check_auto = sqrt(pow(sigma_check, 2) + pow(sigma_auto, 2)) / sqrt(reps);
 };
 
+/**
+ * @brief Compute 1p and 2p statistics.
+ */
 void
 SampleStats3D::computeSampleStats(void)
 {
@@ -654,6 +803,9 @@ SampleStats3D::computeSampleStats(void)
   }
 };
 
+/**
+ * @brief Importance sampling.
+ */
 void
 SampleStats3D::computeSampleStatsImportance(void)
 {
@@ -777,6 +929,12 @@ SampleStats3D::computeSampleStatsImportance(void)
   }
 };
 
+/**
+ * @brief Write 1p frequencies in binary format.
+ *
+ * @param output_file file string for 1p output
+ * @param output_file_sigma file string for 1p variance output
+ */
 void
 SampleStats3D::writeFrequency1p(std::string output_file,
                                 std::string output_file_sigma)
@@ -785,6 +943,12 @@ SampleStats3D::writeFrequency1p(std::string output_file,
   frequency_1p_sigma.save(output_file_sigma, arma::arma_binary);
 };
 
+/**
+ * @brief Write 1p frequencies in text format.
+ *
+ * @param output_file file string for 1p output
+ * @param output_file_sigma file string for 1p variance output
+ */
 void
 SampleStats3D::writeFrequency1pAscii(std::string output_file,
                                      std::string output_file_sigma)
@@ -804,6 +968,12 @@ SampleStats3D::writeFrequency1pAscii(std::string output_file,
   }
 };
 
+/**
+ * @brief Write 2p frequencies in binary format.
+ *
+ * @param output_file file string for 2p output
+ * @param output_file_sigma file string for 2p variance output
+ */
 void
 SampleStats3D::writeFrequency2p(std::string output_file,
                                 std::string output_file_sigma)
@@ -812,6 +982,12 @@ SampleStats3D::writeFrequency2p(std::string output_file,
   frequency_2p_sigma.save(output_file_sigma, arma::arma_binary);
 };
 
+/**
+ * @brief Write 2p frequencies in text format.
+ *
+ * @param output_file file string for 2p output
+ * @param output_file_sigma file string for 2p variance output
+ */
 void
 SampleStats3D::writeFrequency2pAscii(std::string output_file,
                                      std::string output_file_sigma)
@@ -835,6 +1011,11 @@ SampleStats3D::writeFrequency2pAscii(std::string output_file,
   }
 };
 
+/**
+ * @brief Write samples to disk.
+ *
+ * @param output_file file string for output
+ */
 void
 SampleStats3D::writeSamples(std::string output_file)
 {
@@ -852,6 +1033,11 @@ SampleStats3D::writeSamples(std::string output_file)
   }
 };
 
+/**
+ * @brief Write sampled sequence energies to disk.
+ *
+ * @param output_file file string for output.
+ */
 void
 SampleStats3D::writeSampleEnergies(std::string output_file)
 {
@@ -864,6 +1050,11 @@ SampleStats3D::writeSampleEnergies(std::string output_file)
   }
 };
 
+/**
+ * @brief Write sequence energy trajectories to disk.
+ *
+ * @param output_file file string for output.
+ */
 void
 SampleStats3D::writeSampleEnergiesRelaxation(std::string output_file)
 {

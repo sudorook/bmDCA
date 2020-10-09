@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "msa_stats.hpp"
 
 #include <algorithm>
@@ -12,6 +29,12 @@
 
 #include "pcg_random.hpp"
 
+/**
+ * @brief MSAStats constructor.
+ *
+ * @param msa address of MSA instance
+ * @param verbose flag to print MSA info
+ */
 MSAStats::MSAStats(MSA* msa, bool verbose)
   : msa(msa)
 {
@@ -45,6 +68,7 @@ MSAStats::MSAStats(MSA* msa, bool verbose)
   aa_background_frequencies = arma::Col<double>(Q, arma::fill::ones);
 
   if (Q == 21) {
+    // fixed background frequencies
     aa_background_frequencies = { 0.000, 0.073, 0.025, 0.050, 0.061, 0.042,
                                   0.072, 0.023, 0.053, 0.064, 0.089, 0.023,
                                   0.043, 0.052, 0.040, 0.052, 0.073, 0.056,
@@ -53,9 +77,15 @@ MSAStats::MSAStats(MSA* msa, bool verbose)
     aa_background_frequencies = aa_background_frequencies / (double)Q;
   }
 
-  computeMSAStats(msa);
+  computeMSAStats();
 };
 
+/**
+ * @brief Update MSAStats with new MSA
+ *
+ * @param new_msa address of new MSA
+ * @param verbose print MSA info
+ */
 void
 MSAStats::updateMSA(MSA* new_msa, bool verbose)
 {
@@ -74,11 +104,14 @@ MSAStats::updateMSA(MSA* new_msa, bool verbose)
     std::cout << M_effective << " effective sequences" << std::endl;
   }
 
-  computeMSAStats(msa);
+  computeMSAStats();
 };
 
+/**
+ * @brief Compute the 1p and 2p statistics for an MSA.
+ */
 void
-MSAStats::computeMSAStats(MSA* msa)
+MSAStats::computeMSAStats()
 {
   frequency_1p.zeros();
   rel_entropy_1p.zeros();
@@ -164,11 +197,18 @@ MSAStats::computeMSAStats(MSA* msa)
   }
 };
 
+/**
+ * @brief Compute RMSE for multiple subsets of the MSA.
+ *
+ * @param reps number of RMSE replicates
+ * @param seed random seed for RNG
+ */
 void
 MSAStats::computeErrorMSA(int reps, long int seed)
 {
   msa_rms = arma::Col<double>(reps, arma::fill::zeros);
 
+  // parition MSA into equal subsets
   int M_1 = (int)((M + 1) / 2);
   int M_2 = (int)(M / 2);
 
@@ -206,6 +246,8 @@ MSAStats::computeErrorMSA(int reps, long int seed)
     arma::Col<double> weights_1 = arma::Col<double>(M_1, arma::fill::zeros);
     arma::Col<double> weights_2 = arma::Col<double>(M_2, arma::fill::zeros);
 
+    // Parition the MSA into two subsets. Use the full MSA sequence weights to
+    // estimate effective sequence size for each subset.
 #pragma omp parallel
     {
 #pragma omp for
@@ -308,10 +350,12 @@ MSAStats::computeErrorMSA(int reps, long int seed)
       }
     }
 
+    // Compute the difference in 1p stats between the two subsets.
     double error_1p =
       arma::accu(arma::pow(msa_1_frequency_1p - msa_2_frequency_1p, 2));
     error_1p = sqrt(error_1p / (N * Q));
 
+    // Compute the difference in 2p stats between the two subsets.
     arma::Col<double> error_2p_vec = arma::Col<double>(N, arma::fill::zeros);
 #pragma omp parallel
     {
@@ -325,6 +369,7 @@ MSAStats::computeErrorMSA(int reps, long int seed)
     }
     double error_2p = sqrt(arma::accu(error_2p_vec) / (N * (N - 1) * Q * Q));
 
+    // Compute the RMSE of the 1p and 2p stats.
     msa_rms(rep) = (error_1p + error_2p) /
                    sqrt(M_effective / (M_1_effective + M_2_effective) * 2);
   }
@@ -332,24 +377,44 @@ MSAStats::computeErrorMSA(int reps, long int seed)
   return;
 }
 
+/**
+ * @brief Getter function for number of states.
+ *
+ * @return number of states
+ */
 double
 MSAStats::getQ(void)
 {
   return Q;
 };
 
+/**
+ * @brief Getter function for number of sequences.
+ *
+ * @return number of sequences
+ */
 double
 MSAStats::getM(void)
 {
   return M;
 };
 
+/**
+ * @brief Getter function for number of positions.
+ *
+ * @return number of positions
+ */
 double
 MSAStats::getN(void)
 {
   return N;
 };
 
+/**
+ * @brief Getter function for effective number of sequences.
+ *
+ * @return number of effective sequences
+ */
 double
 MSAStats::getEffectiveM(void)
 {
@@ -409,12 +474,22 @@ MSAStats::getEffectiveM(void)
 //   }
 // };
 
+/**
+ * @brief Write 1p stats (arma::binary)
+ *
+ * @param output_file file string for output
+ */
 void
 MSAStats::writeFrequency1p(std::string output_file)
 {
   frequency_1p.save(output_file, arma::arma_binary);
 };
 
+/**
+ * @brief Write 1p stats in text format
+ *
+ * @param output_file file string for output
+ */
 void
 MSAStats::writeFrequency1pAscii(std::string output_file)
 {
@@ -429,12 +504,22 @@ MSAStats::writeFrequency1pAscii(std::string output_file)
   }
 };
 
+/**
+ * @brief Write 2p stats (arma::binary)
+ *
+ * @param output_file file string for output
+ */
 void
 MSAStats::writeFrequency2p(std::string output_file)
 {
   frequency_2p.save(output_file, arma::arma_binary);
 };
 
+/**
+ * @brief Write 2p stats in text format
+ *
+ * @param output_file file string for output
+ */
 void
 MSAStats::writeFrequency2pAscii(std::string output_file)
 {

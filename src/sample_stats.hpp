@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef SAMPLE_STATS_HPP
 #define SAMPLE_STATS_HPP
 
@@ -5,29 +22,41 @@
 
 #include "utils.hpp"
 
+/**
+ * @brief Abstract class for computing statistics for sampled sequences.
+ *
+ * Because 1p/2p statistics are more efficiently computed with different data
+ * structures depending on whether or not mutliple sequences are sampled along
+ * trajectories, the SampleStats abstract class acts as a wrapper around the
+ * key functions. SampleStats2D or SampleStats3D can be recasted to
+ * SampleStats.
+ */
 class SampleStats
 {
 public:
   SampleStats(void){};
   virtual ~SampleStats(void){};
 
-  virtual void writeStep(int, bool = true) = 0;
-  virtual void writeData(std::string, bool = true) = 0;
-  virtual void writeSamples(std::string) = 0;
-  virtual void writeSampleEnergies(std::string) = 0;
-  virtual void computeStats(void) = 0;
-  virtual void computeStatsExtra(void) = 0;
-  virtual void computeStatsImportance(void) = 0;
-  virtual void setMixingTime(int) = 0;
-  virtual arma::Col<double> getStats(void) = 0;
+  virtual void writeStep(int, bool = true) = 0;         ///< write all stats for the step
+  virtual void writeData(std::string, bool = true) = 0; ///< write all stats for the step
+  virtual void writeSamples(std::string) = 0;           ///< write the samples to disk
+  virtual void writeSampleEnergies(std::string) = 0;    ///< write the sample energies to disk
+  virtual void computeStats(void) = 0;                  ///< compute the 1p/2p statistics
+  virtual void computeStatsExtra(void) = 0;             ///< compute the energies and sequence correlations
+  virtual void computeStatsImportance(void) = 0;        ///< run an importance sampling to re-esimate parameters
+  virtual void setMixingTime(int) = 0;                  ///< set the burn-between time for the samples
+  virtual arma::Col<double> getStats(void) = 0;         ///< return important metrics
 
-  arma::Mat<double> frequency_1p;
-  arma::field<arma::Mat<double>> frequency_2p;
+  arma::Mat<double> frequency_1p;              ///< 1p frequencies
+  arma::field<arma::Mat<double>> frequency_2p; ///< 2p sample frequencies
 
 protected:
-  int mixing_time = 1;
+  int mixing_time = 1; ///< burn-between time used by sampler
 };
 
+/**
+ * @brief Class to compute sample statistics (independent).
+ */
 class SampleStats2D : public SampleStats
 {
 public:
@@ -55,23 +84,26 @@ private:
   void writeSamples(std::string);
   void writeSampleEnergies(std::string);
 
-  double Z_ratio;
-  double sumw_inv;
-  double dE_av_tot;
+  double Z_ratio;   ///< for importance sampling...
+  double sumw_inv;  ///< for importance sampling...
+  double dE_av_tot; ///< for importance sampling...
 
-  double overlap_inf;
-  double overlap_inf_sigma;
+  double overlap_inf;       ///< total sequence correlations
+  double overlap_inf_sigma; ///< variance of correlations
 
-  potts_model* params;
-  potts_model* params_prev;
-  arma::Mat<int>* samples;
-  arma::Col<double> energies;
+  potts_model* params;        ///< Potts parameters
+  potts_model* params_prev;   ///< previous Potts parameters (for importance sampling)
+  arma::Mat<int>* samples;    ///< pointer to sampled sequences
+  arma::Col<double> energies; ///< vector of energies for sampled sequences
 
-  int N;
-  int Q;
-  int M;
+  int N; ///< number of positions
+  int Q; ///< number of states
+  int M; ///< number of sampled sequences
 };
 
+/**
+ * @brief Class to compute sample statistics (MCMC).
+ */
 class SampleStats3D : public SampleStats
 {
 public:
@@ -101,46 +133,46 @@ private:
   void writeSampleEnergies(std::string);
   void writeSampleEnergiesRelaxation(std::string);
 
-  arma::Mat<double> frequency_1p_sigma;
-  arma::field<arma::Mat<double>> frequency_2p_sigma;
+  arma::Mat<double> frequency_1p_sigma;              ///< variance of 1p estimates across trajectories
+  arma::field<arma::Mat<double>> frequency_2p_sigma; ///< variance of 1p estimates across trajectories
 
-  arma::Row<double> energies_relax;
-  arma::Row<double> energies_relax_sigma;
+  arma::Row<double> energies_relax;       ///< mean energies at each step along trajectories
+  arma::Row<double> energies_relax_sigma; ///< variance of energies at each step along trajectories
 
-  arma::Col<double> overlaps;
-  arma::Col<double> overlaps_sigma;
+  arma::Col<double> overlaps;       ///< sequence correlations
+  arma::Col<double> overlaps_sigma; ///< variance in sequence correlations
 
-  double energies_start_avg;
-  double energies_start_sigma;
-  double energies_end_avg;
-  double energies_end_sigma;
-  double energies_err;
+  double energies_start_avg;   ///< average energy after burn-in
+  double energies_start_sigma; ///< variance of average energy after burn-in
+  double energies_end_avg;     ///< average energy at trajectory end
+  double energies_end_sigma;   ///< variance of average energy at trajectory end
+  double energies_err;         ///< combined variance of energy at start and end
 
-  double Z_ratio;
-  double sumw_inv;
-  double dE_av_tot;
+  double Z_ratio;   ///< for importance sampling...
+  double sumw_inv;  ///< for importance sampling...
+  double dE_av_tot; ///< for importance sampling...
 
-  double overlap_inf;
-  double overlap_inf_sigma;
-  double overlap_auto;
-  double overlap_cross;
-  double overlap_check;
-  double sigma_auto;
-  double sigma_cross;
-  double sigma_check;
-  double err_cross_auto;
-  double err_cross_check;
-  double err_check_auto;
+  double overlap_inf;       ///< total sequence correlations
+  double overlap_inf_sigma; ///< variance in total correlations
+  double overlap_auto;      ///< correlation at start and end of trajectories
+  double overlap_cross;     ///< correlations between trajectories
+  double overlap_check;     ///< correlatino at middle and end of trajectories
+  double sigma_auto;        ///< variance of auto-correlation
+  double sigma_cross;       ///< variance of cross-correlation
+  double sigma_check;       ///< variance of mid-trajectory and end correlation
+  double err_cross_auto;    ///< combined between-trajectory and within-trajectory variance (start)
+  double err_cross_check;   ///< combined between-trajectory and within-trajectory variance (middle)
+  double err_check_auto;    ///< combined within-trajectory (start) and within-trajectory variance (middke)
 
-  potts_model* params;
-  potts_model* params_prev;
-  arma::Cube<int>* samples;
-  arma::Mat<double> energies;
+  potts_model* params;        ///< Potts parameters
+  potts_model* params_prev;   ///< previous Potts parameters (for importance sampling)
+  arma::Cube<int>* samples;    ///< pointer to sampled sequences
+  arma::Col<double> energies; ///< vector of energies for sampled sequences
 
-  int reps;
-  int N;
-  int Q;
-  int M;
+  int reps; ///< number of trajectories
+  int N;    ///< number of positions
+  int Q;    ///< number of states
+  int M;    ///< number of sampled sequences per trajectory
 };
 
 #endif

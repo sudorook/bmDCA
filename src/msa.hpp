@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef MSA_HPP
 #define MSA_HPP
 
@@ -7,6 +24,13 @@
 
 #include "utils.hpp"
 
+/**
+ * @brief Class for loading, storing, and processing a MSA.
+ *
+ * The MSA class can read in sequences in FASTA or numerical format, process
+ * alignment based on similarity and gap frequencies, compute sequence weights,
+ * and sub-sample alignments.
+ */
 class MSA
 {
 public:
@@ -14,13 +38,13 @@ public:
   MSA(arma::Mat<int>, arma::Col<double>, int, int, int);
   MSA(arma::Mat<int>, int, int, int);
 
-  arma::Mat<int> alignment; // numerical multiple sequence alignment
-  int M;                    // number of sequences
-  int N;                    // number of positions
-  int Q;                    // number of amino acids
+  arma::Mat<int> alignment; ///< numerical multiple sequence alignment
+  int M;                    ///< number of sequences
+  int N;                    ///< number of positions
+  int Q;                    ///< number of amino acids
 
-  arma::Col<double> sequence_weights; // weights for each sequence
-  arma::Col<double> hamming_distances;
+  arma::Col<double> sequence_weights;  ///< weights for each sequence
+  arma::Col<double> hamming_distances; ///< hamming distances among sequences
 
   void setKeepPositions(std::vector<int>);
   void setKeepSequences(std::vector<int>);
@@ -40,15 +64,15 @@ public:
   std::vector<MSA*> partitionAlignment(int = 0, long int = 0);
 
 private:
-  std::vector<SeqRecord> seq_records;
+  std::vector<SeqRecord> seq_records; ///< vector of sequences loaded from a FASTA file
   int getSequenceLength(std::string);
   void readInputMSA(std::string);
   void readInputNumericMSA(std::string);
   void readSequenceWeights(std::string);
   void makeNumericalMatrix(void);
 
-  std::vector<int> seq_to_keep;
-  std::vector<int> pos_to_keep;
+  std::vector<int> seq_to_keep; ///< indices for sequences to protect from pruning
+  std::vector<int> pos_to_keep; ///< indices for positions to protect from pruning
 };
 
 #endif

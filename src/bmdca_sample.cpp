@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <armadillo>
 #include <iostream>
 #include <string>
@@ -8,6 +25,9 @@
 #include "generator.hpp"
 #include "utils.hpp"
 
+/**
+ * @brief Print command line usage.
+ */
 void
 print_usage(void)
 {
@@ -30,19 +50,24 @@ print_usage(void)
   std::cout << "  -h: print usage (i.e. this message)" << std::endl;
 };
 
+/**
+ * @brief Sample sequences from a given Potts model.
+ *
+ * @return Return status.
+ */
 int
 main(int argc, char* argv[])
 {
-  int num_sequences = 1000;
-  int num_replicates = 10;
+  int num_sequences = 1000; // number of sequence to sample per replicate
+  int num_replicates = 10;  // number of independent MC trajectories
 
-  std::string parameters_file, J_file;
-  std::string dest_dir = ".";
-  std::string config_file;
-  std::string output_file = "MC_samples.fasta";
+  std::string parameters_file, J_file;          // file strings for input parameters
+  std::string dest_dir = ".";                   // directory for storing output
+  std::string config_file;                      // config file for sampler hyperparameters
+  std::string output_file = "MC_samples.fasta"; // output file name
 
   bool dest_dir_given = false;
-  bool compat_mode = true;
+  bool compat_mode = true; // flag for whether the input parameters are text or binary
 
   // Read command-line parameters.
   char c;
@@ -115,15 +140,17 @@ main(int argc, char* argv[])
     params = loadPottsModel(parameters_file, J_file);
   }
 
-  int N = params.h.n_cols;
-  int Q = params.h.n_rows;
+  int N = params.h.n_cols; // number of positions
+  int Q = params.h.n_rows; // number of states
 
+  // Initialize the sampler
   Generator generator = Generator(params, N, Q, config_file);
 
   if (dest_dir_given == true) {
     chdir(dest_dir.c_str());
   }
 
+  // Sample num_replicates x num_sequences sequences
   generator.run(num_replicates, num_sequences, output_file);
 
   return 0;

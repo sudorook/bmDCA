@@ -1,11 +1,37 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "model.hpp"
 
 #include <armadillo>
 
 #include "utils.hpp"
 
+/**
+ * @brief Model constructor.
+ */
 Model::Model(void){};
 
+/**
+ * @brief Store the address of the MSA statstics.
+ *
+ * @param msa_train pointer to the statistics for the training MSA
+ * @param msa_validate pointer to stats for the validation MSA
+ */
 void
 Model::setMSAStats(MSAStats* msa_train, MSAStats* msa_validate)
 {
@@ -15,6 +41,8 @@ Model::setMSAStats(MSAStats* msa_train, MSAStats* msa_validate)
   N = training->getN();
   Q = training->getQ();
 
+  // Set the validate flag to true if a validation MSA is given (msa_validate
+  // != nullptr).
   if (msa_validate) {
     validate = true;
   } else {
@@ -22,18 +50,37 @@ Model::setMSAStats(MSAStats* msa_train, MSAStats* msa_validate)
   }
 };
 
+/**
+ * @brief Store the address of the sampled sequence statistics.
+ *
+ * @param s pointer to the SampleStats sample statistics
+ */
 void
 Model::setSampleStats(SampleStats* s)
 {
   samples = s;
 };
 
+/**
+ * @brief Set the iteration number.
+ *
+ * @param s iteration number
+ *
+ * The Model class needs to be updated with the step number, as it doesn't keep
+ * track of it on its own.
+ */
 void
 Model::setStep(int s)
 {
   step = s;
 };
 
+/**
+ * @brief Rescale parameters to have 0 marginals for J and h.
+ *
+ * Sets the 0-mean (Ising) gauge for the parameters. Note that it causes
+ * regularization for J and h to blend together and become non-independent.
+ */
 void
 Model::setZeroGauge(void)
 {

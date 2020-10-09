@@ -1,3 +1,20 @@
+/* Boltzmann-machine Direct Coupling Analysis (bmDCA)
+ * Copyright (C) 2020
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "run.hpp"
 
 #include <armadillo>
@@ -24,6 +41,15 @@
 #define EPSILON 0.00000001
 #define PI 3.1415926
 
+/**
+ * @brief Constructor for inferencce loop.
+ *
+ * @param msa_train pointer to training MSA
+ * @param msa_validate pointer to validation MSA (optional)
+ * @param config_file file string for hyperparameter file
+ * @param dest_dir directory to output bmDCA results
+ * @param force_restart force the inference to start from the beginning
+ */
 Sim::Sim(MSA* msa_train,
          MSA* msa_validate,
          std::string config_file,
@@ -48,7 +74,7 @@ Sim::Sim(MSA* msa_train,
   }
   checkHyperparameters();
 
-  // Load model hyperparameters.
+  // Load the training model.
   if (train_mode == "adam") {
     model = new Adam();
   } else if (train_mode == "adamw") {
@@ -67,6 +93,7 @@ Sim::Sim(MSA* msa_train,
     std::exit(EXIT_FAILURE);
   }
 
+  // Load model hyperparameters.
   if (!config_file.empty()) {
     std::cout << "loading model hyperparameters... " << std::flush;
     model->loadHyperparameters(config_file);
@@ -101,10 +128,18 @@ Sim::Sim(MSA* msa_train,
   initialize();
 };
 
+/**
+ * @brief Initialize the run.
+ *
+ * Set up the training and validation MSA, initialize the sample and energy
+ * data structures, create instances of the MSAStats, Model, SampleStats, and
+ * Sampler classes, and compute the MSA statistics.
+ */
 void
 Sim::initialize(void)
 {
-
+  // Subset the MSA if cross-validation is enabled but not validation MSA was
+  // provided.
   if (!msa_validate) {
     if (cross_validate) {
       std::vector<MSA*> tmp =
@@ -185,6 +220,9 @@ Sim::initialize(void)
   sampler = new Sampler(N, Q, &(model->params));
 };
 
+/**
+ * @brief Sim destructor.
+ */
 Sim::~Sim(void)
 {
   delete msa_train_stats;
@@ -194,6 +232,11 @@ Sim::~Sim(void)
   delete sample_stats;
 };
 
+/**
+ * @brief Load sampler hyperparameters from config file.
+ *
+ * @param file_name config file string
+ */
 void
 Sim::loadHyperparameters(std::string file_name)
 {
@@ -227,6 +270,13 @@ Sim::loadHyperparameters(std::string file_name)
   }
 };
 
+/**
+ * @brief Check that hyperparameters in config file are same as stored values.
+ *
+ * @param file_name config file string
+ *
+ * @return (bool) flag that all hyperparameters are equivalent
+ */
 bool
 Sim::compareHyperparameters(std::string file_name)
 {
@@ -261,6 +311,12 @@ Sim::compareHyperparameters(std::string file_name)
   return all_same;
 };
 
+/**
+ * @brief Set a hyperparameter to a specific value.
+ *
+ * @param key hyperparameter to set
+ * @param value value at which to set hyperparameter
+ */
 void
 Sim::setHyperparameter(std::string key, std::string value)
 {
@@ -334,6 +390,11 @@ Sim::setHyperparameter(std::string key, std::string value)
   }
 };
 
+/**
+ * @brief Check additional constraints for hyperparameter values.
+ *
+ * Check any constraints on the possible values for the run hyperparameters.
+ */
 void
 Sim::checkHyperparameters(void)
 {
@@ -343,6 +404,13 @@ Sim::checkHyperparameters(void)
   }
 };
 
+/**
+ * @brief Write stored hyperparameters to file
+ *
+ * @param output_file config file string
+ * @param append flag for whether or not to append the hyperparameters to the
+ * file or overwrite it
+ */
 void
 Sim::writeHyperparameters(std::string output_file, bool append)
 {
@@ -383,6 +451,14 @@ Sim::writeHyperparameters(std::string output_file, bool append)
   stream.close();
 };
 
+/**
+ * @brief Compare the value of a specific hyperparameter against a given value.
+ *
+ * @param key name of the hyperparameter to check
+ * @param value value against which to check the 'key' hyperparameter.
+ *
+ * @return (bool) flag for whether the stored and given values are equal
+ */
 bool
 Sim::compareHyperparameter(std::string key, std::string value)
 {
@@ -449,6 +525,13 @@ Sim::compareHyperparameter(std::string key, std::string value)
   return same;
 };
 
+/**
+ * @brief Check that all the necessary data exists to reload a given step.
+ *
+ * @param step iteration to check
+ *
+ * @return (bool) flag for whether the necessary files were found
+ */
 bool
 Sim::isValidStep(int step)
 {
@@ -469,6 +552,12 @@ Sim::isValidStep(int step)
   return valid;
 };
 
+/**
+ * @brief Find the last valid step in order to restore run state.
+ *
+ * Search the output directory and parse file names for step numbers, and then
+ * check that the requisite data exists for that step number.
+ */
 void
 Sim::setStepOffset(void)
 {
@@ -542,6 +631,11 @@ Sim::setStepOffset(void)
   }
 };
 
+/**
+ * @brief Delete all data associated with a particular step.
+ *
+ * @param step iteration to delete
+ */
 void
 Sim::deleteStep(int step)
 {
@@ -642,6 +736,12 @@ Sim::deleteStep(int step)
 //   }
 // };
 
+/**
+ * @brief Restore a run from the last valid position.
+ *
+ * Parse the run log to re-load burn-times, etc. and reset the RNG to the state
+ * it was in when the program terminated. Ensures results are deterministic.
+ */
 void
 Sim::restoreRunState(void)
 {
@@ -692,6 +792,7 @@ Sim::restoreRunState(void)
     }
   }
 
+  // Burn RNG until the sampled value matches the value in the run log.
   std::uniform_int_distribution<long int> dist(0, RAND_MAX - step_max);
   int counter = 1;
   while (dist(rng) != prev_seed) {
@@ -703,6 +804,11 @@ Sim::restoreRunState(void)
   }
 };
 
+/**
+ * @brief Run the inference loop.
+ *
+ * All heavy lifting is done here.
+ */
 void
 Sim::run(void)
 {
@@ -787,7 +893,7 @@ Sim::run(void)
           double e_start_sigma = arma::stddev(energy_burn.row(0), 1);
           double e_end = (arma::mean(energy_burn.row(burn_count - 1)) +
                           arma::mean(energy_burn.row(burn_count - 2))) /
-                         2;
+                         2; // lazy way to double the number of sequences from the end step
           double e_end_sigma =
             sqrt(pow(arma::stddev(energy_burn.row(burn_count - 1), 1), 2) +
                  pow(arma::stddev(energy_burn.row(burn_count - 2), 1), 2));
@@ -797,12 +903,21 @@ Sim::run(void)
 
           bool flag_twaiting_up = true;
           bool flag_twaiting_down = true;
+
+          // If the difference in average starting (burn-in) and ending
+          // (burn-in + n_sequences x burn-between) energies along a trajectory
+          // is less than twice the variance, don't increase burn-in time.
           if (e_start - e_end <= 2 * e_err) {
             flag_twaiting_up = false;
           }
+
+          // If the difference in average ending (burn-in + n_sequences x
+          // burn-between) and starting (burn-in) energies along a trajectory
+          // is less than twice the variance, don't decrease burn-in time.
           if (e_start - e_end >= -2 * e_err) {
             flag_twaiting_down = false;
           }
+
           if (flag_twaiting_up) {
             burn_in = (int)(round((double)burn_in * adapt_up_time));
           } else if (flag_twaiting_down) {
@@ -1072,36 +1187,58 @@ Sim::run(void)
   return;
 };
 
+/**
+ * @brief Update the burn-in and burn-between times.
+ *
+ * @return (bool) flag for whether to resample the sequences.
+ *
+ * This function is called when M > 1 sequences are sampled per MC trajectory.
+ * If sequences along a trajectory are too correlated, burn-beteween time is
+ * increased. If energy after burn-in and after burn-in + M x burn-between is
+ * too much lower, then burn-in time is increased.
+ */
 bool
 Sim::checkErgodicity(void)
 {
   arma::Col<double> stats = sample_stats->getStats();
 
-  double e_start = stats.at(0);
-  double e_end = stats.at(2);
-  double e_err = stats.at(4);
+  double e_start = stats.at(0); // average starting energy for MC trajectory
+  double e_end = stats.at(2);   // average ending energy
+  double e_err = stats.at(4);   // combined starting and ending variance
 
-  double auto_corr = stats.at(7);
-  double cross_corr = stats.at(8);
-  double check_corr = stats.at(9);
-  double cross_check_err = stats.at(14);
-  double auto_cross_err = stats.at(13);
+  double auto_corr = stats.at(7);        // sequence correlations for trajectory start/end
+  double cross_corr = stats.at(8);       // correlations between trajectories
+  double check_corr = stats.at(9);       // correlations for mid-trajectory (length/10) and end
+  double cross_check_err = stats.at(14); // combined auto+cross variance
+  double auto_cross_err = stats.at(13);  // combined check+cross variance
 
-  bool flag_deltat_up = true;
-  bool flag_deltat_down = true;
-  bool flag_twaiting_up = true;
-  bool flag_twaiting_down = true;
+  bool flag_deltat_up = true;     // flag to increase burn-between time
+  bool flag_deltat_down = true;   // flag to decrease burn-between time
+  bool flag_twaiting_up = true;   // flag to increase burn-in time
+  bool flag_twaiting_down = true; // flag to decrease burn-in time
 
+  // If the difference in sequence correlations within and between trajectories
+  // is less than the variance, don't increase waiting time.
   if (check_corr - cross_corr <= cross_check_err) {
     flag_deltat_up = false;
   }
+
+  // If the difference in sequence correlations within and between trajectories
+  // is grater than the variance, don't decrease waiting time.
   if (auto_corr - cross_corr >= auto_cross_err) {
     flag_deltat_down = false;
   }
 
+  // If the difference in average starting (burn-in) and ending (burn-in +
+  // n_sequences x burn-between) energies along a trajectory is less than twice
+  // the variance, don't increase burn-in time.
   if (e_start - e_end <= 2 * e_err) {
     flag_twaiting_up = false;
   }
+
+  // If the difference in average ending (burn-in + n_sequences x burn-between)
+  // and starting (burn-in) energies along a trajectory is less than twice the
+  // variance, don't decrease burn-in time.
   if (e_start - e_end >= -2 * e_err) {
     flag_twaiting_down = false;
   }
@@ -1124,6 +1261,8 @@ Sim::checkErgodicity(void)
     std::cout << "decreasing burn-in time to " << burn_in << std::endl;
   }
 
+  // If burn-in or burn-between times were increased, then the sequences need
+  // to be resampled to ensure proper mixing.
   bool flag_mc = true;
   if (not flag_deltat_up and not flag_twaiting_up) {
     flag_mc = false;
@@ -1131,6 +1270,13 @@ Sim::checkErgodicity(void)
   return flag_mc;
 };
 
+/**
+ * @brief Compute MSA sequence energies using the current parameters.
+ *
+ * @param energies pointer to energy data structure
+ * @param msa pointer to the MSA
+ * @param params ponter to the Potts parameters
+ */
 void
 Sim::computeMSAEnergies(arma::Col<double>* energies,
                         MSA* msa,
@@ -1154,6 +1300,14 @@ Sim::computeMSAEnergies(arma::Col<double>* energies,
   }
 };
 
+/**
+ * @brief Write the data for the current step.
+ *
+ * @param step current inference iteration
+ *
+ * Writes the model parameters necessary for restarting runs, along with the
+ * sequence energies and statistics for the MSA and sampled sequences.
+ */
 void
 Sim::writeStep(int step)
 {
@@ -1162,6 +1316,14 @@ Sim::writeStep(int step)
   writeMSAEnergies(step);
 };
 
+/**
+ * @brief Write the current data.
+ *
+ * @param id label for the output data
+ *
+ * Writes the model parameters along with the sequence energies and statistics
+ * for the MSA and sampled sequences.
+ */
 void
 Sim::writeData(std::string id)
 {
@@ -1170,6 +1332,14 @@ Sim::writeData(std::string id)
   writeMSAEnergies(id);
 };
 
+/**
+ * @brief Write the sequence energies for the MSA using current parameters.
+ *
+ * @param step current iteration
+ *
+ * Writes both the training and validation (if applicable) sequence energies as
+ * computed using the currently inferred Potts model.
+ */
 void
 Sim::writeMSAEnergies(int step)
 {
@@ -1197,6 +1367,14 @@ Sim::writeMSAEnergies(int step)
   }
 };
 
+/**
+ * @brief Write the sequence energies for the MSA using current parameters.
+ *
+ * @param id output label
+ *
+ * Writes both the training and validation (if applicable) sequence energies as
+ * computed using the currently inferred Potts model.
+ */
 void
 Sim::writeMSAEnergies(std::string id)
 {
@@ -1222,6 +1400,9 @@ Sim::writeMSAEnergies(std::string id)
   }
 };
 
+/**
+ * @brief Write the column headers for the run log.
+ */
 void
 Sim::initializeRunLog()
 {
@@ -1284,6 +1465,13 @@ Sim::initializeRunLog()
   stream.close();
 };
 
+/**
+ * @brief Flush the run buffer data to the run log.
+ *
+ * @param current_step current iteration
+ * @param offset step offset (if the buffer isn't full)
+ * @param keep (bool) flag to keep the data in the buffer
+ */
 void
 Sim::writeRunLog(int current_step, int offset, bool keep)
 {
