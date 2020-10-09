@@ -1,5 +1,6 @@
 # Generated files and directries
 relic/
+doxygen/
 src/.deps/
 example/processed/
 src/autocorrelation
