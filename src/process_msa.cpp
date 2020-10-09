@@ -51,7 +51,7 @@ main(int argc, char* argv[])
   std::vector<int> keep_pos;
 
   char c;
-  while ((c = getopt(argc, argv, "i:n:w:rk:p:g:G:s:t:o:O:hv")) != -1) {
+  while ((c = getopt(argc, argv, "i:n:w:rp:q:g:G:s:t:o:O:hv")) != -1) {
     switch (c) {
       case 'i':
         infile = optarg;
