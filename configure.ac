@@ -1,8 +1,8 @@
 AC_PREREQ([2.68])
 
 AC_INIT([bmDCA],
-        [0.8.14],
-        [https://github.com/ranganathanlab/bmDCA/issues],
+        [0.9.0],
+        [https://github.com/sudorook/bmDCA/issues],
         [bmDCA])
 
 AC_CANONICAL_HOST

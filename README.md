@@ -240,7 +240,7 @@ add the line `ILoveCandy`. Just a cosmetic flourish for `pacman`._
 Now that all the dependencies have been installed, compile and install bmDCA
 globally (default: `/usr/local`) by running:
 ```
-git clone https://github.com/ranganathanlab/bmDCA.git
+git clone https://github.com/sudorook/bmDCA.git
 cd bmDCA
 ./autogen.sh --prefix=/usr/local && \
 make -j4 && \
