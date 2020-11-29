@@ -73,8 +73,8 @@ set_alias() {
 #
 
 # Add alias for Homebrew GCC and export to CC and CXX environment variables.
-set_gcc /usr/local/bin/gcc-9  # from Homebrew
-# set_gcc /usr/local/Cellar/gcc/bin/gcc-9
+set_gcc /usr/local/bin/gcc-10  # from Homebrew
+# set_gcc /usr/local/Cellar/gcc/bin/gcc-10
 
 # Look for pkg-config directories
 pkgconfig_find /usr/local/Cellar  # from Homebrew
