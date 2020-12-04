@@ -7,8 +7,9 @@
 #   $1 - absolute path of directory
 pkgconfig_find() {
   if [ -d "${1}" ]; then
-    local PKG_CONFIG_PATH_NEW=$(find "${1}" -type d -name "pkgconfig" -print | \
-                                tr '\n' ':')
+    local PKG_CONFIG_PATH_NEW
+    PKG_CONFIG_PATH_NEW=$(find "${1}" -type d -name "pkgconfig" -print | \
+                          tr '\n' ':')
     if ! [[ "${PKG_CONFIG_PATH_NEW}" == "" ]] && \
        ! [[ "${PKG_CONFIG_PATH}" =~ "${PKG_CONFIG_PATH_NEW}" ]]; then
       export PKG_CONFIG_PATH="${PKG_CONFIG_PATH_NEW}${PKG_CONFIG_PATH}"
