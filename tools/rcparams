@@ -22,8 +22,9 @@ pkgconfig_find() {
 # binaries compiled against libraries in stored in exotic directories.
 #   $1 - library name input to pkg-config
 ld_lib_add() {
-  local LIB_PATH=$(pkg-config --libs "${1}" 2>/dev/null | \
-                   sed -n "s,-L\(.*\)\ -l.*,\1,p")
+  local LIB_PATH
+  LIB_PATH=$(pkg-config --libs "${1}" 2>/dev/null | \
+             sed -n "s,-L\(.*\)\ -l.*,\1,p")
   if ! [[ "${LIB_PATH}" == "" ]] && \
      ! [[ "${LD_LIBRARY_PATH}" =~ ${LIB_PATH} ]]; then
     export LD_LIBRARY_PATH="${LIB_PATH}:${LD_LIBRARY_PATH}"
@@ -34,7 +35,8 @@ ld_lib_add() {
 #   $1 - absolute path of directory
 ld_path_add() {
   if [ -d "${1}" ]; then
-    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(readlink -f "${1}")"
+    LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(readlink -f "${1}")"
+    export LD_LIBRARY_PATH
   fi
 }
 
@@ -43,8 +45,10 @@ ld_path_add() {
 # environmental variables.
 #   $1 - absolute path to gcc binary file
 set_gcc() {
-  local GCC="$(echo "${1}" | sed -e "s,/g++\([0-9\-]*\)$,/gcc\1,g")"
-  local GXX="$(echo "${1}" | sed -e "s,/gcc\([0-9\-]*\)$,/g++\1,g")"
+  local GCC
+  local GXX
+  GCC="$(echo "${1}" | sed -e "s,/g++\([0-9\-]*\)$,/gcc\1,g")"
+  GXX="$(echo "${1}" | sed -e "s,/gcc\([0-9\-]*\)$,/g++\1,g")"
   if [ -f "${GCC}" ] && [ -f "${GXX}" ]; then
     alias gcc="${GCC}"
     alias g++="${GXX}"
