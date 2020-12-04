@@ -11,7 +11,7 @@ pkgconfig_find() {
     PKG_CONFIG_PATH_NEW=$(find "${1}" -type d -name "pkgconfig" -print | \
                           tr '\n' ':')
     if ! [[ "${PKG_CONFIG_PATH_NEW}" == "" ]] && \
-       ! [[ "${PKG_CONFIG_PATH}" =~ "${PKG_CONFIG_PATH_NEW}" ]]; then
+       ! [[ "${PKG_CONFIG_PATH}" =~ ${PKG_CONFIG_PATH_NEW} ]]; then
       export PKG_CONFIG_PATH="${PKG_CONFIG_PATH_NEW}${PKG_CONFIG_PATH}"
     fi
   fi
@@ -25,7 +25,7 @@ ld_lib_add() {
   local LIB_PATH=$(pkg-config --libs "${1}" 2>/dev/null | \
                    sed -n "s,-L\(.*\)\ -l.*,\1,p")
   if ! [[ "${LIB_PATH}" == "" ]] && \
-     ! [[ "${LD_LIBRARY_PATH}" =~ "${LIB_PATH}" ]]; then
+     ! [[ "${LD_LIBRARY_PATH}" =~ ${LIB_PATH} ]]; then
     export LD_LIBRARY_PATH="${LIB_PATH}:${LD_LIBRARY_PATH}"
   fi
 }
