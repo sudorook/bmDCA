@@ -772,7 +772,7 @@ MSA::partitionAlignment(int validation_size, long int seed)
   }
 
   // don't use more than a quarter of the MSA for cross-validation
-  size = Min(size, (int)M / 4);
+  size = (int)Min((double)size, (double)M / 4);
 
   arma::Mat<int> sub_alignment_1 =
     arma::Mat<int>(N, M - size, arma::fill::zeros);
