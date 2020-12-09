@@ -26,7 +26,7 @@
 /**
  * @brief Structure for storing 1D histograms.
  */
-typedef struct
+typedef struct histogram1d
 {
   arma::Mat<unsigned long long int> range; ///< histogram counts
   int bins = BINS;                         ///< number of bins in histogram
@@ -38,7 +38,7 @@ typedef struct
 /**
  * @brief Structure for storing 2D histograms.
  */
-typedef struct
+typedef struct histogram2d
 {
   arma::Mat<unsigned long long int> grid; ///< histogram counts
   int bins = BINS;                        ///< number of bins in histogram
