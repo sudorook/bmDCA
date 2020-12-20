@@ -66,7 +66,7 @@ private:
   std::string train_mode = "original"; ///< training model
   bool cross_validate = false;         ///< flag to cross-validate the MSA
   int validation_seqs = 100;           ///< effective M for validatino set
-  long int random_seed = 1;            ///< random seed for RNG
+  long int random_seed = 142857;       ///< random seed for RNG
   bool output_binary = true;           ///< flag to output in arma::binary format
 
   // Sampler settings
