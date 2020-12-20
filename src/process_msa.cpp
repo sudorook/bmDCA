@@ -34,7 +34,7 @@ print_usage(void)
   std::cout << "process_msa usage:" << std::endl;
   std::cout << "  -i: input MSA (FASTA format)" << std::endl;
   std::cout << "  -n: numeric MSA" << std::endl;
-  std::cout << "  -w: pre-computied sequence weights (optional)" << std::endl;
+  std::cout << "  -w: pre-computed sequence weights (optional)" << std::endl;
   std::cout << "  -g: maximum gap frequency for sequences" << std::endl;
   std::cout << "  -G: maximum gap frequency for positions" << std::endl;
   std::cout << "  -s: maximum sequence similarity" << std::endl;
@@ -42,7 +42,7 @@ print_usage(void)
   std::cout << "  -r: flag to reweight sequences before filtering" << std::endl;
   std::cout << "  -p: position (by index number) to protect from filtering"
             << std::endl;
-  std::cout << "  -q: sequences (by index numbeR) to protect from filtering"
+  std::cout << "  -q: sequences (by index number) to protect from filtering"
             << std::endl;
   std::cout << "  -o: output file name (numeric format)" << std::endl;
   std::cout << "  -O: output sequence weights file name" << std::endl;
