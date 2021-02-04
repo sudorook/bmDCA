@@ -15,5 +15,5 @@ distclean-local:
 	rm -f compile \
 	rm -f depcomp \
 	rm -rf src/.deps/ \
-	rm -f config.guess \
-	rm -f config.sub
+	rm -f config.guess{?,} \
+	rm -f config.sub{?,}
