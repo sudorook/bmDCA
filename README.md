@@ -7,17 +7,6 @@ Dependencies (installation instructions detailed below):
  * pkg-config
  * [Armadillo](http://arma.sourceforge.net/)
 
-This repository contains a C++ reimplementation of bmDCA adapted from [the
-original](https://github.com/matteofigliuzzi/bmDCA) code. Method is described
-in:
-
-> Figliuzzi, M., Barrat-Charlaix, P. & Weigt, M. How Pairwise Coevolutionary
-> Models Capture the Collective Residue Variability in Proteins? Molecular
-> Biology and Evolution 35, 1018–1027 (2018).
-
-This code is designed to eliminate the original's excessive file I/O and to
-parallelize the MCMC in the inference loop.
-
 ## Installing dependencies
 
 __GCC__ is used to compile the source code (and dependencies, if necessary).
@@ -96,7 +85,7 @@ launcher and run:
 xcode-select --install
 ```
 
-This may already have this installed.
+This may already be installed.
 
 Next, install Homebrew. From the [online instructions](https://brew.sh), run:
 ```
@@ -109,20 +98,22 @@ root owns the `/usr/local/` directory, you can change the ownership by running:
 sudo chown -R <user> /usr/local/
 ```
 
-where `<user>` should be substituted with your username, e.g. `john`.
+where `<user>` should be substituted with your username, e.g. `john`. Your
+username should be apparent form the command prompt, but if unsure, run
+`whoami`.
 
 Once Homebrew is installed, run:
 ```
 brew install gcc automake autoconf pkg-config armadillo
 ```
 
-This will install the most recent GCC (9.3.0 as of writing) along with
+This will install the most recent GCC (10.2.0 as of writing) along with
 AutoTools and pkg-config.
 
 __IMPORTANT:__ The default `gcc`, located in `/usr/bin/gcc` is actually aliased
-to `clang`, which is another compiler. While in principle this is not an issue,
-this version of Clang is not compatible with the `fopenmp` compiler flag that
-is used to enable parallelization of the MCMC sampler. Additionally, libraries
+to `clang`, which is another compiler. While in principle it can be used to
+compile bmDCA, this version of Clang is not compatible with the `fopenmp`
+compiler flag that is used to enable parallelization. Additionally, libraries
 (see Armadillo in the next step) installed via Homebrew are not by default
 known to `pkg-config` or the linker.
 
@@ -144,16 +135,15 @@ copy to `${HOME}/.zshrc`. The general idea is that macOS versions <=10.14
 (Mojave and earlier), uses bash as the default shell, and for >=10.15 (Catalina
 and later), Apple switched the default shell to zsh.
 
-You can append the `rcparams` file by copy-pasting the code in your favorite
-text editor. You could also do something like `cat tools/rcparams >>
-${HOME}/.bashrc`, for example.
+You can append the `rcparams` file by copy-pasting the code in it to run rc
+file using your favorite text editor. You could also do something like `cat
+tools/rcparams >> ${HOME}/.bashrc`, for example.
 
-As a side note, your macOS may not actually source the `.bashrc` file by
-default. If you notice that adding the `rcparams` function has not effect in
-new terminals, check that the `${HOME}/.bash_profile` file exists. In it, there
-should be a line like `[ -f $HOME/.bashrc ] && . $HOME/.bashrc`. (If the
-`.bashrc` file exists, use `source` on it.) If no such like is there, add it
-and reload your terminal.
+As another side note, your macOS installation may not actually source the
+`.bashrc` file by default. If you notice that adding the `rcparams` function
+has no effect in new terminals, check that the `${HOME}/.bash_profile` file
+exists. In it, there should be a line that looks like `[ -f $HOME/.bashrc ] &&
+. $HOME/.bashrc`. If no such like is there, add it and reload your terminal.
 
 The libraries and headers will be found via the `pkgconfig_find()` and
 `ld_lib_add()` functions specified in the `rcparams` file.
@@ -164,7 +154,7 @@ are edited. To update your shell to reflect changes, you can either run:
 source ${HOME}/.bashrc
 ```
 
-Or simply open a new shell. (For remote systems, you can just log out and log
+or simply open a new shell. (For remote systems, you can just log out and log
 in again.)
 
 <!-- The files will be installed to `/usr/local/include` and `/usr/local/lib` by
@@ -197,28 +187,28 @@ Once MSYS2 is installed and open, update the base libraries by running:
 pacman -Syu
 ```
 
-This will download and install some packages. You will then be prompted to
-close the terminal. Close it and open it again. Then, again run:
+This will download and install some packages and synchronize the list of
+available packages with what is available on online repositories. You will then
+be prompted to close the terminal. Close it and open it again. Then, again run:
 ```
 pacman -Syu
 ```
 
-This will upgrade the remaining packages packaged in the installer to their
-most recent versions.
+This will upgrade any remaining packages.
 
 Next, install the dependencies for bmDCA:
 ```
 pacman -S nano vim git \
-   autoconf automake-wrapper pkg-config make \
-   mingw-w64-x86_64-toolchain \
-   mingw-w64-x86_64-openmp \
-   mingw-w64-x86_64-arpack \
-   mingw-w64-x86_64-lapack \
-   mingw-w64-x86_64-openblas \
-   mingw-w64-x86_64-armadillo
+  autoconf automake-wrapper pkg-config make \
+  mingw-w64-x86_64-toolchain \
+  mingw-w64-x86_64-openmp \
+  mingw-w64-x86_64-arpack \
+  mingw-w64-x86_64-lapack \
+  mingw-w64-x86_64-openblas \
+  mingw-w64-x86_64-armadillo
 ```
 
-The above command will installed the required programs in the `/mingw64/bin`
+The above command will install the required programs in the `/mingw64/bin`
 directory. Unfortunately, this directory is not on the default PATH. You will
 need to add it manually.
 
@@ -237,24 +227,28 @@ add the line `ILoveCandy`. Just a cosmetic flourish for `pacman`._
 
 ## Installing bmDCA (all platforms)
 
-Now that all the dependencies have been installed, compile and install bmDCA
-globally (default: `/usr/local`) by running:
+Now that all the dependencies have been installed, download bmDCA.
 ```
 git clone https://github.com/sudorook/bmDCA.git
 cd bmDCA
+```
+
+Then, compile and install bmDCA in a globally accessible directory (default:
+`/usr/local`) by running:
+```
 ./autogen.sh --prefix=/usr/local && \
 make -j4 && \
 make install
-cd ..
 ```
 
 Depending on your platform, the `make install` command may fail due to
-permissions issues. To remedy this you can either run `sudo make install`
-instead, or you can specify a different installation directory that does not
-require administrator privileges. The latter option is particularly useful when
-working on remote system not under your control.
+permissions issues. To remedy this you can either run `sudo make install`, or
+you can specify a different installation directory that does not require
+administrator privileges. The latter option is particularly useful when working
+on remote system not under your control.
 
-Should you want to specify a local directory, for example `$HOME/.local`, run:
+To go with the latter option and install bmDCA in a local directory, for
+example `$HOME/.local`, adjust the installation command as follows:
 ```
 ./autogen.sh --prefix=${HOME}/.local && \
 make -j4 && \
@@ -264,7 +258,7 @@ make install
 You can replace the value to the right of `--prefix=` with any other path.
 Note, that you should check that it is on your system PATH.
 
-In the event you with to uninstall `bmDCA`, simply run `sudo make uninstall`
+In the event you wish to uninstall `bmDCA`, simply run `sudo make uninstall`
 or `make uninstall` as appropriate.
 
 Test the installation by running in the terminal:
@@ -535,9 +529,9 @@ Inference and sampling runs can be configured using a text file (see
 10. `update_rule` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
     'z-barker' for Zanella, 2019. 'z-sqrt' corresponds to a balancing function
     of `sqrt(t)`, and 'z-barker' corresponds to `t/(1+t)`. (default: "mh")
-11. `update_burn_timeo` - flag to check tune the burn times during runtime
-    using MCMC sample energies and autocorrelations or lookahead sampling of a
-    small set of sequences. (default: true)
+11. `update_burn_times` - flag to check tune the burn times during runtime
+    using MCMC sample energies and autocorrelations (walkers > 1) or lookahead
+    sampling of a small set of sequences (walkers == 1). (default: true)
 12. `burn_in_start` - initial burn-in time (default: 10000)
 13. `burn_between_start` - initial wait time between sampling sequences
     (default: 100)
@@ -644,23 +638,22 @@ independent of the moments.
 2. `lambda_decay_J` - weight decay strength for couplings (default: 0.01)
 3. `initial_params` - choice of initializing the parameters (`profile` for an
    independent site profile model, zero otherwise)  (default: 'profile')
-5. `set_zero_gauge` - TBD (default: false)
-5. `set_zero_gauge` - set zero (Ising) gauge for parameters (default: false)
-6. `allow_gap_couplings` - allow inference of gap couplings (default: true)
-7. `learn_rate_h` - learning rate for fields (default: 0.01)
-8. `learn_rate_J` - learning rate for couplings (default: 0.01)
-9. `eta_min` - minimum scaling value for annealing schedule (default: 0.1)
-10. `eta_max` - maximum scaling value for annealing schedule (default: 1)
-11. `anneal_schedule` - rule for scaling the learning rates (default: none)
+4. `set_zero_gauge` - set zero (Ising) gauge for parameters (default: false)
+5. `allow_gap_couplings` - allow inference of gap couplings (default: true)
+6. `learn_rate_h` - learning rate for fields (default: 0.01)
+7. `learn_rate_J` - learning rate for couplings (default: 0.01)
+8. `eta_min` - minimum scaling value for annealing schedule (default: 0.1)
+9. `eta_max` - maximum scaling value for annealing schedule (default: 1)
+10. `anneal_schedule` - rule for scaling the learning rates (default: none)
     - `cos`, cosine-based annealing
     - `trap`, trapezoidal (warm-up, hot, then cool-down) annealing
-12. `anneal_scale` - scaling factor for the period, extending (or shortening)
+11. `anneal_scale` - scaling factor for the period, extending (or shortening)
     the schedules over time and iterations (default: 2)
-13. `anneal_period` - period for cycling the annealing schedule (default: 40)
-14. `anneal_warm` - warm-up number of iterations to scale from `eta_min` to
+12. `anneal_period` - period for cycling the annealing schedule (default: 40)
+13. `anneal_warm` - warm-up number of iterations to scale from `eta_min` to
     `eta_max` (default: 20)
-15. `anneal_hot` - number of iterations to run at `eta_max` (default: 0)
-16. `anneal_cool` - number of iterations to decrease from `eta_max` to
+14. `anneal_hot` - number of iterations to run at `eta_max` (default: 0)
+15. `anneal_cool` - number of iterations to decrease from `eta_max` to
     `eta_min` (default: 0)
 
 #### [[radam]]
@@ -711,9 +704,9 @@ Stochastic gradient descent with momentum.
 5. `burn_in_start` - initial burn-in time (default: 100000)
 6. `burn_between_start` - initial wait time between sampling sequences
    (default: 1000)
-7. `update_burn_timeo` - flag to check tune the burn times during runtime using
-   MCMC sample energies and autocorrelations or lookahead sampling of a small
-   set of sequences. (default: true)
+7. `update_burn_times` - flag to check tune the burn times during runtime using
+   MCMC sample energies and autocorrelations (walkers > 1) or lookahead
+   sampling of a small set of sequences (walkers == 1). (default: true)
 8. `adapt_up_time` - multiple to increase MCMC wait/burn-in time (default: 1.5)
 9. `adapt_down_time` - multiple to decrease MCMC wait/burn-in time (default
    0.6)
