@@ -498,7 +498,7 @@ RAdam::updateGradients(void)
       }
     }
   }
-  train_error_2p = sqrt(train_error_2p / (N * (N - 1) * Q * Q / 2));
+  train_error_2p = sqrt(train_error_2p / (N * (N - 1.) * Q * Q / 2.));
 
   if (validate) {
     for (int i = 0; i < N; i++) {
@@ -529,7 +529,8 @@ RAdam::updateGradients(void)
         }
       }
     }
-    validation_error_2p = sqrt(validation_error_2p / (N * (N - 1) * Q * Q / 2));
+    validation_error_2p =
+      sqrt(validation_error_2p / (N * (N - 1.) * Q * Q / 2.));
   }
   return;
 };
