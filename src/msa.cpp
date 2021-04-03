@@ -402,6 +402,7 @@ void
 MSA::computeSequenceWeights(double threshold)
 {
   sequence_weights = arma::Col<double>(M, arma::fill::ones);
+  double cutoff = N * threshold;
   arma::Mat<int> alignment_T = alignment.t();
 
   // arma::Mat is stored in column-major format, but sequences are stored in
@@ -421,7 +422,7 @@ MSA::computeSequenceWeights(double threshold)
               id += 1;
             }
           }
-          if (id > threshold * N) {
+          if (id > cutoff) {
             sequence_weights(m1) += 1;
           }
         }
@@ -445,7 +446,8 @@ void
 MSA::filterSimilarSequences(double threshold, bool verbose)
 {
   arma::Col<int> sequence_status = arma::Col<int>(M, arma::fill::zeros);
-  int sim_cutoff = (int)(N * threshold);
+  // int sim_cutoff = (int)(N * threshold);
+  double sim_cutoff = N * threshold;
   arma::Mat<int> alignment_T = alignment.t();
 #pragma omp parallel
   {
@@ -508,7 +510,7 @@ MSA::filterSimilarSequences(double threshold, bool verbose)
  * @param keep vector of indices
  */
 void
-MSA::setKeepPositions(std::vector<int> keep) {
+MSA::setKeepPositions(std::vector<size_t> keep) {
   pos_to_keep = keep;
 };
 
@@ -518,7 +520,7 @@ MSA::setKeepPositions(std::vector<int> keep) {
  * @param keep vector of indices
  */
 void
-MSA::setKeepSequences(std::vector<int> keep) {
+MSA::setKeepSequences(std::vector<size_t> keep) {
   seq_to_keep = keep;
 };
 
