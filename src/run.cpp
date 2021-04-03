@@ -851,7 +851,7 @@ Sim::run(void)
     std::cout << timer.toc() << " sec" << std::endl;
 
     double error_avg = arma::mean(msa_train_stats->msa_rms);
-    double error_stddev = arma::stddev(msa_train_stats->msa_rms, 1);
+    // double error_stddev = arma::stddev(msa_train_stats->msa_rms, 1);
     // stop_threshold = (error_avg - 2 * error_stddev) /
     //                   sqrt(M * count_max / msa_train_stats->getEffectiveM());
     stop_threshold = error_avg / sqrt(samples_per_walk * walkers /
@@ -863,8 +863,8 @@ Sim::run(void)
     std::cout << "convergence threshold is " << stop_threshold << std::endl;
   }
 
-  int N = msa_train_stats->getN();
-  int Q = msa_train_stats->getQ();
+  // int N = msa_train_stats->getN();
+  // int Q = msa_train_stats->getQ();
 
   // BM sampling loop
   for (step = 1 + step_offset; step <= step_max; step++) {

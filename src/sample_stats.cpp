@@ -218,7 +218,7 @@ SampleStats2D::computeSampleStatsImportance(void)
   arma::Col<double> dE = arma::Col<double>(M, arma::fill::zeros);
   double Z_tot = 0;
   double Z_inv_tot = 0;
-  double W = 0;
+  // double W = 0;
   double w = 0;
   double sumw = 0;
 
@@ -253,7 +253,7 @@ SampleStats2D::computeSampleStatsImportance(void)
   }
   Z_tot = Z;
   Z_inv_tot += Z_inv;
-  W = 1. / sum;
+  // W = 1. / sum;
   w = 1. / sum;
 
   arma::Col<int> n1 = arma::Col<int>(Q, arma::fill::zeros);
