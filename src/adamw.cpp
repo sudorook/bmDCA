@@ -606,7 +606,7 @@ AdamW::updateParameters(void)
 
   double eta = 0;
   if (anneal_schedule == "none") {
-    eta = eta_max;
+    eta = 1.0;
   } else if (anneal_schedule == "cos") {
     if (step <= anneal_warm) {
       eta = eta_min + (eta_max - eta_min) * (double)step / anneal_warm;
