@@ -46,8 +46,8 @@ public:
   arma::Col<double> sequence_weights;  ///< weights for each sequence
   arma::Col<double> hamming_distances; ///< hamming distances among sequences
 
-  void setKeepPositions(std::vector<int>);
-  void setKeepSequences(std::vector<int>);
+  void setKeepPositions(std::vector<size_t>);
+  void setKeepSequences(std::vector<size_t>);
 
   void filterSequenceGaps(double = 0.2, bool = false);
   void filterPositionGaps(double = 0.2, bool = false);
@@ -71,8 +71,8 @@ private:
   void readSequenceWeights(std::string);
   void makeNumericalMatrix(void);
 
-  std::vector<int> seq_to_keep; ///< indices for sequences to protect from pruning
-  std::vector<int> pos_to_keep; ///< indices for positions to protect from pruning
+  std::vector<size_t> seq_to_keep; ///< indices for sequences to protect from pruning
+  std::vector<size_t> pos_to_keep; ///< indices for positions to protect from pruning
 };
 
 #endif

@@ -75,8 +75,8 @@ main(int argc, char* argv[])
   double position_gap_threshold = 1.0;
   double sequence_gap_threshold = 1.0;
 
-  std::vector<int> keep_seq;
-  std::vector<int> keep_pos;
+  std::vector<size_t> keep_seq;
+  std::vector<size_t> keep_pos;
 
   char c;
   while ((c = getopt(argc, argv, "i:n:w:rp:q:g:G:s:t:o:O:hv")) != -1) {
