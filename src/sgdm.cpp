@@ -708,7 +708,7 @@ SGDM::writeStep(int step, bool output_binary)
     writeParamsAscii(param_file);
 
     std::string param_prev_file =
-      "parameters_prev_" + std::to_string(step) + ".txt";
+      "parameters_" + std::to_string(step - 1) + ".txt";
     writeParamsPreviousAscii(param_prev_file);
 
     std::string grad_file = "gradients_" + std::to_string(step) + ".txt";
