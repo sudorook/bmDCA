@@ -132,7 +132,9 @@ Sampler::sampleEnergies(arma::Mat<double>* p,
         }
       }
 
-      for (size_t s = 0; s < samples_per_walk; ++s) {
+      *(ptr) = E;
+
+      for (size_t s = 1; s < samples_per_walk; ++s) {
         for (size_t k = 0; k < burn_between; ++k) {
           size_t i = size_t(N * uniform(rng));
           size_t dq = 1 + size_t((Q - 1) * uniform(rng));
@@ -224,7 +226,11 @@ Sampler::sampleSequences(arma::Cube<int>* p,
         }
       }
 
-      for (size_t s = 0; s < samples_per_walk; ++s) {
+      for (size_t i = 0; i < N; ++i) {
+        (*ptr)(0, i) = conf(i);
+      }
+
+      for (size_t s = 1; s < samples_per_walk; ++s) {
         for (size_t k = 0; k < burn_between; ++k) {
           size_t i = size_t(N * uniform(rng));
           size_t dq = 1 + size_t((Q - 1) * uniform(rng));
@@ -486,7 +492,12 @@ Sampler::sampleSequencesZanella(arma::Cube<int>* p,
           de = de_old;
         }
       }
-      for (size_t s = 0; s < samples_per_walk; ++s) {
+
+      for (size_t i = 0; i < N; ++i) {
+        (*ptr)(0, i) = (int)conf(i);
+      }
+
+      for (size_t s = 1; s < samples_per_walk; ++s) {
         for (size_t k = 0; k < burn_between; ++k) {
           double rand = uniform(rng) * lambda;
           double r_sum = 0.0;
