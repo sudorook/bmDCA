@@ -1,325 +1,75 @@
 # Boltzmann-machine Direct Coupling Analysis (bmDCA)
 
-Dependencies (installation instructions detailed below):
- * [GCC](https://gcc.gnu.org/) that supports the C++11 standard and
-   [OpenMP](https://en.wikipedia.org/wiki/OpenMP)
- * AutoTools
- * pkg-config
- * [Armadillo](http://arma.sourceforge.net/)
-
-## Installing dependencies
-
-__GCC__ is used to compile the source code (and dependencies, if necessary).
-The code relies on the `fopenmp` flag for parallelization, so GCC is preferred
-over Clang. It also needs support for the C++11 standard, so any GCC later than
-version 4.2 will suffice.
-
-__AutoTools__ are a set of programs used to generate makefiles for
-cross-platform compilation and installation.
-
-__pkg-config__ is a program that provides a simple interface between installed
-programs (e.g. libraries and header files) and the compiler. It's used by
-AutoTools to check for dependencies before compilation.
-
-__Armadillo__ is a C++ linear algebra library. It's used for storing data in
-matrix structures and performing quick computations in the bmDCA inference
-loop. To install, again look to your package repository.
-
-### Linux
-
-To install the dependencies in Linux, simply use your distributions package
-manager. Commands for Debian/Ubuntu and Arch Linux are provided below:
-
-#### Debian/Ubuntu
-
-Run:
-```
-sudo apt-get update
-sudo apt-get install git gcc g++ automake autoconf pkg-config \
-  libarmadillo-dev libopenblas-dev libarpack++2-dev
-```
-
-#### Arch Linux
-
-For Arch Linux, GCC should have been installed with the `base` and `base-devel`
-metapackages (`sudo pacman -S base base-devel`), but if not installed, run:
-```
-sudo pacman -S gcc automake autoconf pkgconf superlu
-```
-
-For Arch, Armadillo is not in the package repositories. You will need to check
-the AUR.
-```
-git clone https://aur.archlinux.org/armadillo.git
-cd armadillo
-makepkg -si
-cd ..
-```
-
-<!-- If there is no package for Armadillo, or you do not have root privileges on the
-   - system your using, you can instead compile the library from source.
-   - 
-   - First, make sure that `cmake`, `openblas` (or `blas`), `lapack`, `arpack`, and
-   - `SuperLU` are installed. CMake is a compilation tool and the others are build
-   - dependencies. Then, to download and install Armadillo system wide, run the
-   - following:
-   - ```
-   - wget https://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz
-   - tar xf armadillo-9.850.1.tar.xz
-   - cd armadillo-9.850.1
-   - cmake .
-   - make -j4
-   - sudo make install
-   - cd ..
-   - ``` -->
-
-
-### macOS
-
-The macOS instructions rely on Xcode developer tools and Homebrew for package
-management. All commands will be entered into the Terminal.
-
-First, install Xcode developer tools. Open the 'Terminal' application from the
-launcher and run:
-```
-xcode-select --install
-```
-
-This may already be installed.
-
-Next, install Homebrew. From the [online instructions](https://brew.sh), run:
-```
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-```
-
-If you run into permissions errors when installing Homebrew, complaining that
-root owns the `/usr/local/` directory, you can change the ownership by running:
-```
-sudo chown -R <user> /usr/local/
-```
-
-where `<user>` should be substituted with your username, e.g. `john`. Your
-username should be apparent form the command prompt, but if unsure, run
-`whoami`.
-
-Once Homebrew is installed, run:
-```
-brew install gcc automake autoconf pkg-config armadillo
-```
-
-This will install the most recent GCC (10.2.0 as of writing) along with
-AutoTools and pkg-config.
-
-__IMPORTANT:__ The default `gcc`, located in `/usr/bin/gcc` is actually aliased
-to `clang`, which is another compiler. While in principle it can be used to
-compile bmDCA, this version of Clang is not compatible with the `fopenmp`
-compiler flag that is used to enable parallelization. Additionally, libraries
-(see Armadillo in the next step) installed via Homebrew are not by default
-known to `pkg-config` or the linker.
-
-Addressing all of these issues involves overriding the `CC` and `CXX`
-environmental variables with the new GCC, updating `PKG_CONFIG_PATH` with paths
-to any relevant \*.pc files, and updating `LD_LIBRARY_PATH` with any shared
-object library linked at compile time.
-
-Doing this for the first time is a bit bewildering, so for convenience, use the
-`rcparams` file in the `tools` directory in this repository. In it are a few
-helper functions and aliases. Simply append the contents of that file to your
-shell run commands. If you don't know what shell you're using, run:
-```
-echo $SHELL
-```
-
-For bash, copy the contents of `rcparams` to `${HOME}/.bashrc`, and for zsh,
-copy to `${HOME}/.zshrc`. The general idea is that macOS versions <=10.14
-(Mojave and earlier), uses bash as the default shell, and for >=10.15 (Catalina
-and later), Apple switched the default shell to zsh.
-
-You can append the `rcparams` file by copy-pasting the code in it to run rc
-file using your favorite text editor. Another method for appending is to run
-`cat tools/rcparams >> ${HOME}/.bashrc` or `cat tools/rcparams >>
-${HOME}/.bashrc`, as appropriate.
-
-The `rcparams` file contains a few helper functions, `pkgconfig_find()` and
-`ld_lib_add()`, that automate the process of finding where build dependencies
-are installed on your system.
-
-__Note:__ Run commands are only executed when the shell starts, _not_ when the
-their files are edited. To update your currently-running shell to reflect new
-changes, you can either run in the command prompt:
-```
-source ${HOME}/.bashrc
-```
-
-or simply open a new terminal. (For remote systems, you can just log out and log
-in again.)
-
-__Bash users:__ Your macOS installation may not actually source the `.bashrc`
-file by default. Check that the functions are actually being loaded by running:
-```
-LC_ALL=C type pkgconfig_find
-```
-
-If the function is not found, check that the `${HOME}/.bash_profile` file
-exists. In it, there should be a line that looks like `[ -f $HOME/.bashrc ] &&
-. $HOME/.bashrc`. If no such like is there or if no such file exists, add it
-and open a new terminal.
-
-
-<!-- The files will be installed to `/usr/local/include` and `/usr/local/lib` by
-   - default. This requires root privileges (hence, the `sudo make install` at the
-   - end). If you want to install elsewhere, adjust the above commands:
-   - ```
-   - wget https://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz
-   - tar xf armadillo-9.850.1.tar.xz
-   - cd armadillo-9.850.1
-   - cmake . -DCMAKE_INSTALL_PREFIX:PATH=<alternate_path>
-   - make -j4
-   - make install
-   - cd ..
-   - ```
-   - 
-   - Here, change `<alternate_path>` to wherever you want, for example `${HOME}` or
-   - `${HOME}/.local`. -->
-
-### Windows
-
-Before starting, install [MSYS2](https://www.msys2.org). This program is a
-package distribution for GNU/Unix tools that can be used to build programs for
-Windows.
-
-The installer defaults work fine, and if prompted, open the "MSYS2" shell in
-the dialog window.
-
-Once MSYS2 is installed and open, update the base libraries by running:
-```
-pacman -Syu
-```
-
-This will download and install some packages and synchronize the list of
-available packages with what is available on online repositories. You will then
-be prompted to close the terminal. Close it and open it again. Then, again run:
-```
-pacman -Syu
-```
-
-This will upgrade any remaining packages.
-
-Next, install the dependencies for bmDCA:
-```
-pacman -S nano vim git \
-  autoconf automake-wrapper pkg-config make \
-  mingw-w64-x86_64-toolchain \
-  mingw-w64-x86_64-openmp \
-  mingw-w64-x86_64-arpack \
-  mingw-w64-x86_64-lapack \
-  mingw-w64-x86_64-openblas \
-  mingw-w64-x86_64-armadillo
-```
-
-The above command will install the required programs in the `/mingw64/bin`
-directory. Unfortunately, this directory is not on the default PATH. You will
-need to add it manually.
-
-Open your `.bashrc` file in a text editor (e.g. `vim ~/.bashrc`). Nano and Vim
-were installed in the above command block.
-
-Once open, add the line (at the end of the file):
-```
-export PATH="/mingw64/bin:$PATH"
-```
-
-Then, close and open the MSYS2 terminal again.
-
-_Optionally, edit the `/etc/pacman.conf` file. Uncomment the line `#Color` and
-add the line `ILoveCandy`. Just a cosmetic flourish for `pacman`._
-
-## Installing bmDCA (all platforms)
-
-Now that all the dependencies have been installed, download bmDCA.
-```
-git clone https://github.com/sudorook/bmDCA.git
-cd bmDCA
-```
-
-Then, compile and install bmDCA in a globally accessible directory (default:
-`/usr/local`) by running:
-```
-./autogen.sh --prefix=/usr/local && \
-make -j4 && \
-make install
-```
-
-Depending on your platform, the `make install` command may fail due to
-permissions issues. To remedy this you can either run `sudo make install`, or
-you can specify a different installation directory that does not require
-administrator privileges. The latter option is particularly useful when working
-on remote system not under your control.
-
-To go with the latter option and install bmDCA in a local directory, for
-example `$HOME/.local`, adjust the installation command as follows:
-```
-./autogen.sh --prefix=${HOME}/.local && \
-make -j4 && \
-make install
-```
-
-You can replace the value to the right of `--prefix=` with any other path.
-Note, that you should check that it is on your system PATH.
-
-In the event you wish to uninstall `bmDCA`, simply run `sudo make uninstall`
-or `make uninstall` as appropriate.
-
-Test the installation by running in the terminal:
-```
-bmdca
-```
-
-If the installation worked correctly, this will print the usage information,
-e.g.:
-```
-bmdca usage:
-(e.g. bmdca -i <input MSA> -r -d <directory> -c <config file>)
-  -i: input MSA (FASTA format)
-  -d: destination directory
-  -r: re-weighting flag
-  -n: numerical MSA
-  -w: sequence weights
-  -c: config file
-  -h: print usage (i.e. this message)
-  -f: force a restart of the inference loop
-```
-
-### Additional notes for Windows 10
-
-Though `bmdca` should now be easily invoked from within MSYS2, one can update
-the system PATH variable to make the binaries accessible system-wide, such as
-from the command prompt or other terminal emulators. To update the PATH:
-
-1. Type 'env' in the start search bar.
-2. Click 'Edit the system environment variables'.
-3. Click on 'Environment Variables...' toward the bottom of the window that
-   opens.
-4. Select 'Path' in one of the two selection windows (either 'User variables'
-   or 'System variables' is fine)
-5. Once 'Path' is highlighted, click 'Edit...'
-6. Enter the `/usr/local/bin` as a new PATH entry. You can either:
-   - Click 'New' in the new window and enter the path to `/usr/local/bin` in
-     the MSYS2 installation folder (default: `C:\msys64\usr\local\bin`).
-   - Click the 'Browse...' button and navigate to the `C:\msys64\usr\local\bin`
-     directory.
-7. When the new entry is added, click 'OK' on all the opened windows to set all
-   the changes. You will need to close and re-open terminals for the changes to
-   be reflected.
+bmDCA is a tool to infer a Potts model from an amino-acid multiple sequence
+alignment. The inferred model can be used for predicting:
+ - Structural contacts
+ - Mutational effects
+ - Sequence function
 
 ## Usage
 
+To install bmDCA, follow the [INSTALL.md](installation instructions). The
+following are descriptions of the binaries.
+
+### Alignment pre-preprocessing (`process_msa`)
+
+**This is the most important step in the pipeline! Do not gloss over it.**
+
+A MSA will need to be preprocessed before any sort of inference is performed.
+This is to ensure that the alignment contains mostly the relevant variation on
+protein sequences. For example, in large alignments, most positions are gaps,
+and most sequences consist of gaps. Training of model on raw MSAs like those
+will not yield informative models, just gaps.
+
+To pre-process the MSA, you can use `process_msa` program. Command line flags
+are:
+ - `-i`: input multiple sequence alignment, FASTA format
+ - `-n`: input multiple sequence alignment, numerical format
+ - `-w`: (_optional_) sequence weight file for the input MSA
+ - `-r`: (_optional_) flag to re-weight sequences before any processing is done
+         (if no weights file is provided)
+ - `-t`: sequence similarity threshold for re-weighting
+         (if no weights file is provided)
+ - `-g`: maximum allowable fraction of gaps in sequences so that highly gapped
+         sequences are removed
+ - `-G`: maximum allowable fraction of gaps in positions so that highly gapped
+         positions are removed
+ - `-s`: maximum sequence identity fraction, where sequences above the
+         threshold will be pruned from the alignment
+ - `-p`: positions (indexed from 0) to protect from being pruned from the
+         alignment
+ - `-q`: sequences (indexed form 0 in the alignment) to protect from being
+         pruning
+ - `-o`: output name of the processed alignment
+ - `-O`: (_optional_) output name for sequence weights
+ - `-h`: print usage information
+
+__Important:__ `process_msa` does not handle gaps represented by '.'
+characters.
+
+#### Examples
+
+To prune sequences and positions with gaps above `0.2`:
+```
+process_msa -i <input msa> -g .2 -G .2 -o <output file>
+```
+
+To remove sequences above 90% similarity but protect the first two sequences:
+```
+process_msa -i <input msa> -o <output file> -s .9 -q 0 -q 1
+```
+
+__Note:__ When pruning position and sequence gaps, gapped positions are removed
+_first_ and _then_ the sequence gap proportions are computed using the pruned
+set of positions.
+
 ### Inference (`bmdca`)
 
-This step will take an input multiple sequence alignment (MSA) and a config
-file specifying learning parameters and options and then run an inference loop
-to fit values to a Potts model for amino acid frequencies at positions (Potts
-fields) and pairs of frequencies at pairs of positions (Potts couplings).
+This step will take an input multiple sequence alignment (MSA) and a
+configuration file specifying learning parameters and options and then run an
+inference loop to fit values to a Potts model for amino acid frequencies at
+positions (fields, h) and pairs of frequencies at pairs of positions
+(couplings, J).
 
 The command line flags are:
  - `-i`: training input MSA, FASTA format
@@ -339,13 +89,18 @@ acids are ordered as in the following string "-ACDEFGHIKLMNPQRSTVWY". They are
 then mapped to the integer corresponding to their position in the string, minus
 one. The gap symbol is mapped to 0, A is mapped to 1, etc...
 
-To generate a sequence weight file, you can use the provided `process_msa` tool
-bundled in bmDCA. Instructions are in a subsequent section.
+Output will be contained in the output folder specified or ones current working
+directory if not. An explanation of what each file is and the format by which
+data is stored will be provided in a later section.
 
-__Important:__ The MSA processing function does not handle gaps represented by
-'.' characters.
+__Important:__ Due to the sheer number of parameters being trained versus the
+number of sequences as input, there is a very substantial. To help keep track
+of overfitting at each step of the inference loop, bmDCA will by default split
+out 100 (by default) effective sequences chosen at random to use as a
+validation set. Overfitting becomes more severe as the difference in sequence
+energy between the training and validation set increases.
 
-#### Example 1: run from FASTA file
+#### Example 1: Run from FASTA file
 
 To learn a FASTA-formatted multiple sequence alignment (with re-weighting) and
 a config file:
@@ -355,7 +110,7 @@ bmdca -i <input_alignment.fasta> -w <input_alignment_weignts.txt> \
   -d <output_directory> -c <config_file.conf>
 ```
 
-#### Example 2: restarting runs
+#### Example 2: Restarting runs
 
 Take, for example, this command:
 ```
@@ -370,7 +125,7 @@ bmdca -i <input_alignment.fasta> -d <output_directory> -r -c <config_file.conf>
 
 The inference loop will pick up from where it left off.
 
-**IMPORTANT** To guarantee that inferences loop produce the same results
+__Note:__ To guarantee that inferences loop produce the same results
 irrespective of whether they were stopped and restarted or ran continuously,
 bmDCA will check that the hyperparameters used previously and presently match.
 The only fields that may be adjusted before restarting are:
@@ -379,8 +134,8 @@ The only fields that may be adjusted before restarting are:
    disk.
 2. `save_best_step` - boolean flag to save any step that produces the lowest
    RMS error with respect to the MSA so far in the inference.
-3. `step_max` - the max number of steps (increase to continue a loop after it
-   ends)
+3. `step_max` - the max number of steps (increase to continue inference on a
+   previously completed run)
 4. `stop_mode` - the method used to determine the convergence threshold
    (description below)
 5. `stop_threshold` - the convergence threshold (lower it to continue)
@@ -455,53 +210,6 @@ numeric2fasta -n <numeric_msa_file> -o <output_fasta_file>
 
 Presently, only numeric alignments with 21 states (20 amino acids + 1 for gaps)
 can be converted to FASTA format.
-
-### Alignment pre-preprocessing (`process_msa`)
-
-A MSA will need to be preprocessed before any sort of inference is performed.
-This is to ensure that the alignment contains mostly the relevant variation on
-protein sequences. Often, for large alignment, most positions are gaps, and
-most sequences consist of gaps. Such alignments will not yield informative
-models.
-
-To preprocess the MSA, you can use `process_msa` program. Command line flags
-are:
- - `-i`: input multiple sequence alignment, FASTA format
- - `-n`: input multiple sequence alignment, numerical format
- - `-w`: (_optional_) sequence weight file for the input MSA
- - `-r`: (_optional_) flag to re-weight sequences before any processing is done
-         (if no weights file is provided)
- - `-t`: sequence similarity threshold for re-weighting
-         (if no weights file is provided)
- - `-g`: maximum allowable fraction of gaps in sequences so that highly gapped
-         sequences are removed
- - `-G`: maximum allowable fraction of gaps in positions so that highly gapped
-         positions are removed
- - `-s`: maximum sequence identity fraction, where sequences above the
-         threshold will be pruned from the alignment
- - `-p`: positions (indexed from 0) to protect from being pruned from the
-         alignment
- - `-q`: sequences (indexed form 0 in the alignment) to protect from being
-         pruning
- - `-o`: output name of the processed alignment
- - `-O`: (_optional_) output name for sequence weights
- - `-h`: print usage information
-
-Below are some examples:
-
-To prune sequences and positions with gaps above `0.2`:
-```
-process_msa -i <input msa> -g .2 -G .2 -o <output file>
-```
-
-To remove sequences above 90% similarity but protect the first two sequences:
-```
-process_msa -i <input msa> -o <output file> -s .9 -q 0 -q 1
-```
-
-__Note:__ If pruning position and sequence gaps, gapped positions are removed
-_first_ and _then_ the sequence gap proportions are computed using the pruned
-set of positions.
 
 ## Configuration file options
 
@@ -779,16 +487,18 @@ the file extension. For example, the final learned parameters will be stored in
 `parameters_final.txt`. __Use this file or the latest learned parameters for
 sampling synthetic sequences.__
 
-Depending how many times you configure `bmdca` to save steps to disk, the total
-data generated can be substantial ( > 1 Gb). At present, the only way to
-disable writing of a particular log file is to comment out the code in the
-`Sim::run()` function defined in `src/run.cpp`.
+Depending how many times you configure `bmdca` to save steps to disk and the
+size of the model being trained, the size of the total data generated can be
+substantial (>> 1 Gb).
 
 ## Output file formats
 
 ### Run log
 
-The columns in the run log correspond to:
+The run log (`bmdca_run.log`) is a delimited table updated every `save_period`
+number of steps alongside the rest of the output.
+
+The columns in the correspond to:
 1. `step` - current iteration number
 2. `walkers` - number of independent sampling trajectories
 3. `samples-per-walk` - number of samples to take from each walker (MCMC)
@@ -827,30 +537,34 @@ The columns in the run log correspond to:
 Some columns may or may not be present in your log file depending on the
 settings used for inference. For example, if only 1 sequence is sampled from
 each trajectory (`samples_per_walk=1`), then the auto- and cross-correlation
-stats along with the energy ones will be not be computed.
+stats along with the energy ones will be not be computed and the corresponding
+columns absent.
 
 ### Numerical sequence alignment
 
-This file is a space-delimited file, e.g.:
+These files (e.g. `msa_numerical.txt`, `samples_%d.txt`) contain
+integer-encoded sequences of an MSA. These are space-delimited files, e.g.:
 ```
 4914 53 21
 0 2 10 10 13 16 1 7 6 13 2 1 12 19 17 17 15 19 20 5 18 6 18 18 6 15 2 12 15 5 19 20 6 6 2 7 6 12 9 12 16 5 1 16 4 4 4 2 11 15 18 2 0
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 5 6 20 9 6 2 6 6 12 9 12 12 5 3 17 3 6 17 2 17 16 10 2 9
 ```
 
-The first line is:
+The values in the first line are:
 1. Number of sequences (M)
 2. Number of positions (N)
 3. Size of amino acid alphabet (all AAs + 1 for gaps) (Q)
+
+The remaining lines are the sequences themselves.
 
 ### Learned Potts model parameters
 
 #### Armadillo binary
 
-By default, `bmdca` will save learned parameters in binary format.  These files
-(`parameters_h_%d.bin` and `parameters_J_%d.bin`) cannot be directly viewed by
-a text editor. To view the contents, convert the files to ASCII by using the
-provided `arma2ascii` tool.
+By default, `bmdca` will save learned parameters in Armadillo binary format.
+These files (`parameters_h_%d.bin` and `parameters_J_%d.bin`) cannot be
+directly viewed by a text editor. To view the contents, convert the files to
+ASCII by using the provided `arma2ascii` tool.
 
 See the above usage section for how to use `arma2ascii`. Parameters converted
 by the program will match the format for parameters generated when
@@ -889,7 +603,7 @@ For 1 position (1p) frequencies:
 .
 ```
 where `[amino acid frequencies (21)]` is a row of frequencies for each of the
-21 positions.
+21 amino acids.
 
 For 2 position (2p) frequencies:
 ```
@@ -923,4 +637,5 @@ The above examples will limit OpenMP to 4 threads.
 
 __You don't need to worry about this if submitting jobs through a workload
 manager__, such as Slurm or Sun Grid Engine. The manager will limit bmDCA to
-the number of cores specified, so manipulating `OMP_NUM_THREADS` is not needed.
+the number of cores in the job request, so manipulating `OMP_NUM_THREADS` is
+not needed.

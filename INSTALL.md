@@ -1,0 +1,313 @@
+# Install
+
+Dependencies (installation instructions detailed below):
+ * [GCC](https://gcc.gnu.org/) that supports the C++11 standard and
+   [OpenMP](https://en.wikipedia.org/wiki/OpenMP)
+ * AutoTools
+ * pkg-config
+ * [Armadillo](http://arma.sourceforge.net/)
+
+## Dependencies
+
+__GCC__ is used to compile the source code (and dependencies, if necessary).
+The code relies on the `fopenmp` flag for parallelization, so GCC is preferred
+over Clang. It also needs support for the C++11 standard, so any GCC later than
+version 4.2 will suffice.
+
+__AutoTools__ are a set of programs used to generate makefiles for
+cross-platform compilation and installation.
+
+__pkg-config__ is a program that provides a simple interface between installed
+programs (e.g. libraries and header files) and the compiler. It's used by
+AutoTools to check for dependencies before compilation.
+
+__Armadillo__ is a C++ linear algebra library. It's used for storing data in
+matrix structures and performing quick computations in the bmDCA inference
+loop. To install, again look to your package repository.
+
+### Linux
+
+To install the dependencies in Linux, simply use your distributions package
+manager. Commands for Debian/Ubuntu and Arch Linux are provided below:
+
+#### Debian/Ubuntu
+
+Run:
+```
+sudo apt-get update
+sudo apt-get install git gcc g++ automake autoconf pkg-config \
+  libarmadillo-dev libopenblas-dev libarpack++2-dev
+```
+
+#### Arch Linux
+
+For Arch Linux, GCC should have been installed with the `base` and `base-devel`
+metapackages (`sudo pacman -S base base-devel`), but if not installed, run:
+```
+sudo pacman -S gcc automake autoconf pkgconf superlu
+```
+
+For Arch, Armadillo is not in the package repositories. You will need to check
+the AUR.
+```
+git clone https://aur.archlinux.org/armadillo.git
+cd armadillo
+makepkg -si
+cd ..
+```
+
+<!-- If there is no package for Armadillo, or you do not have root privileges on the
+   - system your using, you can instead compile the library from source.
+   - 
+   - First, make sure that `cmake`, `openblas` (or `blas`), `lapack`, `arpack`, and
+   - `SuperLU` are installed. CMake is a compilation tool and the others are build
+   - dependencies. Then, to download and install Armadillo system wide, run the
+   - following:
+   - ```
+   - wget https://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz
+   - tar xf armadillo-9.850.1.tar.xz
+   - cd armadillo-9.850.1
+   - cmake .
+   - make -j4
+   - sudo make install
+   - cd ..
+   - ``` -->
+
+
+### macOS
+
+The macOS instructions rely on Xcode developer tools and Homebrew for package
+management. All commands will be entered into the Terminal.
+
+First, install Xcode developer tools. Open the 'Terminal' application from the
+launcher and run:
+```
+xcode-select --install
+```
+
+This may already be installed.
+
+Next, install Homebrew. From the [online instructions](https://brew.sh), run:
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+```
+
+If you run into permissions errors when installing Homebrew, complaining that
+root owns the `/usr/local/` directory, you can change the ownership by running:
+```
+sudo chown -R <user> /usr/local/
+```
+
+where `<user>` should be substituted with your username, e.g. `john`. Your
+username should be apparent form the command prompt, but if unsure, run
+`whoami`.
+
+Once Homebrew is installed, run:
+```
+brew install gcc automake autoconf pkg-config armadillo
+```
+
+This will install the most recent GCC (10.2.0 as of writing) along with
+AutoTools and pkg-config.
+
+__IMPORTANT:__ The default `gcc`, located in `/usr/bin/gcc` is actually aliased
+to `clang`, which is another compiler. While in principle it can be used to
+compile bmDCA, this version of Clang is not compatible with the `fopenmp`
+compiler flag that is used to enable parallelization. Additionally, libraries
+(see Armadillo in the next step) installed via Homebrew are not by default
+known to `pkg-config` or the linker.
+
+Addressing all of these issues involves overriding the `CC` and `CXX`
+environmental variables with the new GCC, updating `PKG_CONFIG_PATH` with paths
+to any relevant \*.pc files, and updating `LD_LIBRARY_PATH` with any shared
+object library linked at compile time.
+
+Doing this for the first time is a bit bewildering, so for convenience, use the
+`rcparams` file in the `tools` directory in this repository. In it are a few
+helper functions and aliases. Simply append the contents of that file to your
+shell run commands. If you don't know what shell you're using, run:
+```
+echo $SHELL
+```
+
+For bash, copy the contents of `rcparams` to `${HOME}/.bashrc`, and for zsh,
+copy to `${HOME}/.zshrc`. The general idea is that macOS versions <=10.14
+(Mojave and earlier), uses bash as the default shell, and for >=10.15 (Catalina
+and later), Apple switched the default shell to zsh.
+
+You can append the `rcparams` file by copy-pasting the code in it to run rc
+file using your favorite text editor. Another method for appending is to run
+`cat tools/rcparams >> ${HOME}/.bashrc` or `cat tools/rcparams >>
+${HOME}/.bashrc`, as appropriate.
+
+The `rcparams` file contains a few helper functions, `pkgconfig_find()` and
+`ld_lib_add()`, that automate the process of finding where build dependencies
+are installed on your system.
+
+__Note:__ Run commands are only executed when the shell starts, _not_ when the
+their files are edited. To update your currently-running shell to reflect new
+changes, you can either run in the command prompt:
+```
+source ${HOME}/.bashrc
+```
+
+or simply open a new terminal. (For remote systems, you can just log out and log
+in again.)
+
+__Bash users:__ Your macOS installation may not actually source the `.bashrc`
+file by default. Check that the functions are actually being loaded by running:
+```
+LC_ALL=C type pkgconfig_find
+```
+
+If the function is not found, check that the `${HOME}/.bash_profile` file
+exists. In it, there should be a line that looks like `[ -f $HOME/.bashrc ] &&
+. $HOME/.bashrc`. If no such like is there or if no such file exists, add it
+and open a new terminal.
+
+
+<!-- The files will be installed to `/usr/local/include` and `/usr/local/lib` by
+   - default. This requires root privileges (hence, the `sudo make install` at the
+   - end). If you want to install elsewhere, adjust the above commands:
+   - ```
+   - wget https://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz
+   - tar xf armadillo-9.850.1.tar.xz
+   - cd armadillo-9.850.1
+   - cmake . -DCMAKE_INSTALL_PREFIX:PATH=<alternate_path>
+   - make -j4
+   - make install
+   - cd ..
+   - ```
+   - 
+   - Here, change `<alternate_path>` to wherever you want, for example `${HOME}` or
+   - `${HOME}/.local`. -->
+
+### Windows
+
+Before starting, install [MSYS2](https://www.msys2.org). This program is a
+package distribution for GNU/Unix tools that can be used to build programs for
+Windows.
+
+The installer defaults work fine, and if prompted, open the "MSYS2" shell in
+the dialog window.
+
+Once MSYS2 is installed and open, update the base libraries by running:
+```
+pacman -Syu
+```
+
+This will download and install some packages and synchronize the list of
+available packages with what is available on online repositories. You will then
+be prompted to close the terminal. Close it and open it again. Then, again run:
+```
+pacman -Syu
+```
+
+This will upgrade any remaining packages.
+
+Next, install the dependencies for bmDCA:
+```
+pacman -S nano vim git \
+  autoconf automake-wrapper pkg-config make \
+  mingw-w64-x86_64-toolchain \
+  mingw-w64-x86_64-openmp \
+  mingw-w64-x86_64-arpack \
+  mingw-w64-x86_64-lapack \
+  mingw-w64-x86_64-openblas \
+  mingw-w64-x86_64-armadillo
+```
+
+The above command will install the required programs in the `/mingw64/bin`
+directory. Unfortunately, this directory is not on the default PATH. You will
+need to add it manually.
+
+Open your `.bashrc` file in a text editor (e.g. `vim ~/.bashrc`). Nano and Vim
+were installed in the above command block.
+
+Once open, add the line (at the end of the file):
+```
+export PATH="/mingw64/bin:$PATH"
+```
+
+Then, close and open the MSYS2 terminal again.
+
+_Optionally, edit the `/etc/pacman.conf` file. Uncomment the line `#Color` and
+add the line `ILoveCandy`. Just a cosmetic flourish for `pacman`._
+
+## Installing bmDCA (all platforms)
+
+Now that all the dependencies have been installed, download bmDCA.
+```
+git clone https://github.com/sudorook/bmDCA.git
+cd bmDCA
+```
+
+Then, compile and install bmDCA in a globally accessible directory (default:
+`/usr/local`) by running:
+```
+./autogen.sh --prefix=/usr/local && \
+make -j4 && \
+make install
+```
+
+Depending on your platform, the `make install` command may fail due to
+permissions issues. To remedy this you can either run `sudo make install`, or
+you can specify a different installation directory that does not require
+administrator privileges. The latter option is particularly useful when working
+on remote system not under your control.
+
+To go with the latter option and install bmDCA in a local directory, for
+example `$HOME/.local`, adjust the installation command as follows:
+```
+./autogen.sh --prefix=${HOME}/.local && \
+make -j4 && \
+make install
+```
+
+You can replace the value to the right of `--prefix=` with any other path.
+Note, that you should check that it is on your system PATH.
+
+In the event you wish to uninstall `bmDCA`, simply run `sudo make uninstall`
+or `make uninstall` as appropriate.
+
+Test the installation by running in the terminal:
+```
+bmdca
+```
+
+If the installation worked correctly, this will print the usage information,
+e.g.:
+```
+bmdca usage:
+(e.g. bmdca -i <input MSA> -r -d <directory> -c <config file>)
+  -i: input MSA (FASTA format)
+  -d: destination directory
+  -r: re-weighting flag
+  -n: numerical MSA
+  -w: sequence weights
+  -c: config file
+  -h: print usage (i.e. this message)
+  -f: force a restart of the inference loop
+```
+
+### Additional notes for Windows 10
+
+Though `bmdca` should now be easily invoked from within MSYS2, one can update
+the system PATH variable to make the binaries accessible system-wide, such as
+from the command prompt or other terminal emulators. To update the PATH:
+
+1. Type 'env' in the start search bar.
+2. Click 'Edit the system environment variables'.
+3. Click on 'Environment Variables...' toward the bottom of the window that
+   opens.
+4. Select 'Path' in one of the two selection windows (either 'User variables'
+   or 'System variables' is fine)
+5. Once 'Path' is highlighted, click 'Edit...'
+6. Enter the `/usr/local/bin` as a new PATH entry. You can either:
+   - Click 'New' in the new window and enter the path to `/usr/local/bin` in
+     the MSYS2 installation folder (default: `C:\msys64\usr\local\bin`).
+   - Click the 'Browse...' button and navigate to the `C:\msys64\usr\local\bin`
+     directory.
+7. When the new entry is added, click 'OK' on all the opened windows to set all
+   the changes. You will need to close and re-open terminals for the changes to
+   be reflected.
