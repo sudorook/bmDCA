@@ -136,26 +136,35 @@ copy to `${HOME}/.zshrc`. The general idea is that macOS versions <=10.14
 and later), Apple switched the default shell to zsh.
 
 You can append the `rcparams` file by copy-pasting the code in it to run rc
-file using your favorite text editor. You could also do something like `cat
-tools/rcparams >> ${HOME}/.bashrc`, for example.
+file using your favorite text editor. Another method for appending is to run
+`cat tools/rcparams >> ${HOME}/.bashrc` or `cat tools/rcparams >>
+${HOME}/.bashrc`, as appropriate.
 
-As another side note, your macOS installation may not actually source the
-`.bashrc` file by default. If you notice that adding the `rcparams` function
-has no effect in new terminals, check that the `${HOME}/.bash_profile` file
-exists. In it, there should be a line that looks like `[ -f $HOME/.bashrc ] &&
-. $HOME/.bashrc`. If no such like is there, add it and reload your terminal.
+The `rcparams` file contains a few helper functions, `pkgconfig_find()` and
+`ld_lib_add()`, that automate the process of finding where build dependencies
+are installed on your system.
 
-The libraries and headers will be found via the `pkgconfig_find()` and
-`ld_lib_add()` functions specified in the `rcparams` file.
-
-__Note:__ Run commands are executed when the shell starts, not when the files
-are edited. To update your shell to reflect changes, you can either run:
+__Note:__ Run commands are only executed when the shell starts, _not_ when the
+their files are edited. To update your currently-running shell to reflect new
+changes, you can either run in the command prompt:
 ```
 source ${HOME}/.bashrc
 ```
 
-or simply open a new shell. (For remote systems, you can just log out and log
+or simply open a new terminal. (For remote systems, you can just log out and log
 in again.)
+
+__Bash users:__ Your macOS installation may not actually source the `.bashrc`
+file by default. Check that the functions are actually being loaded by running:
+```
+LC_ALL=C type pkgconfig_find
+```
+
+If the function is not found, check that the `${HOME}/.bash_profile` file
+exists. In it, there should be a line that looks like `[ -f $HOME/.bashrc ] &&
+. $HOME/.bashrc`. If no such like is there or if no such file exists, add it
+and open a new terminal.
+
 
 <!-- The files will be installed to `/usr/local/include` and `/usr/local/lib` by
    - default. This requires root privileges (hence, the `sudo make install` at the
