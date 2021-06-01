@@ -47,8 +47,9 @@ ld_lib_add() {
 #   $1 - absolute path of directory
 ld_path_add() {
   if [ -d "${1}" ]; then
-    LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(readlink -f "${1}")"
-    export LD_LIBRARY_PATH
+    local lib_path
+    lib_path="$(readlink -f "${1}")"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${lib_path}"
   fi
 }
 
