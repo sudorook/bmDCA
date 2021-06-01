@@ -58,15 +58,15 @@ ld_path_add() {
 # environmental variables.
 #   $1 - absolute path to gcc binary file
 set_gcc() {
-  local GCC
-  local GXX
-  GCC="$(echo "${1}" | sed -e "s,/g++\([0-9\-]*\)$,/gcc\1,g")"
-  GXX="$(echo "${1}" | sed -e "s,/gcc\([0-9\-]*\)$,/g++\1,g")"
-  if [ -f "${GCC}" ] && [ -f "${GXX}" ]; then
-    alias gcc="${GCC}"
-    alias g++="${GXX}"
-    export CC="${GCC}"
-    export CXX="${GXX}"
+  local gcc
+  local gxx
+  gcc="$(echo "${1}" | sed -e "s,/g++\([0-9\-]*\)$,/gcc\1,g")"
+  gxx="$(echo "${1}" | sed -e "s,/gcc\([0-9\-]*\)$,/g++\1,g")"
+  if [ -f "${gcc}" ] && [ -f "${gxx}" ]; then
+    alias gcc="${gcc}"
+    alias g++="${gxx}"
+    export CC="${gcc}"
+    export CXX="${gxx}"
   fi
 }
 
