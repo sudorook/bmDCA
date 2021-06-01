@@ -4,16 +4,25 @@
 
 # Search for pkgconfig directories in a given path and load them to the
 # PKG_CONFIG_PATH environmental variable.
-#   $1 - absolute path of directory
+#   $1 - path to search for pkg-config *.pc files
 pkgconfig_find() {
-  if [ -d "${1}" ]; then
-    local PKG_CONFIG_PATH_NEW
-    PKG_CONFIG_PATH_NEW=$(find "${1}" -type d -name "pkgconfig" -print | \
-                          tr '\n' ':')
-    if ! [[ "${PKG_CONFIG_PATH_NEW}" == "" ]] && \
-       ! [[ "${PKG_CONFIG_PATH}" =~ ${PKG_CONFIG_PATH_NEW} ]]; then
-      export PKG_CONFIG_PATH="${PKG_CONFIG_PATH_NEW}${PKG_CONFIG_PATH}"
+  if ! [ -d "${1}" ]; then
+    echo "pkgconfig_find(): ${1} does not exist." 1>&2
+    return 1
+  fi
+  local dir
+  local pkg_config
+  dir="$(readlink -f "${1}")"
+  pkg_config=$(find "${dir}" -type d -name "pkgconfig" -print 2>/dev/null | \
+               tr '\n' ':')
+  if [[ -n "${pkg_config}" ]]; then
+    if ! [[ "${PKG_CONFIG_PATH}" =~ ${pkg_config} ]]; then
+      export PKG_CONFIG_PATH="${pkg_config}${PKG_CONFIG_PATH}"
+    else
+      echo "pkgconfig_find(): ${1} already exists in PKG_CONFIG_PATH." 1>&2
     fi
+  else
+    echo "pkgconfig_find(): pkgconfig not found in ${1}." 1>&2
   fi
 }
 
