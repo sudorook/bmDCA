@@ -31,12 +31,15 @@ pkgconfig_find() {
 # binaries compiled against libraries in stored in exotic directories.
 #   $1 - library name input to pkg-config
 ld_lib_add() {
-  local LIB_PATH
-  LIB_PATH=$(pkg-config --libs "${1}" 2>/dev/null | \
+  local lib_path
+  lib_path=$(pkg-config --libs "${1}" 2>/dev/null | \
              sed -n "s,-L\(.*\)\ -l.*,\1,p")
-  if ! [[ "${LIB_PATH}" == "" ]] && \
-     ! [[ "${LD_LIBRARY_PATH}" =~ ${LIB_PATH} ]]; then
-    export LD_LIBRARY_PATH="${LIB_PATH}:${LD_LIBRARY_PATH}"
+  if [[ -n "${lib_path}" ]]; then
+    if ! [[ "${LD_LIBRARY_PATH}" =~ ${lib_path} ]]; then
+      export LD_LIBRARY_PATH="${lib_path}:${LD_LIBRARY_PATH}"
+    else
+      echo "ld_lib_add(): ${1} already exists in LD_LIBRARY_PATH." 1>&2
+    fi
   fi
 }
 
