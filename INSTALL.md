@@ -1,4 +1,4 @@
-# Install
+# Installation
 
 Dependencies (installation instructions detailed below):
  * [GCC](https://gcc.gnu.org/) that supports the C++11 standard and
@@ -41,14 +41,21 @@ sudo apt-get install git gcc g++ automake autoconf pkg-config \
 
 #### Arch Linux
 
-For Arch Linux, GCC should have been installed with the `base` and `base-devel`
-metapackages (`sudo pacman -S base base-devel`), but if not installed, run:
+For Arch Linux, GCC and the build tools should have been installed with the
+`base` and `base-devel` metapackages (`sudo pacman -S base base-devel`), but if
+not installed, run:
 ```
-sudo pacman -S gcc automake autoconf pkgconf superlu
+sudo pacman -S gcc automake autoconf pkgconf
 ```
 
-For Arch, Armadillo is not in the package repositories. You will need to check
-the AUR.
+Next, install the `git` and `superlu` packages from the repos.
+```
+sudo pacman -S git superlu
+```
+
+The final dependency, Armadillo, is not in the Arch package repositories. You
+can build the package from source (not recommended on rolling release distros)
+or use the AUR package. Run:
 ```
 git clone https://aur.archlinux.org/armadillo.git
 cd armadillo
@@ -72,7 +79,6 @@ cd ..
    - sudo make install
    - cd ..
    - ``` -->
-
 
 ### macOS
 
@@ -107,45 +113,51 @@ Once Homebrew is installed, run:
 brew install gcc automake autoconf pkg-config armadillo
 ```
 
-This will install the most recent GCC (10.2.0 as of writing) along with
+This will install the most recent GCC (11.1.0 as of writing) along with
 AutoTools and pkg-config.
 
 __IMPORTANT:__ The default `gcc`, located in `/usr/bin/gcc` is actually aliased
-to `clang`, which is another compiler. While in principle it can be used to
-compile bmDCA, this version of Clang is not compatible with the `fopenmp`
-compiler flag that is used to enable parallelization. Additionally, libraries
-(see Armadillo in the next step) installed via Homebrew are not by default
-known to `pkg-config` or the linker.
+to `clang`, which is another compiler. While in principle Clang can be used to
+compile bmDCA, the default version of Clang is not compatible with the
+`fopenmp` compiler flag that is used to enable parallelization. Additionally,
+libraries installed via Homebrew are not by default known to `pkg-config` or
+the linker.
 
-Addressing all of these issues involves overriding the `CC` and `CXX`
-environmental variables with the new GCC, updating `PKG_CONFIG_PATH` with paths
-to any relevant \*.pc files, and updating `LD_LIBRARY_PATH` with any shared
-object library linked at compile time.
+Addressing issues involves overriding the `CC` and `CXX` environmental
+variables to use the Homebrew-installed GCC, updating `PKG_CONFIG_PATH` with
+paths to any relevant \*.pc files, and updating `LD_LIBRARY_PATH` with the
+paths of all the shared object libraries linked at compile time.
 
 Doing this for the first time is a bit bewildering, so for convenience, use the
-`rcparams` file in the `tools` directory in this repository. In it are a few
-helper functions and aliases. Simply append the contents of that file to your
-shell run commands. If you don't know what shell you're using, run:
+`rcparams` file in the `tools/` directory in this repository. In it are a few
+helper functions (`pkgconfig_find()` and `ld_lib_add()`) to automate the
+process of finding where build dependencies are installed on your system.
+
+Simply append the contents of that file to your shell run commands. If you
+don't know what shell you're using, run:
 ```
 echo $SHELL
 ```
 
-For bash, copy the contents of `rcparams` to `${HOME}/.bashrc`, and for zsh,
-copy to `${HOME}/.zshrc`. The general idea is that macOS versions <=10.14
-(Mojave and earlier), uses bash as the default shell, and for >=10.15 (Catalina
-and later), Apple switched the default shell to zsh.
+For Bash, copy the contents of `rcparams` to `${HOME}/.bashrc`, and for Zsh,
+copy to `${HOME}/.zshrc`. macOS versions <=10.14 (Mojave and earlier), uses
+Bash as the default shell, and for >=10.15 (Catalina and later), Apple switched
+the default shell to Zsh.
 
-You can append the `rcparams` file by copy-pasting the code in it to run rc
-file using your favorite text editor. Another method for appending is to run
-`cat tools/rcparams >> ${HOME}/.bashrc` or `cat tools/rcparams >>
-${HOME}/.bashrc`, as appropriate.
-
-The `rcparams` file contains a few helper functions, `pkgconfig_find()` and
-`ld_lib_add()`, that automate the process of finding where build dependencies
-are installed on your system.
+To copy the `rcparams` contents:
+1. Append the `rcparams` file by copy-pasting the code from your favorite text
+   editor, or
+2. Run (as appropriate):
+```
+cat tools/rcparams >> ${HOME}/.bashrc
+```
+or
+```
+cat tools/rcparams >> ${HOME}/.zshrc
+```
 
 __Note:__ Run commands are only executed when the shell starts, _not_ when the
-their files are edited. To update your currently-running shell to reflect new
+files are edited. To update your currently-running shell to reflect new
 changes, you can either run in the command prompt:
 ```
 source ${HOME}/.bashrc
@@ -161,26 +173,13 @@ LC_ALL=C type pkgconfig_find
 ```
 
 If the function is not found, check that the `${HOME}/.bash_profile` file
-exists. In it, there should be a line that looks like `[ -f $HOME/.bashrc ] &&
-. $HOME/.bashrc`. If no such like is there or if no such file exists, add it
-and open a new terminal.
+exists. In it, there should be a line that looks like:
+```
+[ -f $HOME/.bashrc ] && . $HOME/.bashrc
+```
 
-
-<!-- The files will be installed to `/usr/local/include` and `/usr/local/lib` by
-   - default. This requires root privileges (hence, the `sudo make install` at the
-   - end). If you want to install elsewhere, adjust the above commands:
-   - ```
-   - wget https://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz
-   - tar xf armadillo-9.850.1.tar.xz
-   - cd armadillo-9.850.1
-   - cmake . -DCMAKE_INSTALL_PREFIX:PATH=<alternate_path>
-   - make -j4
-   - make install
-   - cd ..
-   - ```
-   - 
-   - Here, change `<alternate_path>` to wherever you want, for example `${HOME}` or
-   - `${HOME}/.local`. -->
+If no such like is there or if no such file exists, add it and open a new
+terminal.
 
 ### Windows
 
@@ -207,7 +206,7 @@ This will upgrade any remaining packages.
 
 Next, install the dependencies for bmDCA:
 ```
-pacman -S nano vim git \
+pacman -S git nano vim \
   autoconf automake-wrapper pkg-config make \
   mingw-w64-x86_64-toolchain \
   mingw-w64-x86_64-openmp \
@@ -218,11 +217,11 @@ pacman -S nano vim git \
 ```
 
 The above command will install the required programs in the `/mingw64/bin`
-directory. Unfortunately, this directory is not on the default PATH. You will
-need to add it manually.
+directory. Unfortunately, this directory is not on the default PATH in Windows.
+You will need to add it manually.
 
 Open your `.bashrc` file in a text editor (e.g. `vim ~/.bashrc`). Nano and Vim
-were installed in the above command block.
+(two different text editors) were installed in the above command block.
 
 Once open, add the line (at the end of the file):
 ```
@@ -232,11 +231,12 @@ export PATH="/mingw64/bin:$PATH"
 Then, close and open the MSYS2 terminal again.
 
 _Optionally, edit the `/etc/pacman.conf` file. Uncomment the line `#Color` and
-add the line `ILoveCandy`. Just a cosmetic flourish for `pacman`._
+add a new line `ILoveCandy`. Just a cosmetic flourish for `pacman`._
 
 ## Installing bmDCA (all platforms)
 
-Now that all the dependencies have been installed, download bmDCA.
+Now that all the dependencies have been installed on your operating systems,
+download bmDCA.
 ```
 git clone https://github.com/sudorook/bmDCA.git
 cd bmDCA
@@ -246,29 +246,32 @@ Then, compile and install bmDCA in a globally accessible directory (default:
 `/usr/local`) by running:
 ```
 ./autogen.sh --prefix=/usr/local && \
-make -j4 && \
-make install
+  make -j$(nproc) && \
+  make install
 ```
 
 Depending on your platform, the `make install` command may fail due to
-permissions issues. To remedy this you can either run `sudo make install`, or
-you can specify a different installation directory that does not require
-administrator privileges. The latter option is particularly useful when working
-on remote system not under your control.
+permissions issues. To remedy this you can either run `sudo make install` to
+install bmDCA system-wide, or you can specify a different installation
+directory that does not require administrator privileges. The latter option is
+particularly useful when working on remote systems not under your control.
 
 To go with the latter option and install bmDCA in a local directory, for
-example `$HOME/.local`, adjust the installation command as follows:
+example the `$HOME/.local` directory, adjust the installation command as
+follows:
 ```
 ./autogen.sh --prefix=${HOME}/.local && \
-make -j4 && \
-make install
+  make -j$(nproc) && \
+  make install
 ```
 
-You can replace the value to the right of `--prefix=` with any other path.
+You can replace the value to the right of `--prefix=` with any other directory.
 Note, that you should check that it is on your system PATH.
 
 In the event you wish to uninstall `bmDCA`, simply run `sudo make uninstall`
 or `make uninstall` as appropriate.
+
+## Run bmDCA
 
 Test the installation by running in the terminal:
 ```
@@ -289,6 +292,8 @@ bmdca usage:
   -h: print usage (i.e. this message)
   -f: force a restart of the inference loop
 ```
+
+For full details and usage examples, see the [README](README.md).
 
 ### Additional notes for Windows 10
 
