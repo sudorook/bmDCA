@@ -18,8 +18,8 @@ following are descriptions of the binaries.
 A MSA will need to be preprocessed before any sort of inference is performed.
 This is to ensure that the alignment contains mostly the relevant variation on
 protein sequences. For example, in large alignments, most positions are gaps,
-and most sequences consist of gaps. Training of model on raw MSAs like those
-will not yield informative models, just gaps.
+and most sequences consist of gaps. Training on raw MSAs like these will not
+yield informative protein models, just models of gaps.
 
 To pre-process the MSA, you can use `process_msa` program. Command line flags
 are:
