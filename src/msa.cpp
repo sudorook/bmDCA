@@ -306,6 +306,10 @@ MSA::makeNumericalMatrix(void)
           alignment(row_idx, col_idx) = 20;
           col_idx++;
           break;
+        default:
+          std::cerr << *aa << std::endl;
+          std::exit(EXIT_FAILURE);
+          break;
       }
     }
     row_idx++;
@@ -389,6 +393,10 @@ MSA::getSequenceLength(std::string sequence)
       case 'W':
       case 'Y':
         valid_aa_count += 1;
+        break;
+      default:
+        std::cerr << *it << std::endl;
+        std::exit(EXIT_FAILURE);
         break;
     }
   }
