@@ -216,6 +216,7 @@ MSA::makeNumericalMatrix(void)
     for (auto aa = sequence.begin(); aa != sequence.end(); aa++) {
       switch (*aa) {
         case '-':
+        case '.':
         case 'B':
         case 'J':
         case 'O':
@@ -360,6 +361,7 @@ MSA::getSequenceLength(std::string sequence)
        ++it) {
     switch (*it) {
       case '-':
+      case '.':
       case 'B':
       case 'J':
       case 'O':
