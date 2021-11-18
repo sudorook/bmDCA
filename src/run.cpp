@@ -413,7 +413,6 @@ Sim::checkHyperparameters(void)
 void
 Sim::writeHyperparameters(std::string output_file, bool append)
 {
-  // std::ofstream stream(output_file);
   std::ofstream stream;
   if (append) {
     stream.open(output_file, std::ofstream::out | std::ofstream::app);
@@ -687,54 +686,6 @@ Sim::deleteStep(int step)
   }
 };
 
-// void
-// Sim::clearFiles(std::string dest_dir)
-// {
-//   DIR* dp;
-//   struct dirent* dirp;
-//
-//   std::vector<std::string> files;
-//   dp = opendir(dest_dir.c_str());
-//
-//   while ((dirp = readdir(dp)) != NULL) {
-//     std::string fname = dirp->d_name;
-//
-//     if (fname.find("parameters_"))
-//       files.push_back(fname);
-//     // else if (fname.find("parameters_avg_"))
-//     //   files.push_back(fname);
-//     else if (fname.find("gradients_"))
-//       files.push_back(fname);
-//     else if (fname.find("bmdca_"))
-//       files.push_back(fname);
-//     else if (fname.find("moment1_"))
-//       files.push_back(fname);
-//     else if (fname.find("moment2_"))
-//       files.push_back(fname);
-//     else if (fname.find("MC_energies_"))
-//       files.push_back(fname);
-//     else if (fname.find("MC_samples_"))
-//       files.push_back(fname);
-//     else if (fname.find("msa_numerical"))
-//       files.push_back(fname);
-//     else if (fname.find("overlap_"))
-//       files.push_back(fname);
-//     else if (fname.find("ergo_"))
-//       files.push_back(fname);
-//     else if (fname.find("stat_MC_"))
-//       files.push_back(fname);
-//     else if (fname.find("stat_align_"))
-//       files.push_back(fname);
-//     else if (fname.find("rel_ent_grad_"))
-//       files.push_back(fname);
-//   }
-//   closedir(dp);
-//
-//   for (auto it = files.begin(); it != files.end(); ++it) {
-//     std::remove((*it).c_str());
-//   }
-// };
-
 /**
  * @brief Restore a run from the last valid position.
  *
@@ -862,9 +813,6 @@ Sim::run(void)
     std::cout << "convergence threshold is " << stop_threshold << std::endl;
   }
 
-  // int N = msa_train_stats->getN();
-  // int Q = msa_train_stats->getQ();
-
   // BM sampling loop
   for (step = 1 + step_offset; step <= step_max; step++) {
     step_timer.tic();
@@ -985,7 +933,6 @@ Sim::run(void)
       if (update_burn_time & (samples_per_walk > 1)) {
         flag_mc = checkErgodicity();
         if (flag_mc) {
-          std::cout << "resampling..." << std::endl;
           sample_stats->setMixingTime(burn_between);
         }
       } else {
@@ -1140,7 +1087,6 @@ Sim::run(void)
       std::cout << "converged! writing final results... " << std::flush;
       writeRunLog(step % save_period, buffer_offset);
       writeStep(step);
-      // writeData(std::to_string(step) + "_final");
       std::cout << "done" << std::endl;
       return;
     }
