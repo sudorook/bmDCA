@@ -32,6 +32,10 @@
 #define AA_ALPHABET_SIZE 21
 #endif
 
+#ifndef NT_ALPHABET_SIZE
+#define NT_ALPHABET_SIZE 5
+#endif
+
 /**
  * @brief Constructor for reading MSA (and weights) from file.
  *
@@ -46,9 +50,9 @@ MSA::MSA(std::string msa_file, std::string weight_file, bool is_numeric_msa)
   } else {
     readInputMSA(msa_file);
     M = seq_records.size();
-    N = getSequenceLength(seq_records.begin()->getSequence());
+    N = getAASequenceLength(seq_records.begin()->getSequence());
     Q = AA_ALPHABET_SIZE;
-    makeNumericalMatrix();
+    makeAANumericalMatrix();
   }
   if (!weight_file.empty()) {
     readSequenceWeights(weight_file);
@@ -205,7 +209,49 @@ MSA::readInputMSA(std::string msa_file)
  * @brief Convert a FASTA-formatted alignment into a numerical matrix.
  */
 void
-MSA::makeNumericalMatrix(void)
+MSA::makeNTNumericalMatrix(void)
+{
+  alignment = arma::Mat<int>(M, N);
+
+  int row_idx = 0;
+  for (auto seq = seq_records.begin(); seq != seq_records.end(); seq++) {
+    std::string sequence = seq->getSequence();
+    int col_idx = 0;
+    for (auto nt = sequence.begin(); nt != sequence.end(); nt++) {
+      switch (*nt) {
+        case '-':
+        case '.':
+          alignment(row_idx, col_idx) = 0;
+          col_idx++;
+          break;
+        case 'A':
+          alignment(row_idx, col_idx) = 1;
+          col_idx++;
+          break;
+        case 'C':
+          alignment(row_idx, col_idx) = 2;
+          col_idx++;
+          break;
+        case 'G':
+          alignment(row_idx, col_idx) = 3;
+          col_idx++;
+          break;
+        case 'T':
+          alignment(row_idx, col_idx) = 4;
+          col_idx++;
+          break;
+        default:
+          std::cerr << *nt << std::endl;
+          std::exit(EXIT_FAILURE);
+          break;
+      }
+    }
+    row_idx++;
+  }
+};
+
+void
+MSA::makeAANumericalMatrix(void)
 {
   alignment = arma::Mat<int>(M, N);
 
@@ -358,7 +404,38 @@ MSA::printAlignment(void)
  * @return number of positions
  */
 int
-MSA::getSequenceLength(std::string sequence)
+MSA::getNTSequenceLength(std::string sequence)
+{
+  int valid_nt_count = 0;
+  for (std::string::iterator it = sequence.begin(); it != sequence.end();
+       ++it) {
+    switch (*it) {
+      case '-':
+      case '.':
+      case 'A':
+      case 'C':
+      case 'G':
+      case 'T':
+        valid_nt_count += 1;
+        break;
+      default:
+        std::cerr << *it << std::endl;
+        std::exit(EXIT_FAILURE);
+        break;
+    }
+  }
+  return valid_nt_count;
+};
+
+/**
+ * @brief Count the number of valid positions in a sequence.
+ *
+ * @param sequence sequence string
+ *
+ * @return number of positions
+ */
+int
+MSA::getAASequenceLength(std::string sequence)
 {
   int valid_aa_count = 0;
   for (std::string::iterator it = sequence.begin(); it != sequence.end();

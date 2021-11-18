@@ -479,11 +479,42 @@ deleteAllFiles(std::string directory)
 };
 
 /**
+ * @brief Map integer to nucleotide (char).
+ *
+ * @param n (int) input nucleotide
+ *
+ * @return (char) nucleotide
+ */
+char
+convertNT(int n)
+{
+  char nt = '\0';
+  switch (n) {
+    case 0:
+      nt = '-';
+      break;
+    case 1:
+      nt = 'A';
+      break;
+    case 2:
+      nt = 'C';
+      break;
+    case 3:
+      nt = 'G';
+      break;
+    case 4:
+      nt = 'T';
+      break;
+  }
+  return nt;
+};
+
+/**
  * @brief Map integer to amino acid (char).
  *
  * @param n (int) input amino acid
  *
- * @return  (char)amino acid
+ * @return (char)amino acid
  */
 char
 convertAA(int n)

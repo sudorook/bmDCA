@@ -65,11 +65,13 @@ public:
 
 private:
   std::vector<SeqRecord> seq_records; ///< vector of sequences loaded from a FASTA file
-  int getSequenceLength(std::string);
+  int getAASequenceLength(std::string);
+  int getNTSequenceLength(std::string);
   void readInputMSA(std::string);
   void readInputNumericMSA(std::string);
   void readSequenceWeights(std::string);
-  void makeNumericalMatrix(void);
+  void makeAANumericalMatrix(void);
+  void makeNTNumericalMatrix(void);
 
   std::vector<size_t> seq_to_keep; ///< indices for sequences to protect from pruning
   std::vector<size_t> pos_to_keep; ///< indices for positions to protect from pruning
