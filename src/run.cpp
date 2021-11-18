@@ -880,8 +880,8 @@ Sim::run(void)
         timer.tic();
         bool flag_burn = true;
         while (flag_burn) {
-          double burn_reps = 24;
-          double burn_count = 4;
+          double burn_reps = 48;
+          double burn_count = 2;
           arma::Mat<double> energy_burn =
             arma::Mat<double>(burn_count, burn_reps, arma::fill::zeros);
 
@@ -890,15 +890,10 @@ Sim::run(void)
 
           double e_start = arma::mean(energy_burn.row(0));
           double e_start_sigma = arma::stddev(energy_burn.row(0), 1);
-          double e_end = (arma::mean(energy_burn.row(burn_count - 1)) +
-                          arma::mean(energy_burn.row(burn_count - 2))) /
-                         2; // lazy way to double the number of sequences from the end step
-          double e_end_sigma =
-            sqrt(pow(arma::stddev(energy_burn.row(burn_count - 1), 1), 2) +
-                 pow(arma::stddev(energy_burn.row(burn_count - 2), 1), 2));
+          double e_end = arma::mean(energy_burn.row(burn_count - 1));
+          double e_end_sigma = arma::stddev(energy_burn.row(burn_count - 1), 1);
           double e_err =
-            sqrt((pow(e_start_sigma, 2) / burn_reps + pow(e_end_sigma, 2)) / 2 /
-                 burn_reps);
+            sqrt((pow(e_start_sigma, 2) + pow(e_end_sigma, 2)) / burn_reps);
 
           bool flag_twaiting_up = true;
           bool flag_twaiting_down = true;
