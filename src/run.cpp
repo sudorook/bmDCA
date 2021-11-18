@@ -180,13 +180,12 @@ Sim::initialize(void)
     }
   }
 
-  // If using stochastic sampling, set M to match the effective number of
-  // sequences.
+  // If using stochastic sampling, set M to match the number of sequences.
   if (use_ss) {
     samples_per_walk = 1;
     burn_between_start = 0;
     burn_between = 0;
-    walkers = (int)(round(msa_train_stats->getEffectiveM()));
+    walkers = (int)(round(msa_train_stats->getM()));
   }
 
   int N = msa_train_stats->getN();
