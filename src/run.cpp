@@ -58,7 +58,7 @@ Sim::Sim(MSA* msa_train,
   : msa_train(msa_train)
   , msa_validate(msa_validate)
 {
-  std::cout << "----------------------- bmDCA -----------------------"
+  std::cout << "--------------------------- bmDCA ---------------------------"
             << std::endl;
 
   // Load bmDCA hyperparameters.

@@ -162,7 +162,7 @@ MSAStats::computeMSAStats()
   }
 
   double mean_2p_var =
-    arma::accu(mean_2p_var_vec) / (double)(N * (N - 1) / 2 * Q * Q);
+    arma::accu(mean_2p_var_vec) / (N * (N - 1.) / (2. * Q * Q));
   freq_rms = sqrt(mean_1p_var) + sqrt(mean_2p_var);
 
   // Update the background frequencies based by computing overall gap frequency

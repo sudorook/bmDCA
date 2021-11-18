@@ -533,7 +533,6 @@ void
 MSA::filterSimilarSequences(double threshold, bool verbose)
 {
   arma::Col<int> sequence_status = arma::Col<int>(M, arma::fill::zeros);
-  // int sim_cutoff = (int)(N * threshold);
   double sim_cutoff = N * threshold;
   arma::Mat<int> alignment_T = alignment.t();
 #pragma omp parallel
