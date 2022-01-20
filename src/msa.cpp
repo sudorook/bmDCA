@@ -489,7 +489,7 @@ void
 MSA::computeSequenceWeights(double threshold)
 {
   sequence_weights = arma::Col<double>(M, arma::fill::ones);
-  double cutoff = N * threshold;
+  int cutoff = (int)(N * threshold);
   arma::Mat<int> alignment_T = alignment.t();
 
   // arma::Mat is stored in column-major format, but sequences are stored in
@@ -503,7 +503,7 @@ MSA::computeSequenceWeights(double threshold)
       for (int m2 = 0; m2 < M; ++m2) {
         if (m1 != m2) {
           int* m2_ptr = alignment_T.colptr(m2);
-          double id = 0;
+          int id = 0;
           for (int i = 0; i < N; ++i) {
             if (*(m1_ptr + i) == *(m2_ptr + i)) {
               id += 1;
@@ -533,7 +533,7 @@ void
 MSA::filterSimilarSequences(double threshold, bool verbose)
 {
   arma::Col<int> sequence_status = arma::Col<int>(M, arma::fill::zeros);
-  double sim_cutoff = N * threshold;
+  int sim_cutoff = (int)(N * threshold);
   arma::Mat<int> alignment_T = alignment.t();
 #pragma omp parallel
   {
@@ -543,7 +543,7 @@ MSA::filterSimilarSequences(double threshold, bool verbose)
       for (int m2 = 0; m2 < M; ++m2) {
         if (m1 != m2) {
           int* m2_ptr = alignment_T.colptr(m2);
-          double id = 0;
+          int id = 0;
           for (int i = 0; i < N; ++i) {
             if (*(m1_ptr + i) == *(m2_ptr + i)) {
               id += 1;
