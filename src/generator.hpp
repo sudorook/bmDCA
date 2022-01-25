@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef GENERATOR_HPP
+#define GENERATOR_HPP
+
 #include "pcg_random.hpp"
 #include "sample_stats.hpp"
 #include "sampler.hpp"
@@ -71,3 +74,5 @@ private:
   void checkParameters(void);
   void setParameter(std::string, std::string);
 };
+
+#endif
