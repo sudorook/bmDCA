@@ -225,18 +225,22 @@ MSA::makeNTNumericalMatrix(void)
           col_idx++;
           break;
         case 'A':
+        case 'a':
           alignment(row_idx, col_idx) = 1;
           col_idx++;
           break;
         case 'C':
+        case 'c':
           alignment(row_idx, col_idx) = 2;
           col_idx++;
           break;
         case 'G':
+        case 'g':
           alignment(row_idx, col_idx) = 3;
           col_idx++;
           break;
         case 'T':
+        case 't':
           alignment(row_idx, col_idx) = 4;
           col_idx++;
           break;
@@ -264,91 +268,117 @@ MSA::makeAANumericalMatrix(void)
         case '-':
         case '.':
         case 'B':
+        case 'b':
         case 'J':
+        case 'j':
         case 'O':
+        case 'o':
         case 'U':
+        case 'u':
         case 'X':
+        case 'x':
         case 'Z':
+        case 'z':
           alignment(row_idx, col_idx) = 0;
           col_idx++;
           break;
         case 'A':
+        case 'a':
           alignment(row_idx, col_idx) = 1;
           col_idx++;
           break;
         case 'C':
+        case 'c':
           alignment(row_idx, col_idx) = 2;
           col_idx++;
           break;
         case 'D':
+        case 'd':
           alignment(row_idx, col_idx) = 3;
           col_idx++;
           break;
         case 'E':
+        case 'e':
           alignment(row_idx, col_idx) = 4;
           col_idx++;
           break;
         case 'F':
+        case 'f':
           alignment(row_idx, col_idx) = 5;
           col_idx++;
           break;
         case 'G':
+        case 'g':
           alignment(row_idx, col_idx) = 6;
           col_idx++;
           break;
         case 'H':
+        case 'h':
           alignment(row_idx, col_idx) = 7;
           col_idx++;
           break;
         case 'I':
+        case 'i':
           alignment(row_idx, col_idx) = 8;
           col_idx++;
           break;
         case 'K':
+        case 'k':
           alignment(row_idx, col_idx) = 9;
           col_idx++;
           break;
         case 'L':
+        case 'l':
           alignment(row_idx, col_idx) = 10;
           col_idx++;
           break;
         case 'M':
+        case 'm':
           alignment(row_idx, col_idx) = 11;
           col_idx++;
           break;
         case 'N':
+        case 'n':
           alignment(row_idx, col_idx) = 12;
           col_idx++;
           break;
         case 'P':
+        case 'p':
           alignment(row_idx, col_idx) = 13;
           col_idx++;
           break;
         case 'Q':
+        case 'q':
           alignment(row_idx, col_idx) = 14;
           col_idx++;
           break;
         case 'R':
+        case 'r':
           alignment(row_idx, col_idx) = 15;
           col_idx++;
           break;
         case 'S':
+        case 's':
           alignment(row_idx, col_idx) = 16;
           col_idx++;
           break;
         case 'T':
+        case 't':
           alignment(row_idx, col_idx) = 17;
           col_idx++;
           break;
         case 'V':
+        case 'v':
           alignment(row_idx, col_idx) = 18;
           col_idx++;
           break;
         case 'W':
+        case 'w':
           alignment(row_idx, col_idx) = 19;
           col_idx++;
           break;
         case 'Y':
+        case 'y':
           alignment(row_idx, col_idx) = 20;
           col_idx++;
           break;
@@ -413,9 +443,13 @@ MSA::getNTSequenceLength(std::string sequence)
       case '-':
       case '.':
       case 'A':
+      case 'a':
       case 'C':
+      case 'c':
       case 'G':
+      case 'g':
       case 'T':
+      case 't':
         valid_nt_count += 1;
         break;
       default:
@@ -444,31 +478,57 @@ MSA::getAASequenceLength(std::string sequence)
       case '-':
       case '.':
       case 'B':
+      case 'b':
       case 'J':
+      case 'j':
       case 'O':
+      case 'o':
       case 'U':
+      case 'u':
       case 'X':
+      case 'x':
       case 'Z':
+      case 'z':
       case 'A':
+      case 'a':
       case 'C':
+      case 'c':
       case 'D':
+      case 'd':
       case 'E':
+      case 'e':
       case 'F':
+      case 'f':
       case 'G':
+      case 'g':
       case 'H':
+      case 'h':
       case 'I':
+      case 'i':
       case 'K':
+      case 'k':
       case 'L':
+      case 'l':
       case 'M':
+      case 'm':
       case 'N':
+      case 'n':
       case 'P':
+      case 'p':
       case 'Q':
+      case 'q':
       case 'R':
+      case 'r':
       case 'S':
+      case 's':
       case 'T':
+      case 't':
       case 'V':
+      case 'v':
       case 'W':
+      case 'w':
       case 'Y':
+      case 'y':
         valid_aa_count += 1;
         break;
       default:
