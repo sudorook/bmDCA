@@ -178,7 +178,7 @@ exists. In it, there should be a line that looks like:
 [ -f $HOME/.bashrc ] && . $HOME/.bashrc
 ```
 
-If no such like is there or if no such file exists, add it and open a new
+If no such line is there or if no such file exists, add it and open a new
 terminal.
 
 ### Windows
