@@ -695,7 +695,6 @@ Sim::deleteStep(int step)
 void
 Sim::restoreRunState(void)
 {
-  long int prev_seed = -1;
   std::ifstream stream(run_log_file);
   std::string line;
   std::getline(stream, line);
@@ -724,34 +723,24 @@ Sim::restoreRunState(void)
         train_err_tot_min = std::stod(fields.at(17));
         if (cross_validate) {
           validate_err_tot_min = std::stod(fields.at(22));
-          prev_seed = std::stol(fields.at(23));
+          rng_counter = std::stoi(fields.at(23));
         } else {
-          prev_seed = std::stol(fields.at(18));
+          rng_counter = std::stoi(fields.at(18));
         }
       } else {
         if (cross_validate) {
           train_err_tot_min = std::stod(fields.at(8));
           validate_err_tot_min = std::stod(fields.at(12));
-          prev_seed = std::stol(fields.at(14));
+          rng_counter = std::stoi(fields.at(14));
         } else {
           train_err_tot_min = std::stod(fields.at(8));
-          prev_seed = std::stol(fields.at(9));
+          rng_counter = std::stoi(fields.at(9));
         }
       }
       break;
     }
   }
-
-  // Burn RNG until the sampled value matches the value in the run log.
-  std::uniform_int_distribution<long int> dist(0, RAND_MAX - step_max);
-  int counter = 1;
-  while (dist(rng) != prev_seed) {
-    if (counter > 1000000 * step_max) {
-      std::cerr << "WARNING: cannot restore RNG state." << std::endl;
-      break;
-    }
-    counter++;
-  }
+  rng.advance(rng_counter);
 };
 
 /**
@@ -835,6 +824,7 @@ Sim::run(void)
 
           sampler->sampleEnergies(
             &energy_burn, burn_reps, burn_count, burn_in, burn_in, dist(rng));
+          rng_counter += 1;
 
           double e_start = arma::mean(energy_burn.row(0));
           double e_start_sigma = arma::stddev(energy_burn.row(0), 1);
@@ -876,7 +866,8 @@ Sim::run(void)
       std::cout << "sampling model... " << std::flush;
       timer.tic();
       seed = dist(rng);
-      run_buffer((step - 1) % save_period, 23) = seed;
+      rng_counter += 1;
+      run_buffer((step - 1) % save_period, 23) = rng_counter;
       if (samples_per_walk > 1) {
         if (update_rule == "mh") {
           sampler->sampleSequences(&samples_3d,
@@ -1399,7 +1390,7 @@ Sim::initializeRunLog()
            << "diff-avg-energy"
            << "\t";
   }
-  stream << "seed"
+  stream << "rng-counter"
          << "\t"
          << "duration" << std::endl;
   stream.close();
@@ -1453,7 +1444,7 @@ Sim::writeRunLog(int current_step, int offset, bool keep)
       stream << run_buffer(i, 21) << "\t";
       stream << run_buffer(i, 22) << "\t";
     }
-    stream << (long int)run_buffer(i, 23) << "\t";
+    stream << (int)run_buffer(i, 23) << "\t";
     stream << run_buffer(i, 24) << std::endl;
   }
   if (!keep) {
