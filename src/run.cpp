@@ -761,7 +761,6 @@ Sim::run(void)
   // Instantiate the PCG random number generator and unifrom random
   // distribution.
   rng.seed(random_seed);
-  std::uniform_int_distribution<long int> dist(0, RAND_MAX - step_max);
 
   // Initialize the buffer.
   run_buffer = arma::Mat<double>(save_period, 25, arma::fill::zeros);
@@ -823,7 +822,7 @@ Sim::run(void)
             arma::Mat<double>(burn_count, burn_reps, arma::fill::zeros);
 
           sampler->sampleEnergies(
-            &energy_burn, burn_reps, burn_count, burn_in, burn_in, dist(rng));
+            &energy_burn, burn_reps, burn_count, burn_in, burn_in, rng());
           rng_counter += 1;
 
           double e_start = arma::mean(energy_burn.row(0));
@@ -865,7 +864,7 @@ Sim::run(void)
       // Draw from MCMC
       std::cout << "sampling model... " << std::flush;
       timer.tic();
-      seed = dist(rng);
+      seed = rng();
       rng_counter += 1;
       run_buffer((step - 1) % save_period, 23) = rng_counter;
       if (samples_per_walk > 1) {

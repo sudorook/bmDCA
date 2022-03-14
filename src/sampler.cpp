@@ -90,13 +90,16 @@ Sampler::sampleEnergies(arma::Mat<double>* p,
     for (size_t walker = 0; walker < walkers; walker++) {
       double* ptr = ((*p).colptr(walker));
 
+      assert(N != 0); // avoid divide-by-0 during modulo division
+
       pcg32 rng;
       rng.seed(seed + walker);
       std::uniform_real_distribution<double> uniform(0, 1);
 
       arma::Col<size_t> conf = arma::Col<size_t>(N);
       for (size_t i = 0; i < N; ++i) {
-        conf(i) = size_t(Q * uniform(rng));
+        conf(i) = size_t(rng() % Q);
+        assert(conf(i) < Q);
       }
 
       double E = 0;
@@ -108,8 +111,8 @@ Sampler::sampleEnergies(arma::Mat<double>* p,
       }
 
       for (size_t k = 0; k < burn_in; ++k) {
-        size_t i = size_t(N * uniform(rng));
-        size_t dq = 1 + size_t((Q - 1) * uniform(rng));
+        size_t i = size_t(rng() % N);
+        size_t dq = 1 + size_t(rng() % (Q - 1));
 
         size_t q0 = conf(i);
         size_t q1 = (q0 + dq) % Q;
@@ -136,8 +139,8 @@ Sampler::sampleEnergies(arma::Mat<double>* p,
 
       for (size_t s = 1; s < samples_per_walk; ++s) {
         for (size_t k = 0; k < burn_between; ++k) {
-          size_t i = size_t(N * uniform(rng));
-          size_t dq = 1 + size_t((Q - 1) * uniform(rng));
+          size_t i = size_t(rng() % N);
+          size_t dq = 1 + size_t(rng() & (Q - 1));
 
           size_t q0 = conf(i);
           size_t q1 = (q0 + dq) % Q;
@@ -192,19 +195,21 @@ Sampler::sampleSequences(arma::Cube<int>* p,
     for (size_t walker = 0; walker < walkers; walker++) {
       arma::Mat<int>* ptr = (arma::Mat<int>*)&((*p).slice(walker));
 
+      assert(N != 0); // avoid divide-by-0 during modulo division
+
       pcg32 rng;
       rng.seed(seed + walker);
       std::uniform_real_distribution<double> uniform(0, 1);
 
       arma::Col<size_t> conf = arma::Col<size_t>(N);
       for (size_t i = 0; i < N; ++i) {
-        conf(i) = size_t(Q * uniform(rng));
+        conf(i) = size_t(rng() % Q);
         assert(conf(i) < Q);
       }
 
       for (size_t k = 0; k < burn_in; ++k) {
-        size_t i = size_t(N * uniform(rng));
-        size_t dq = 1 + size_t((Q - 1) * uniform(rng));
+        size_t i = size_t(rng() % N);
+        size_t dq = 1 + size_t(rng() % (Q - 1));
 
         size_t q0 = conf(i);
         size_t q1 = (q0 + dq) % Q;
@@ -232,8 +237,8 @@ Sampler::sampleSequences(arma::Cube<int>* p,
 
       for (size_t s = 1; s < samples_per_walk; ++s) {
         for (size_t k = 0; k < burn_between; ++k) {
-          size_t i = size_t(N * uniform(rng));
-          size_t dq = 1 + size_t((Q - 1) * uniform(rng));
+          size_t i = size_t(rng() % N);
+          size_t dq = 1 + size_t(rng() & (Q - 1));
 
           size_t q0 = conf(i);
           size_t q1 = (q0 + dq) % Q;
@@ -284,19 +289,21 @@ Sampler::sampleSequences(arma::Mat<int>* ptr,
   {
 #pragma omp for
     for (size_t walker = 0; walker < walkers; walker++) {
+      assert(N != 0); // avoid divide-by-0 during modulo division
+
       pcg32 rng;
       rng.seed(seed + walker);
       std::uniform_real_distribution<double> uniform(0, 1);
 
       arma::Col<size_t> conf = arma::Col<size_t>(N);
       for (size_t i = 0; i < N; ++i) {
-        conf(i) = size_t(Q * uniform(rng));
+        conf(i) = size_t(rng() % Q);
         assert(conf(i) < Q);
       }
 
       for (size_t k = 0; k < burn_in; ++k) {
-        size_t i = size_t(N * uniform(rng));
-        size_t dq = 1 + size_t((Q - 1) * uniform(rng));
+        size_t i = size_t(rng() % N);
+        size_t dq = 1 + size_t(rng() % (Q - 1));
 
         size_t q0 = conf(i);
         size_t q1 = (q0 + dq) % Q;
@@ -367,7 +374,7 @@ Sampler::sampleSequencesZanella(arma::Cube<int>* p,
 
       arma::Col<size_t> conf = arma::Col<size_t>(N);
       for (size_t i = 0; i < N; ++i) {
-        conf(i) = size_t(Q * uniform(rng));
+        conf(i) = size_t(rng() % Q);
         assert(conf(i) < Q);
       }
 
@@ -624,7 +631,7 @@ Sampler::sampleSequencesZanella(arma::Mat<int>* ptr,
 
       arma::Col<size_t> conf = arma::Col<size_t>(N);
       for (size_t i = 0; i < N; ++i) {
-        conf(i) = size_t(Q * uniform(rng));
+        conf(i) = size_t(rng() % Q);
         assert(conf(i) < Q);
       }
 

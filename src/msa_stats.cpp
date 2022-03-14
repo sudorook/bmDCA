@@ -23,7 +23,6 @@
 #include <fstream>
 #include <iostream>
 #include <numeric>
-#include <random>
 #include <unordered_set>
 #include <vector>
 
@@ -221,8 +220,7 @@ MSAStats::computeErrorMSA(int reps, long int seed)
     std::unordered_set<int> elems;
 
     for (int r = M - M_1; r < M; ++r) {
-      std::uniform_int_distribution<int> dist(0, r);
-      int v = dist(rng);
+      int v = (int)rng();
       if (!elems.insert(v).second) {
         elems.insert(r);
       }

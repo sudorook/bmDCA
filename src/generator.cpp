@@ -283,8 +283,6 @@ Generator::checkErgodicity(void)
 void
 Generator::estimateBurnTime(void)
 {
-  std::uniform_int_distribution<long int> dist(0, RAND_MAX - walkers);
-
   bool flag_burn = true;
   while (flag_burn) {
     double burn_reps = 24;
@@ -293,7 +291,7 @@ Generator::estimateBurnTime(void)
       arma::Mat<double>(burn_count, burn_reps, arma::fill::zeros);
 
     sampler->sampleEnergies(
-      &energy_burn, burn_reps, burn_count, burn_in, burn_in, dist(rng));
+      &energy_burn, burn_reps, burn_count, burn_in, burn_in, rng());
 
     double e_start = arma::mean(energy_burn.row(0));
     double e_start_sigma = arma::stddev(energy_burn.row(0), 1);
@@ -386,7 +384,6 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
   // Instantiate the PCG random number generator and unifrom random
   // distribution.
   rng.seed(random_seed);
-  std::uniform_int_distribution<long int> dist(0, RAND_MAX - walkers);
 
   std::cout << timer.toc() << " sec" << std::endl << std::endl;
 
@@ -414,7 +411,7 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
                                  samples_per_walk,
                                  burn_in,
                                  burn_between,
-                                 dist(rng),
+                                 rng(),
                                  temperature);
       } else if (update_rule == "z-sqrt") {
         sampler->sampleSequencesZanella(&samples_3d,
@@ -422,7 +419,7 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
                                         samples_per_walk,
                                         burn_in,
                                         burn_between,
-                                        dist(rng),
+                                        rng(),
                                         "sqrt",
                                         temperature);
       } else if (update_rule == "z-barker") {
@@ -431,7 +428,7 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
                                         samples_per_walk,
                                         burn_in,
                                         burn_between,
-                                        dist(rng),
+                                        rng(),
                                         "barker",
                                         temperature);
       } else {
@@ -442,13 +439,13 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
     } else {
       if (update_rule == "mh") {
         sampler->sampleSequences(
-          &samples_2d, walkers, burn_in, dist(rng), temperature);
+          &samples_2d, walkers, burn_in, rng(), temperature);
       } else if (update_rule == "z-sqrt") {
         sampler->sampleSequencesZanella(
-          &samples_2d, walkers, burn_in, dist(rng), "sqrt", temperature);
+          &samples_2d, walkers, burn_in, rng(), "sqrt", temperature);
       } else if (update_rule == "z-barker") {
         sampler->sampleSequencesZanella(
-          &samples_2d, walkers, burn_in, dist(rng), "barker", temperature);
+          &samples_2d, walkers, burn_in, rng(), "barker", temperature);
       } else {
         std::cerr << "ERROR: sampler '" << sampler << "' not recognized."
                   << std::endl;
