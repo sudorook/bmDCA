@@ -44,28 +44,28 @@ public:
                       size_t,
                       size_t,
                       size_t,
-                      long int,
+                      unsigned,
                       double = 1.0);
   void sampleSequences(arma::Cube<int>*,
                        size_t,
                        size_t,
                        size_t,
                        size_t,
-                       long int,
+                       unsigned,
                        double = 1.0);
-  void sampleSequences(arma::Mat<int>*, size_t, size_t, long int, double = 1.0);
+  void sampleSequences(arma::Mat<int>*, size_t, size_t, unsigned, double = 1.0);
   void sampleSequencesZanella(arma::Cube<int>*,
                               size_t,
                               size_t,
                               size_t,
                               size_t,
-                              long int,
+                              unsigned,
                               std::string = "sqrt",
                               double = 1.0);
   void sampleSequencesZanella(arma::Mat<int>*,
                               size_t,
                               size_t,
-                              long int,
+                              unsigned,
                               std::string = "sqrt",
                               double = 1.0);
 

@@ -203,7 +203,7 @@ MSAStats::computeMSAStats()
  * @param seed random seed for RNG
  */
 void
-MSAStats::computeErrorMSA(int reps, long int seed)
+MSAStats::computeErrorMSA(int reps, unsigned seed)
 {
   msa_rms = arma::Col<double>(reps, arma::fill::zeros);
 

@@ -60,8 +60,8 @@ public:
   void writeSequenceWeights(std::string);
   void writeHammingDistances(std::string);
 
-  MSA sampleAlignment(int = 0, long int = 0);
-  std::vector<MSA*> partitionAlignment(int = 0, long int = 0);
+  MSA sampleAlignment(int = 0, unsigned = 0);
+  std::vector<MSA*> partitionAlignment(int = 0, unsigned = 0);
 
 private:
   std::vector<SeqRecord> seq_records; ///< vector of sequences loaded from a FASTA file

@@ -852,7 +852,7 @@ MSA::writeHammingDistances(std::string output_file)
  * @return MSA instance with subset of sequences
  */
 MSA
-MSA::sampleAlignment(int size, long int seed)
+MSA::sampleAlignment(int size, unsigned seed)
 {
   pcg32 rng;
   rng.seed(seed);
@@ -895,7 +895,7 @@ MSA::sampleAlignment(int size, long int seed)
  * the weights in the original full MSA.
  */
 std::vector<MSA*>
-MSA::partitionAlignment(int validation_size, long int seed)
+MSA::partitionAlignment(int validation_size, unsigned seed)
 {
   arma::arma_rng::set_seed(seed);
 

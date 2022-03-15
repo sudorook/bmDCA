@@ -46,7 +46,7 @@ private:
   int walkers;          ///< number of sequences sampled from independent runs
 
   int resample_max = 20;             ///< max number of times to resample sequences
-  long int random_seed = 1;          ///< random seed for the PCG RNG
+  unsigned random_seed = 1;          ///< random seed for the PCG RNG
   double adapt_up_time = 1.5;        ///< scaling factor for increasing burn times
   double adapt_down_time = 0.6;      ///< scaling factor for decreasing burn times
   int burn_in_start = 100000;        ///< starting burn-in time

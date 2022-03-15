@@ -38,7 +38,7 @@ public:
   double getM();
   double getQ();
 
-  void computeErrorMSA(int = 100, long int = 0);
+  void computeErrorMSA(int = 100, unsigned = 0);
 
   // void writeRelEntropy(std::string);
   // void writeRelEntropyAscii(std::string);

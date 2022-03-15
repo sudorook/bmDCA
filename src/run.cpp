@@ -809,7 +809,7 @@ Sim::run(void)
 
     // Sampling from MCMC (keep trying until correct properties found)
     bool flag_mc = true;
-    long int seed;
+    unsigned seed;
     while (flag_mc) {
       if (update_burn_time & (samples_per_walk == 1)) {
         std::cout << "setting burn time to... " << std::flush;

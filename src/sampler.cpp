@@ -81,7 +81,7 @@ Sampler::sampleEnergies(arma::Mat<double>* p,
                         size_t samples_per_walk,
                         size_t burn_in,
                         size_t burn_between,
-                        long int seed,
+                        unsigned seed,
                         double temperature)
 {
 #pragma omp parallel
@@ -186,7 +186,7 @@ Sampler::sampleSequences(arma::Cube<int>* p,
                          size_t samples_per_walk,
                          size_t burn_in,
                          size_t burn_between,
-                         long int seed,
+                         unsigned seed,
                          double temperature)
 {
 #pragma omp parallel
@@ -282,7 +282,7 @@ void
 Sampler::sampleSequences(arma::Mat<int>* ptr,
                          size_t walkers,
                          size_t burn_in,
-                         long int seed,
+                         unsigned seed,
                          double temperature)
 {
 #pragma omp parallel
@@ -350,7 +350,7 @@ Sampler::sampleSequencesZanella(arma::Cube<int>* p,
                                 size_t samples_per_walk,
                                 size_t burn_in,
                                 size_t burn_between,
-                                long int seed,
+                                unsigned seed,
                                 std::string mode,
                                 double temperature)
 {
@@ -609,7 +609,7 @@ void
 Sampler::sampleSequencesZanella(arma::Mat<int>* ptr,
                                 size_t walkers,
                                 size_t burn_in,
-                                long int seed,
+                                unsigned seed,
                                 std::string mode,
                                 double temperature)
 {
