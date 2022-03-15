@@ -11,8 +11,8 @@ Dependencies (installation instructions detailed below):
 
 __GCC__ is used to compile the source code (and dependencies, if necessary).
 The code relies on the `fopenmp` flag for parallelization, so GCC is preferred
-over Clang. It also needs support for the C++11 standard, so any GCC later than
-version 4.2 will suffice.
+over Clang. It also needs support for the C++17 standard, so any GCC later than
+version 7.4 will suffice.
 
 __AutoTools__ are a set of programs used to generate makefiles for
 cross-platform compilation and installation.
