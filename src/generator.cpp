@@ -414,22 +414,20 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
                                  rng(),
                                  temperature);
       } else if (update_rule == "z-sqrt") {
-        sampler->sampleSequencesZanella(&samples_3d,
+        sampler->sampleSequencesZanellaSqrt(&samples_3d,
                                         walkers,
                                         samples_per_walk,
                                         burn_in,
                                         burn_between,
                                         rng(),
-                                        "sqrt",
                                         temperature);
       } else if (update_rule == "z-barker") {
-        sampler->sampleSequencesZanella(&samples_3d,
+        sampler->sampleSequencesZanellaBarker(&samples_3d,
                                         walkers,
                                         samples_per_walk,
                                         burn_in,
                                         burn_between,
                                         rng(),
-                                        "barker",
                                         temperature);
       } else {
         std::cerr << "ERROR: sampler '" << sampler << "' not recognized."
@@ -441,11 +439,11 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
         sampler->sampleSequences(
           &samples_2d, walkers, burn_in, rng(), temperature);
       } else if (update_rule == "z-sqrt") {
-        sampler->sampleSequencesZanella(
-          &samples_2d, walkers, burn_in, rng(), "sqrt", temperature);
+        sampler->sampleSequencesZanellaSqrt(
+          &samples_2d, walkers, burn_in, rng(), temperature);
       } else if (update_rule == "z-barker") {
-        sampler->sampleSequencesZanella(
-          &samples_2d, walkers, burn_in, rng(), "barker", temperature);
+        sampler->sampleSequencesZanellaBarker(
+          &samples_2d, walkers, burn_in, rng(), temperature);
       } else {
         std::cerr << "ERROR: sampler '" << sampler << "' not recognized."
                   << std::endl;

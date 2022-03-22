@@ -876,21 +876,19 @@ Sim::run(void)
                                    burn_between,
                                    seed);
         } else if (update_rule == "z-sqrt") {
-          sampler->sampleSequencesZanella(&samples_3d,
+          sampler->sampleSequencesZanellaSqrt(&samples_3d,
                                           walkers,
                                           samples_per_walk,
                                           burn_in,
                                           burn_between,
-                                          seed,
-                                          "sqrt");
+                                          seed);
         } else if (update_rule == "z-barker") {
-          sampler->sampleSequencesZanella(&samples_3d,
+          sampler->sampleSequencesZanellaBarker(&samples_3d,
                                           walkers,
                                           samples_per_walk,
                                           burn_in,
                                           burn_between,
-                                          seed,
-                                          "barker");
+                                          seed);
         } else {
           std::cerr << "ERROR: sampler '" << sampler << "' not recognized."
                     << std::endl;
@@ -900,11 +898,11 @@ Sim::run(void)
         if (update_rule == "mh") {
           sampler->sampleSequences(&samples_2d, walkers, burn_in, seed);
         } else if (update_rule == "z-sqrt") {
-          sampler->sampleSequencesZanella(
-            &samples_2d, walkers, burn_in, seed, "sqrt");
+          sampler->sampleSequencesZanellaSqrt(
+            &samples_2d, walkers, burn_in, seed);
         } else if (update_rule == "z-barker") {
-          sampler->sampleSequencesZanella(
-            &samples_2d, walkers, burn_in, seed, "barker");
+          sampler->sampleSequencesZanellaBarker(
+            &samples_2d, walkers, burn_in, seed);
         } else {
           std::cerr << "ERROR: sampler '" << sampler << "' not recognized."
                     << std::endl;
