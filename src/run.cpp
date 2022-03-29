@@ -27,6 +27,7 @@
 #include <random>
 #include <regex>
 #include <string>
+#include <sstream>
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
@@ -698,6 +699,8 @@ Sim::restoreRunState(void)
   std::ifstream stream(run_log_file);
   std::string line;
   std::getline(stream, line);
+  std::string rng_state;
+
   while (!stream.eof()) {
     std::getline(stream, line);
     std::stringstream buffer(line);
@@ -723,24 +726,30 @@ Sim::restoreRunState(void)
         train_err_tot_min = std::stod(fields.at(17));
         if (cross_validate) {
           validate_err_tot_min = std::stod(fields.at(22));
-          rng_counter = std::stoi(fields.at(23));
+          rng_state = fields.at(23) + " " + fields.at(24) + " " + fields.at(25);
         } else {
-          rng_counter = std::stoi(fields.at(18));
+          rng_state = fields.at(18) + " " + fields.at(19) + " " + fields.at(20);
         }
       } else {
         if (cross_validate) {
           train_err_tot_min = std::stod(fields.at(8));
           validate_err_tot_min = std::stod(fields.at(12));
-          rng_counter = std::stoi(fields.at(14));
+          rng_state = fields.at(14) + " " + fields.at(15) + " " + fields.at(16);
         } else {
           train_err_tot_min = std::stod(fields.at(8));
-          rng_counter = std::stoi(fields.at(9));
+          rng_state = fields.at(9) + " " + fields.at(10) + " " + fields.at(11);
         }
       }
       break;
     }
   }
-  rng.advance(rng_counter);
+
+  std::istringstream is(rng_state);
+  is >> rng;
+  if (is.fail()) {
+    std::cerr << "ERROR: failed to restore RNG state." << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
 };
 
 /**
@@ -763,7 +772,8 @@ Sim::run(void)
   rng.seed(random_seed);
 
   // Initialize the buffer.
-  run_buffer = arma::Mat<double>(save_period, 25, arma::fill::zeros);
+  run_buffer = arma::Mat<double>(save_period, 24, arma::fill::zeros);
+  rng_buffer = arma::Mat<unsigned long>(save_period, 3, arma::fill::zeros);
   int buffer_offset = 0;
 
   if (step_offset == 0) {
@@ -823,7 +833,6 @@ Sim::run(void)
 
           sampler->sampleEnergies(
             &energy_burn, burn_reps, burn_count, burn_in, burn_in, rng());
-          rng_counter += 1;
 
           double e_start = arma::mean(energy_burn.row(0));
           double e_start_sigma = arma::stddev(energy_burn.row(0), 1);
@@ -865,8 +874,15 @@ Sim::run(void)
       std::cout << "sampling model... " << std::flush;
       timer.tic();
       seed = rng();
-      rng_counter += 1;
-      run_buffer((step - 1) % save_period, 23) = rng_counter;
+      {
+        std::stringstream ss;
+        unsigned long rng_mult = 0, rng_inc = 0, rng_state = 0;
+        ss << rng;
+        ss >> rng_mult >> rng_inc >> rng_state;
+        rng_buffer((step - 1) % save_period, 0) = rng_mult;
+        rng_buffer((step - 1) % save_period, 1) = rng_inc;
+        rng_buffer((step - 1) % save_period, 2) = rng_state;
+      }
       if (samples_per_walk > 1) {
         if (update_rule == "mh") {
           sampler->sampleSequences(&samples_3d,
@@ -1071,7 +1087,7 @@ Sim::run(void)
     }
 
     if (converged) {
-      run_buffer((step - 1) % save_period, 24) = step_timer.toc();
+      run_buffer((step - 1) % save_period, 23) = step_timer.toc();
       std::cout << "converged! writing final results... " << std::flush;
       writeRunLog(step % save_period, buffer_offset);
       writeStep(step);
@@ -1079,7 +1095,7 @@ Sim::run(void)
       return;
     }
 
-    run_buffer((step - 1) % save_period, 24) = step_timer.toc();
+    run_buffer((step - 1) % save_period, 23) = step_timer.toc();
 
     // Save parameters
     if (step % save_period == 0) {
@@ -1091,7 +1107,7 @@ Sim::run(void)
       std::cout << timer.toc() << " sec" << std::endl;
     } else if (new_min_found & (step > save_period) & save_best_steps) {
       std::cout << "close... writing step... " << std::flush;
-      run_buffer((step - 1) % save_period, 24) = step_timer.toc();
+      run_buffer((step - 1) % save_period, 23) = step_timer.toc();
       writeRunLog(step % save_period, buffer_offset, true);
       buffer_offset = step % save_period;
       writeStep(step);
@@ -1387,7 +1403,11 @@ Sim::initializeRunLog()
            << "diff-avg-energy"
            << "\t";
   }
-  stream << "rng-counter"
+  stream << "rng-mult"
+         << "\t"
+         << "rng-inc"
+         << "\t"
+         << "rng-state"
          << "\t"
          << "duration" << std::endl;
   stream.close();
@@ -1441,11 +1461,14 @@ Sim::writeRunLog(int current_step, int offset, bool keep)
       stream << run_buffer(i, 21) << "\t";
       stream << run_buffer(i, 22) << "\t";
     }
-    stream << (int)run_buffer(i, 23) << "\t";
-    stream << run_buffer(i, 24) << std::endl;
+    stream << rng_buffer(i, 0) << "\t";
+    stream << rng_buffer(i, 1) << "\t";
+    stream << rng_buffer(i, 2) << "\t";
+    stream << run_buffer(i, 23) << std::endl;
   }
   if (!keep) {
     run_buffer.zeros();
+    rng_buffer.zeros();
   }
   stream.close();
 };

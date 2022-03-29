@@ -123,8 +123,8 @@ private:
 
   SampleStats* sample_stats; ///< address of sample sequence statistics
 
-  pcg32 rng;           ///< PCG32 random number generator
-  int rng_counter = 0; ///< count of random numbers drawn from RNG
+  pcg32 rng;                           ///< PCG32 random number generator
+  arma::Mat<unsigned long> rng_buffer; ///< stores rng values to write to run log
 };
 
 #endif
