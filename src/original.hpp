@@ -54,21 +54,21 @@ private:
   potts_model gradient_prev;  ///< previous step model gradient
   potts_model learning_rates; ///< learning rates for each parameter
 
-  double lambda_reg_h = 0.01;          ///< regularization strength for fields
-  double lambda_reg_J = 0.01;          ///< regularization strength for couplings
-  double alpha_reg = 1.0;              ///< elastic-net L1 / L2 scaling parameter
+  double lambda_reg_h = 0.01; ///< regularization strength for fields
+  double lambda_reg_J = 0.01; ///< regularization strength for couplings
+  double alpha_reg = 1.0;     ///< elastic-net L1 / L2 scaling parameter
   std::string initial_params = "zero"; ///< initialization for parameters
-  bool set_zero_gauge = false;         ///< re-scale parameter for 0-mean J marginals
-  bool allow_gap_couplings = true;     ///< flag to regularize the gaps
-  double epsilon_h = 0.01;             ///< initial learning rate for fields
-  double epsilon_J = 0.001;            ///< initial learning rate for couplings
-  double learn_rate_h_min = 1e-04;     ///< minimum learning rate for fields
-  double learn_rate_h_max = 0.5;       ///< maximum learning rate for fields
-  double learn_rate_J_min = 1e-04;     ///< minimum learning rate for couplings
-  double learn_rate_J_max = 0.5;       ///< maximum learning rate for couplings
-  double adapt_up = 1.5;               ///< scaling factor for increasing learning rate
-  double adapt_down = 0.6;             ///< scaling factor for decreasing learning rate
-  bool use_pos_reg = false;            ///< flag for position-specific regularization
+  bool set_zero_gauge = false; ///< re-scale parameter for 0-mean J marginals
+  bool allow_gap_couplings = true; ///< flag to regularize the gaps
+  double epsilon_h = 0.01;         ///< initial learning rate for fields
+  double epsilon_J = 0.001;        ///< initial learning rate for couplings
+  double learn_rate_h_min = 1e-04; ///< minimum learning rate for fields
+  double learn_rate_h_max = 0.5;   ///< maximum learning rate for fields
+  double learn_rate_J_min = 1e-04; ///< minimum learning rate for couplings
+  double learn_rate_J_max = 0.5;   ///< maximum learning rate for couplings
+  double adapt_up = 1.5;    ///< scaling factor for increasing learning rate
+  double adapt_down = 0.6;  ///< scaling factor for decreasing learning rate
+  bool use_pos_reg = false; ///< flag for position-specific regularization
 
   void updateGradients(void);
   void updateLearningRates(void);

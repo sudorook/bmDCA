@@ -344,12 +344,12 @@ Sampler::sampleSequences(arma::Mat<int>* ptr,
  */
 void
 Sampler::sampleSequencesZanellaSqrt(arma::Cube<int>* p,
-                                size_t walkers,
-                                size_t samples_per_walk,
-                                size_t burn_in,
-                                size_t burn_between,
-                                unsigned seed,
-                                double temperature)
+                                    size_t walkers,
+                                    size_t samples_per_walk,
+                                    size_t burn_in,
+                                    size_t burn_between,
+                                    unsigned seed,
+                                    double temperature)
 {
 #pragma omp parallel
   {
@@ -588,10 +588,10 @@ Sampler::sampleSequencesZanellaSqrt(arma::Cube<int>* p,
  */
 void
 Sampler::sampleSequencesZanellaSqrt(arma::Mat<int>* ptr,
-                                size_t walkers,
-                                size_t burn_in,
-                                unsigned seed,
-                                double temperature)
+                                    size_t walkers,
+                                    size_t burn_in,
+                                    unsigned seed,
+                                    double temperature)
 {
 #pragma omp parallel
   {
@@ -747,12 +747,12 @@ Sampler::sampleSequencesZanellaSqrt(arma::Mat<int>* ptr,
  */
 void
 Sampler::sampleSequencesZanellaBarker(arma::Cube<int>* p,
-                                size_t walkers,
-                                size_t samples_per_walk,
-                                size_t burn_in,
-                                size_t burn_between,
-                                unsigned seed,
-                                double temperature)
+                                      size_t walkers,
+                                      size_t samples_per_walk,
+                                      size_t burn_in,
+                                      size_t burn_between,
+                                      unsigned seed,
+                                      double temperature)
 {
 #pragma omp parallel
   {
@@ -991,10 +991,10 @@ Sampler::sampleSequencesZanellaBarker(arma::Cube<int>* p,
  */
 void
 Sampler::sampleSequencesZanellaBarker(arma::Mat<int>* ptr,
-                                size_t walkers,
-                                size_t burn_in,
-                                unsigned seed,
-                                double temperature)
+                                      size_t walkers,
+                                      size_t burn_in,
+                                      unsigned seed,
+                                      double temperature)
 {
 #pragma omp parallel
   {

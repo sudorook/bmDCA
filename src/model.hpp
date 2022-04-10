@@ -52,15 +52,24 @@ public:
   virtual void reset(void) = 0;        ///< reset the model to initial values
   virtual void restore(int, bool) = 0; ///< re-load parameters from disk
 
-  virtual void writeData(std::string, bool = true) = 0; ///< write current model to disk
-  virtual void writeStep(int, bool = true) = 0;         ///< write all data to reload current step
-  virtual void deleteStep(int, bool = true) = 0;        ///< delete data for a step
-  virtual bool isValidStep(int, bool = true) = 0;       ///< check if data exists to reload a step
+  virtual void writeData(std::string,
+                         bool = true) = 0; ///< write current model to disk
+  virtual void writeStep(
+    int,
+    bool = true) = 0; ///< write all data to reload current step
+  virtual void deleteStep(int, bool = true) = 0; ///< delete data for a step
+  virtual bool isValidStep(
+    int,
+    bool = true) = 0; ///< check if data exists to reload a step
 
-  virtual void loadHyperparameters(std::string) = 0;                ///< read parameters from config file
-  virtual void checkHyperparameters(void) = 0;                      ///< check config parameters against saved state
-  virtual bool compareHyperparameters(std::string) = 0;             ///< check that config parameters are valid
-  virtual void writeHyperparameters(std::string, bool = false) = 0; ///< write config file
+  virtual void loadHyperparameters(
+    std::string) = 0; ///< read parameters from config file
+  virtual void checkHyperparameters(
+    void) = 0; ///< check config parameters against saved state
+  virtual bool compareHyperparameters(
+    std::string) = 0; ///< check that config parameters are valid
+  virtual void writeHyperparameters(std::string,
+                                    bool = false) = 0; ///< write config file
 
   potts_model params;      ///< current step parameters
   potts_model params_prev; ///< previous step parameters

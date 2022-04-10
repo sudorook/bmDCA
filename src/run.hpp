@@ -67,7 +67,7 @@ private:
   bool cross_validate = false;         ///< flag to cross-validate the MSA
   int validation_seqs = 100;           ///< effective M for validatino set
   unsigned random_seed = 142857;       ///< random seed for RNG
-  bool output_binary = true;           ///< flag to output in arma::binary format
+  bool output_binary = true; ///< flag to output in arma::binary format
 
   // Sampler settings
   std::string update_rule = "mh"; ///< update proposal rule for sampler
@@ -77,22 +77,26 @@ private:
   double adapt_up_time = 1.2;     ///< scaling factor for increasing burn times
   double adapt_down_time = 0.9;   ///< scaling factorfor decreasing burn times
   int step_importance_max = 1;    ///< max number of importance sampling steps
-  double coherence_min = 0.9999;  ///< model coherence to maintain for importance sampling
-  bool use_ss = false;            ///< flag to sample effective M sequences
-  int walkers = 1000;             ///< number of trajectories
-  int samples_per_walk = 1;       ///< samples per trajectory
+  double coherence_min =
+    0.9999;            ///< model coherence to maintain for importance sampling
+  bool use_ss = false; ///< flag to sample effective M sequences
+  int walkers = 1000;  ///< number of trajectories
+  int samples_per_walk = 1; ///< samples per trajectory
 
   // Run settings
-  int step = 1;                          ///< current step
-  int step_offset = 0;                   ///< placeholder for restoring step number when restarting
+  int step = 1; ///< current step
+  int step_offset =
+    0; ///< placeholder for restoring step number when restarting
   int burn_in = burn_in_start;           ///< burn-in time
   int burn_between = burn_between_start; ///< burn-between time
   double train_err_tot_min = 1000;       ///< min RMSE for training MSA
   double validate_err_tot_min = 1000;    ///< min RMSE validation MSA
-  double diff_avg_energy = 0;            ///< difference in training and validation energies
+  double diff_avg_energy =
+    0; ///< difference in training and validation energies
 
-  std::string hyperparameter_file = "bmdca_params.conf"; ///< file string for runtime config file
-  std::string run_log_file = "bmdca_run.log";            ///< file string for run log
+  std::string hyperparameter_file =
+    "bmdca_params.conf"; ///< file string for runtime config file
+  std::string run_log_file = "bmdca_run.log"; ///< file string for run log
 
   bool checkErgodicity(void);
 
@@ -123,8 +127,9 @@ private:
 
   SampleStats* sample_stats; ///< address of sample sequence statistics
 
-  pcg32 rng;                           ///< PCG32 random number generator
-  arma::Mat<unsigned long> rng_buffer; ///< stores rng values to write to run log
+  pcg32 rng; ///< PCG32 random number generator
+  arma::Mat<unsigned long>
+    rng_buffer; ///< stores rng values to write to run log
 };
 
 #endif

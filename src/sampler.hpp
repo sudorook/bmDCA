@@ -55,29 +55,29 @@ public:
                        double = 1.0);
   void sampleSequences(arma::Mat<int>*, size_t, size_t, unsigned, double = 1.0);
   void sampleSequencesZanellaSqrt(arma::Cube<int>*,
-                              size_t,
-                              size_t,
-                              size_t,
-                              size_t,
-                              unsigned,
-                              double = 1.0);
+                                  size_t,
+                                  size_t,
+                                  size_t,
+                                  size_t,
+                                  unsigned,
+                                  double = 1.0);
   void sampleSequencesZanellaSqrt(arma::Mat<int>*,
-                              size_t,
-                              size_t,
-                              unsigned,
-                              double = 1.0);
+                                  size_t,
+                                  size_t,
+                                  unsigned,
+                                  double = 1.0);
   void sampleSequencesZanellaBarker(arma::Cube<int>*,
-                              size_t,
-                              size_t,
-                              size_t,
-                              size_t,
-                              unsigned,
-                              double = 1.0);
+                                    size_t,
+                                    size_t,
+                                    size_t,
+                                    size_t,
+                                    unsigned,
+                                    double = 1.0);
   void sampleSequencesZanellaBarker(arma::Mat<int>*,
-                              size_t,
-                              size_t,
-                              unsigned,
-                              double = 1.0);
+                                    size_t,
+                                    size_t,
+                                    unsigned,
+                                    double = 1.0);
 
 private:
   const size_t N; ///< number of positions

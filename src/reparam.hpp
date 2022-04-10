@@ -56,18 +56,18 @@ private:
   potts_model gradient_prev;  ///< previous step model gradient
   potts_model learning_rates; ///< learning rates for each parameter
 
-  double lambda_reg_phi_h = 0.01;         ///< regularization strength for fields
-  double lambda_reg_phi_J = 0.01;         ///< regularization strength for couplings
+  double lambda_reg_phi_h = 0.01; ///< regularization strength for fields
+  double lambda_reg_phi_J = 0.01; ///< regularization strength for couplings
   std::string initial_params = "profile"; ///< initialization for parameters
-  bool set_zero_gauge = false;            ///< re-scale parameter for 0-mean J marginals
-  double epsilon_h = 0.01;                ///< initial learning rate for fields
-  double epsilon_J = 0.001;               ///< initial learning rate for couplings
-  double learn_rate_h_min = 1e-04;        ///< minimum learning rate for fields
-  double learn_rate_J_min = 1e-04;        ///< maximum learning rate for fields
-  double learn_rate_h_max = 0.5;          ///< minimum learning rate for couplings
-  double learn_rate_J_max = 0.5;          ///< maximum learning rate for couplings
-  double adapt_up = 1.5;                  ///< scaling factor for increasing learning rate
-  double adapt_down = 0.6;                ///< scaling factor for decreasing learning rate
+  bool set_zero_gauge = false; ///< re-scale parameter for 0-mean J marginals
+  double epsilon_h = 0.01;     ///< initial learning rate for fields
+  double epsilon_J = 0.001;    ///< initial learning rate for couplings
+  double learn_rate_h_min = 1e-04; ///< minimum learning rate for fields
+  double learn_rate_J_min = 1e-04; ///< maximum learning rate for fields
+  double learn_rate_h_max = 0.5;   ///< minimum learning rate for couplings
+  double learn_rate_J_max = 0.5;   ///< maximum learning rate for couplings
+  double adapt_up = 1.5;   ///< scaling factor for increasing learning rate
+  double adapt_down = 0.6; ///< scaling factor for decreasing learning rate
 
   void updateGradients(void);
   void updateLearningRates(void);

@@ -208,9 +208,11 @@ Generator::checkErgodicity(void)
   double e_end = stats.at(2);   // average ending energy
   double e_err = stats.at(4);   // combined starting and ending variance
 
-  double auto_corr = stats.at(7);        // sequence correlations for trajectory start/end
-  double cross_corr = stats.at(8);       // correlations between trajectories
-  double check_corr = stats.at(9);       // correlations for mid-trajectory (length/10) and end
+  double auto_corr =
+    stats.at(7); // sequence correlations for trajectory start/end
+  double cross_corr = stats.at(8); // correlations between trajectories
+  double check_corr =
+    stats.at(9); // correlations for mid-trajectory (length/10) and end
   double cross_check_err = stats.at(14); // combined auto+cross variance
   double auto_cross_err = stats.at(13);  // combined check+cross variance
 
@@ -295,9 +297,10 @@ Generator::estimateBurnTime(void)
 
     double e_start = arma::mean(energy_burn.row(0));
     double e_start_sigma = arma::stddev(energy_burn.row(0), 1);
-    double e_end = (arma::mean(energy_burn.row(burn_count - 1)) +
-                    arma::mean(energy_burn.row(burn_count - 2))) /
-                   2; // lazy way to double the number of sequences from the end step
+    double e_end =
+      (arma::mean(energy_burn.row(burn_count - 1)) +
+       arma::mean(energy_burn.row(burn_count - 2))) /
+      2; // lazy way to double the number of sequences from the end step
     double e_end_sigma =
       sqrt(pow(arma::stddev(energy_burn.row(burn_count - 1), 1), 2) +
            pow(arma::stddev(energy_burn.row(burn_count - 2), 1), 2));
@@ -415,20 +418,20 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
                                  temperature);
       } else if (update_rule == "z-sqrt") {
         sampler->sampleSequencesZanellaSqrt(&samples_3d,
-                                        walkers,
-                                        samples_per_walk,
-                                        burn_in,
-                                        burn_between,
-                                        rng(),
-                                        temperature);
+                                            walkers,
+                                            samples_per_walk,
+                                            burn_in,
+                                            burn_between,
+                                            rng(),
+                                            temperature);
       } else if (update_rule == "z-barker") {
         sampler->sampleSequencesZanellaBarker(&samples_3d,
-                                        walkers,
-                                        samples_per_walk,
-                                        burn_in,
-                                        burn_between,
-                                        rng(),
-                                        temperature);
+                                              walkers,
+                                              samples_per_walk,
+                                              burn_in,
+                                              burn_between,
+                                              rng(),
+                                              temperature);
       } else {
         std::cerr << "ERROR: sampler '" << sampler << "' not recognized."
                   << std::endl;

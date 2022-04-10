@@ -54,14 +54,14 @@ print_usage(void)
 int
 main(int argc, char* argv[])
 {
-  std::string train_file;           // file string for training MSA
-  std::string train_weight_file;    // file string for training sequence weights
+  std::string train_file;        // file string for training MSA
+  std::string train_weight_file; // file string for training sequence weights
 
   std::string validate_file;        // file string for validation MSA
   std::string validate_weight_file; // file string for validation weights
 
-  std::string config_file;          // file string for bmDCA config file
-  std::string dest_dir = ".";       // output destination directory
+  std::string config_file;    // file string for bmDCA config file
+  std::string dest_dir = "."; // output destination directory
 
   bool is_numeric = false;
   bool force_restart = false;

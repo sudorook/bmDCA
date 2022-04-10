@@ -635,7 +635,7 @@ MSA::filterSimilarSequences(double threshold, bool verbose)
     std::cout << std::flush;
   }
   alignment.shed_rows(bad_sequences); // drop too-similar sequences
-  M = alignment.n_rows; // re-set the number of sequences
+  M = alignment.n_rows;               // re-set the number of sequences
 
   // Once sequences are removed, the indices for sequences to keep need to be
   // updated.
@@ -656,7 +656,8 @@ MSA::filterSimilarSequences(double threshold, bool verbose)
  * @param keep vector of indices
  */
 void
-MSA::setKeepPositions(std::vector<size_t> keep) {
+MSA::setKeepPositions(std::vector<size_t> keep)
+{
   pos_to_keep = keep;
 };
 
@@ -666,7 +667,8 @@ MSA::setKeepPositions(std::vector<size_t> keep) {
  * @param keep vector of indices
  */
 void
-MSA::setKeepSequences(std::vector<size_t> keep) {
+MSA::setKeepSequences(std::vector<size_t> keep)
+{
   seq_to_keep = keep;
 };
 
@@ -712,7 +714,7 @@ MSA::filterSequenceGaps(double seq_threshold, bool verbose)
     std::cout << std::flush;
   }
   alignment.shed_rows(bad_sequences); // drop overly-gapped sequences
-  M = alignment.n_rows; // re-set the number of sequences
+  M = alignment.n_rows;               // re-set the number of sequences
 
   // Once sequences are removed, the indices for sequences to keep need to be
   // updated.
@@ -769,7 +771,7 @@ MSA::filterPositionGaps(double pos_threshold, bool verbose)
     std::cout << std::flush;
   }
   alignment.shed_cols(bad_positions); // drop overly-gapped positions
-  N = (int)alignment.n_cols; // re-set the number of positions
+  N = (int)alignment.n_cols;          // re-set the number of positions
 
   // Once positions are removed, the indices for positions to keep need to be
   // updated.

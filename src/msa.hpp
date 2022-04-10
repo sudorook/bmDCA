@@ -64,7 +64,8 @@ public:
   std::vector<MSA*> partitionAlignment(int = 0, unsigned = 0);
 
 private:
-  std::vector<SeqRecord> seq_records; ///< vector of sequences loaded from a FASTA file
+  std::vector<SeqRecord>
+    seq_records; ///< vector of sequences loaded from a FASTA file
   int getAASequenceLength(std::string);
   int getNTSequenceLength(std::string);
   void readInputMSA(std::string);
@@ -73,8 +74,10 @@ private:
   void makeAANumericalMatrix(void);
   void makeNTNumericalMatrix(void);
 
-  std::vector<size_t> seq_to_keep; ///< indices for sequences to protect from pruning
-  std::vector<size_t> pos_to_keep; ///< indices for positions to protect from pruning
+  std::vector<size_t>
+    seq_to_keep; ///< indices for sequences to protect from pruning
+  std::vector<size_t>
+    pos_to_keep; ///< indices for positions to protect from pruning
 };
 
 #endif

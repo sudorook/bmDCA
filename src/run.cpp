@@ -26,8 +26,8 @@
 #include <iostream>
 #include <random>
 #include <regex>
-#include <string>
 #include <sstream>
+#include <string>
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
@@ -893,18 +893,18 @@ Sim::run(void)
                                    seed);
         } else if (update_rule == "z-sqrt") {
           sampler->sampleSequencesZanellaSqrt(&samples_3d,
-                                          walkers,
-                                          samples_per_walk,
-                                          burn_in,
-                                          burn_between,
-                                          seed);
+                                              walkers,
+                                              samples_per_walk,
+                                              burn_in,
+                                              burn_between,
+                                              seed);
         } else if (update_rule == "z-barker") {
           sampler->sampleSequencesZanellaBarker(&samples_3d,
-                                          walkers,
-                                          samples_per_walk,
-                                          burn_in,
-                                          burn_between,
-                                          seed);
+                                                walkers,
+                                                samples_per_walk,
+                                                burn_in,
+                                                burn_between,
+                                                seed);
         } else {
           std::cerr << "ERROR: sampler '" << sampler << "' not recognized."
                     << std::endl;
@@ -1150,9 +1150,11 @@ Sim::checkErgodicity(void)
   double e_end = stats.at(2);   // average ending energy
   double e_err = stats.at(4);   // combined starting and ending variance
 
-  double auto_corr = stats.at(7);        // sequence correlations for trajectory start/end
-  double cross_corr = stats.at(8);       // correlations between trajectories
-  double check_corr = stats.at(9);       // correlations for mid-trajectory (length/10) and end
+  double auto_corr =
+    stats.at(7); // sequence correlations for trajectory start/end
+  double cross_corr = stats.at(8); // correlations between trajectories
+  double check_corr =
+    stats.at(9); // correlations for mid-trajectory (length/10) and end
   double cross_check_err = stats.at(14); // combined auto+cross variance
   double auto_cross_err = stats.at(13);  // combined check+cross variance
 

@@ -61,13 +61,14 @@ main(int argc, char* argv[])
   int num_sequences = 1000; // number of sequence to sample per replicate
   int num_replicates = 10;  // number of independent MC trajectories
 
-  std::string parameters_file, J_file;          // file strings for input parameters
-  std::string dest_dir = ".";                   // directory for storing output
-  std::string config_file;                      // config file for sampler hyperparameters
+  std::string parameters_file, J_file; // file strings for input parameters
+  std::string dest_dir = ".";          // directory for storing output
+  std::string config_file; // config file for sampler hyperparameters
   std::string output_file = "MC_samples.fasta"; // output file name
 
   bool dest_dir_given = false;
-  bool compat_mode = true; // flag for whether the input parameters are text or binary
+  bool compat_mode =
+    true; // flag for whether the input parameters are text or binary
 
   // Read command-line parameters.
   char c;

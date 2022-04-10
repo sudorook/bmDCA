@@ -55,23 +55,23 @@ private:
   potts_model moment1;  ///< 1st moment estimate
   potts_model moment2;  ///< 2nd moment estimate
 
-  double lambda_decay_h = 0.01;        ///< regularization strength for fields
-  double lambda_decay_J = 0.01;        ///< regularization strength for couplings
+  double lambda_decay_h = 0.01; ///< regularization strength for fields
+  double lambda_decay_J = 0.01; ///< regularization strength for couplings
   std::string initial_params = "zero"; ///< initialization for parameters
-  bool set_zero_gauge = false;         ///< re-scale parameter for 0-mean J marginals
-  bool allow_gap_couplings = true;     ///< flag to regularize the gaps
-  double learn_rate_h = 0.01;          ///< base learning rate for fields
-  double learn_rate_J = 0.01;          ///< base learning rate for couplings
+  bool set_zero_gauge = false; ///< re-scale parameter for 0-mean J marginals
+  bool allow_gap_couplings = true; ///< flag to regularize the gaps
+  double learn_rate_h = 0.01;      ///< base learning rate for fields
+  double learn_rate_J = 0.01;      ///< base learning rate for couplings
 
   // Parameters for learning rate annealing schedule.
-  double eta_min = 0.1;                 ///< minimum learning rate scaling factor
-  double eta_max = 0.1;                 ///< maximum learning rate scaling factor
+  double eta_min = 0.1; ///< minimum learning rate scaling factor
+  double eta_max = 0.1; ///< maximum learning rate scaling factor
   std::string anneal_schedule = "none"; ///< learning rate annealing schedule
   double anneal_scale = 2.0;            ///< scaling factor for schedule periods
   int anneal_period = 40;               ///< starting annealing schedule period
   int anneal_warm = 20;                 ///< # steps for warmup (eta min to max)
-  int anneal_hot = 0;                   ///< # steps to scale learning rate by eta max
-  int anneal_cool = 0;                  ///< # steps for cooldown (eta max to min)
+  int anneal_hot = 0;  ///< # steps to scale learning rate by eta max
+  int anneal_cool = 0; ///< # steps for cooldown (eta max to min)
 
   void updateGradients(void);
   void updateMoments(void);

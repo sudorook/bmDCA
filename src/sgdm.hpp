@@ -52,16 +52,16 @@ private:
   potts_model gradient; ///< model gradient
   potts_model moment1;  ///< 1st moment estimate
 
-  double lambda_reg_h = 0.01;          ///< regularization strength for fields
-  double lambda_reg_J = 0.01;          ///< regularization strength for couplings
-  double alpha_reg = 1.0;              ///< elastic-net L1 / L2 scaling parameter
+  double lambda_reg_h = 0.01; ///< regularization strength for fields
+  double lambda_reg_J = 0.01; ///< regularization strength for couplings
+  double alpha_reg = 1.0;     ///< elastic-net L1 / L2 scaling parameter
   std::string initial_params = "zero"; ///< initialization for parameters
-  bool set_zero_gauge = false;         ///< re-scale parameter for 0-mean J marginals
-  bool allow_gap_couplings = true;     ///< flag to regularize the gaps
-  double learn_rate_h = 0.01;          ///< base learning rate for fields
-  double learn_rate_J = 0.01;          ///< base learning rate for couplings
-  double beta_h = 0.9;                 ///< momentum average decay rate for fields
-  double beta_J = 0.9;                 ///< momentum average decay rate for couplings
+  bool set_zero_gauge = false; ///< re-scale parameter for 0-mean J marginals
+  bool allow_gap_couplings = true; ///< flag to regularize the gaps
+  double learn_rate_h = 0.01;      ///< base learning rate for fields
+  double learn_rate_J = 0.01;      ///< base learning rate for couplings
+  double beta_h = 0.9;             ///< momentum average decay rate for fields
+  double beta_J = 0.9; ///< momentum average decay rate for couplings
 
   void updateGradients(void);
   void updateMoments(void);

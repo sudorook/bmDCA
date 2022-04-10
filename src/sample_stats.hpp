@@ -37,15 +37,21 @@ public:
   SampleStats(void){};
   virtual ~SampleStats(void){};
 
-  virtual void writeStep(int, bool = true) = 0;         ///< write all stats for the step
-  virtual void writeData(std::string, bool = true) = 0; ///< write all stats for the step
-  virtual void writeSamples(std::string) = 0;           ///< write the samples to disk
-  virtual void writeSampleEnergies(std::string) = 0;    ///< write the sample energies to disk
-  virtual void computeStats(void) = 0;                  ///< compute the 1p/2p statistics
-  virtual void computeStatsExtra(void) = 0;             ///< compute the energies and sequence correlations
-  virtual void computeStatsImportance(void) = 0;        ///< run an importance sampling to re-esimate parameters
-  virtual void setMixingTime(int) = 0;                  ///< set the burn-between time for the samples
-  virtual arma::Col<double> getStats(void) = 0;         ///< return important metrics
+  virtual void writeStep(int,
+                         bool = true) = 0; ///< write all stats for the step
+  virtual void writeData(std::string,
+                         bool = true) = 0;    ///< write all stats for the step
+  virtual void writeSamples(std::string) = 0; ///< write the samples to disk
+  virtual void writeSampleEnergies(
+    std::string) = 0;                  ///< write the sample energies to disk
+  virtual void computeStats(void) = 0; ///< compute the 1p/2p statistics
+  virtual void computeStatsExtra(
+    void) = 0; ///< compute the energies and sequence correlations
+  virtual void computeStatsImportance(
+    void) = 0; ///< run an importance sampling to re-esimate parameters
+  virtual void setMixingTime(
+    int) = 0; ///< set the burn-between time for the samples
+  virtual arma::Col<double> getStats(void) = 0; ///< return important metrics
 
   arma::Mat<double> frequency_1p;              ///< 1p frequencies
   arma::field<arma::Mat<double>> frequency_2p; ///< 2p sample frequencies
@@ -91,8 +97,9 @@ private:
   double overlap_inf;       ///< total sequence correlations
   double overlap_inf_sigma; ///< variance of correlations
 
-  potts_model* params;        ///< Potts parameters
-  potts_model* params_prev;   ///< previous Potts parameters (for importance sampling)
+  potts_model* params; ///< Potts parameters
+  potts_model*
+    params_prev; ///< previous Potts parameters (for importance sampling)
   arma::Mat<int>* samples;    ///< pointer to sampled sequences
   arma::Col<double> energies; ///< vector of energies for sampled sequences
 
@@ -133,11 +140,15 @@ private:
   void writeSampleEnergies(std::string);
   void writeSampleEnergiesRelaxation(std::string);
 
-  arma::Mat<double> frequency_1p_sigma;              ///< variance of 1p estimates across trajectories
-  arma::field<arma::Mat<double>> frequency_2p_sigma; ///< variance of 1p estimates across trajectories
+  arma::Mat<double>
+    frequency_1p_sigma; ///< variance of 1p estimates across trajectories
+  arma::field<arma::Mat<double>>
+    frequency_2p_sigma; ///< variance of 1p estimates across trajectories
 
-  arma::Row<double> energies_relax;       ///< mean energies at each step along trajectories
-  arma::Row<double> energies_relax_sigma; ///< variance of energies at each step along trajectories
+  arma::Row<double>
+    energies_relax; ///< mean energies at each step along trajectories
+  arma::Row<double> energies_relax_sigma; ///< variance of energies at each step
+                                          ///< along trajectories
 
   arma::Col<double> overlaps;       ///< sequence correlations
   arma::Col<double> overlaps_sigma; ///< variance in sequence correlations
@@ -160,13 +171,17 @@ private:
   double sigma_auto;        ///< variance of auto-correlation
   double sigma_cross;       ///< variance of cross-correlation
   double sigma_check;       ///< variance of mid-trajectory and end correlation
-  double err_cross_auto;    ///< combined between-trajectory and within-trajectory variance (start)
-  double err_cross_check;   ///< combined between-trajectory and within-trajectory variance (middle)
-  double err_check_auto;    ///< combined within-trajectory (start) and within-trajectory variance (middke)
+  double err_cross_auto;  ///< combined between-trajectory and within-trajectory
+                          ///< variance (start)
+  double err_cross_check; ///< combined between-trajectory and within-trajectory
+                          ///< variance (middle)
+  double err_check_auto;  ///< combined within-trajectory (start) and
+                          ///< within-trajectory variance (middke)
 
-  potts_model* params;        ///< Potts parameters
-  potts_model* params_prev;   ///< previous Potts parameters (for importance sampling)
-  arma::Cube<int>* samples;    ///< pointer to sampled sequences
+  potts_model* params; ///< Potts parameters
+  potts_model*
+    params_prev; ///< previous Potts parameters (for importance sampling)
+  arma::Cube<int>* samples;   ///< pointer to sampled sequences
   arma::Col<double> energies; ///< vector of energies for sampled sequences
 
   int reps; ///< number of trajectories

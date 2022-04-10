@@ -45,24 +45,28 @@ private:
   int samples_per_walk; ///< number of independent sampling runs
   int walkers;          ///< number of sequences sampled from independent runs
 
-  int resample_max = 20;             ///< max number of times to resample sequences
-  unsigned random_seed = 1;          ///< random seed for the PCG RNG
-  double adapt_up_time = 1.5;        ///< scaling factor for increasing burn times
-  double adapt_down_time = 0.6;      ///< scaling factor for decreasing burn times
-  int burn_in_start = 100000;        ///< starting burn-in time
-  int burn_between_start = 1000;     ///< starting burn-between time
-  bool update_burn_time = true;      ///< flag to update burn-time or stick to starting values
+  int resample_max = 20;         ///< max number of times to resample sequences
+  unsigned random_seed = 1;      ///< random seed for the PCG RNG
+  double adapt_up_time = 1.5;    ///< scaling factor for increasing burn times
+  double adapt_down_time = 0.6;  ///< scaling factor for decreasing burn times
+  int burn_in_start = 100000;    ///< starting burn-in time
+  int burn_between_start = 1000; ///< starting burn-between time
+  bool update_burn_time =
+    true; ///< flag to update burn-time or stick to starting values
   bool save_interim_samples = false; ///< write sequence between resamplings
-  std::string update_rule = "mh";    ///< update rule for accepting proposed samples
-  double temperature = 1.0;          ///< temperature for sampling
+  std::string update_rule =
+    "mh";                   ///< update rule for accepting proposed samples
+  double temperature = 1.0; ///< temperature for sampling
 
-  int burn_in; ///< stores current burn-in time
+  int burn_in;      ///< stores current burn-in time
   int burn_between; ///< stores current burn-between time
 
   pcg32 rng; ///< the RNG for the sampler
 
-  arma::Mat<int> samples_2d;  ///< efficiently store sequences when samples_per_run=1
-  arma::Cube<int> samples_3d; ///< efficiently store sequences when samples_per_run>1
+  arma::Mat<int>
+    samples_2d; ///< efficiently store sequences when samples_per_run=1
+  arma::Cube<int>
+    samples_3d;      ///< efficiently store sequences when samples_per_run>1
   potts_model model; ///< structure for Potts model parameters
 
   Sampler* sampler;          ///< sampler
