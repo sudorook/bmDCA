@@ -63,20 +63,20 @@ private:
   bool save_best_steps = false;        ///< flag to save steps with min rmse
   std::string stop_mode = "threshold"; ///< stopping criterion
   double stop_threshold = 0.00001;     ///< threshold for stopping
-  std::string train_mode = "original"; ///< training model
-  bool cross_validate = false;         ///< flag to cross-validate the MSA
+  std::string train_mode = "sgdm";     ///< training model
+  bool cross_validate = true;          ///< flag to cross-validate the MSA
   int validation_seqs = 100;           ///< effective M for validatino set
   unsigned random_seed = 142857;       ///< random seed for RNG
   bool output_binary = true; ///< flag to output in arma::binary format
 
   // Sampler settings
   std::string update_rule = "mh"; ///< update proposal rule for sampler
-  int burn_in_start = 10000;      ///< initial burn-in
+  int burn_in_start = 1000;       ///< initial burn-in
   int burn_between_start = 100;   ///< initial burn-between
   bool update_burn_time = true;   ///< flag to tune burn times
   double adapt_up_time = 1.2;     ///< scaling factor for increasing burn times
   double adapt_down_time = 0.9;   ///< scaling factorfor decreasing burn times
-  int step_importance_max = 1;    ///< max number of importance sampling steps
+  int step_importance_max = 0;    ///< max number of importance sampling steps
   double coherence_min =
     0.9999;            ///< model coherence to maintain for importance sampling
   bool use_ss = false; ///< flag to sample effective M sequences
