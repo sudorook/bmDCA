@@ -1,7 +1,7 @@
 /*
  * PCG Random Number Generation for C++
  *
- * Copyright 2014-2019 Melissa O'Neill <oneill@pcg-random.org>,
+ * Copyright 2014-2022 Melissa O'Neill <oneill@pcg-random.org>,
  *                     and the PCG Project contributors.
  *
  * SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -46,7 +46,7 @@
  *            - equality and inequality for RNGs
  *      - and a number of convenience typedefs to mask all the complexity
  *
- * The code employes a fairly heavy level of abstraction, and has to deal
+ * The code employees a fairly heavy level of abstraction, and has to deal
  * with various C++ minutia.  If you're looking to learn about how the PCG
  * scheme works, you're probably best of starting with one of the other
  * codebases (see www.pcg-random.org).  But if you're curious about the
@@ -101,7 +101,7 @@
 #endif
 
 /*
- * The pcg_extras namespace contains some support code that is likley to
+ * The pcg_extras namespace contains some support code that is likely to
  * be useful for a variety of RNGs, including:
  *      - 128-bit int support for platforms where it isn't available natively
  *      - bit twiddling operations
@@ -123,27 +123,21 @@ using namespace pcg_extras;
  *
  *      default_multiplier<uint32_t>::multiplier()
  *
- * gives you the default multipler for 32-bit integers.  We use the name
+ * gives you the default multiplier for 32-bit integers.  We use the name
  * of the constant and not a generic word like value to allow these classes
  * to be used as mixins.
  */
 
-template<typename T>
-struct default_multiplier
-{
+template <typename T> struct default_multiplier {
   // Not defined for an arbitrary type
 };
 
-template<typename T>
-struct default_increment
-{
+template <typename T> struct default_increment {
   // Not defined for an arbitrary type
 };
 
 #define PCG_DEFINE_CONSTANT(type, what, kind, constant)                        \
-  template<>                                                                   \
-  struct what##_##kind<type>                                                   \
-  {                                                                            \
+  template <> struct what##_##kind<type> {                                     \
     static constexpr type kind() { return constant; }                          \
   };
 
@@ -159,28 +153,20 @@ PCG_DEFINE_CONSTANT(uint32_t, default, increment, 2891336453U)
 PCG_DEFINE_CONSTANT(uint64_t, default, multiplier, 6364136223846793005ULL)
 PCG_DEFINE_CONSTANT(uint64_t, default, increment, 1442695040888963407ULL)
 
-PCG_DEFINE_CONSTANT(pcg128_t,
-                    default,
-                    multiplier,
+PCG_DEFINE_CONSTANT(pcg128_t, default, multiplier,
                     PCG_128BIT_CONSTANT(2549297995355413924ULL,
                                         4865540595714422341ULL))
-PCG_DEFINE_CONSTANT(pcg128_t,
-                    default,
-                    increment,
+PCG_DEFINE_CONSTANT(pcg128_t, default, increment,
                     PCG_128BIT_CONSTANT(6364136223846793005ULL,
                                         1442695040888963407ULL))
 
 /* Alternative (cheaper) multipliers for 128-bit */
 
-template<typename T>
-struct cheap_multiplier : public default_multiplier<T>
-{
+template <typename T> struct cheap_multiplier : public default_multiplier<T> {
   // For most types just use the default.
 };
 
-template<>
-struct cheap_multiplier<pcg128_t>
-{
+template <> struct cheap_multiplier<pcg128_t> {
   static constexpr uint64_t multiplier() { return 0xda942042e4dd58b5ULL; }
 };
 
@@ -198,16 +184,14 @@ struct cheap_multiplier<pcg128_t>
  *                       object, thus every RNG has its own unique sequence
  *
  * This variation is provided though mixin classes which define a function
- * value called increment() that returns the nesessary additive constant.
+ * value called increment() that returns the necessary additive constant.
  */
 
 /*
  * unique stream
  */
 
-template<typename itype>
-class unique_stream
-{
+template <typename itype> class unique_stream {
 protected:
   static constexpr bool is_mcg = false;
 
@@ -217,8 +201,7 @@ protected:
 public:
   typedef itype state_type;
 
-  constexpr itype increment() const
-  {
+  constexpr itype increment() const {
     return itype(reinterpret_cast<uintptr_t>(this) | 1);
   }
 
@@ -226,10 +209,9 @@ public:
 
   static constexpr bool can_specify_stream = false;
 
-  static constexpr size_t streams_pow2()
-  {
+  static constexpr size_t streams_pow2() {
     return (sizeof(itype) < sizeof(size_t) ? sizeof(itype) : sizeof(size_t)) *
-             8 -
+               8 -
            1u;
   }
 
@@ -241,9 +223,7 @@ protected:
  * no stream (mcg)
  */
 
-template<typename itype>
-class no_stream
-{
+template <typename itype> class no_stream {
 protected:
   static constexpr bool is_mcg = true;
 
@@ -267,9 +247,8 @@ protected:
  * single stream/sequence (oneseq)
  */
 
-template<typename itype>
-class oneseq_stream : public default_increment<itype>
-{
+template <typename itype>
+class oneseq_stream : public default_increment<itype> {
 protected:
   static constexpr bool is_mcg = false;
 
@@ -279,8 +258,7 @@ protected:
 public:
   typedef itype state_type;
 
-  static constexpr itype stream()
-  {
+  static constexpr itype stream() {
     return default_increment<itype>::increment() >> 1;
   }
 
@@ -296,9 +274,7 @@ protected:
  * specific stream
  */
 
-template<typename itype>
-class specific_stream
-{
+template <typename itype> class specific_stream {
 protected:
   static constexpr bool is_mcg = false;
 
@@ -322,8 +298,7 @@ protected:
   specific_stream() = default;
 
   specific_stream(itype specific_seq)
-    : inc_(itype(specific_seq << 1) | itype(1U))
-  {
+      : inc_(itype(specific_seq << 1) | itype(1U)) {
     // Nothing (else) to do.
   }
 };
@@ -340,28 +315,22 @@ protected:
  * (reducing register pressure).
  *
  * Given the high level of parameterization, the code has to use some
- * template-metaprogramming tricks to handle some of the suble variations
+ * template-metaprogramming tricks to handle some of the subtle variations
  * involved.
  */
 
-template<typename xtype,
-         typename itype,
-         typename output_mixin,
-         bool output_previous = true,
-         typename stream_mixin = oneseq_stream<itype>,
-         typename multiplier_mixin = default_multiplier<itype>>
-class engine
-  : protected output_mixin
-  , public stream_mixin
-  , protected multiplier_mixin
-{
+template <typename xtype, typename itype, typename output_mixin,
+          bool output_previous = true,
+          typename stream_mixin = oneseq_stream<itype>,
+          typename multiplier_mixin = default_multiplier<itype>>
+class engine : protected output_mixin,
+               public stream_mixin,
+               protected multiplier_mixin {
 protected:
   itype state_;
 
-  struct can_specify_stream_tag
-  {};
-  struct no_specifiable_stream_tag
-  {};
+  struct can_specify_stream_tag {};
+  struct no_specifiable_stream_tag {};
 
   using multiplier_mixin::multiplier;
   using stream_mixin::increment;
@@ -370,8 +339,7 @@ public:
   typedef xtype result_type;
   typedef itype state_type;
 
-  static constexpr size_t period_pow2()
-  {
+  static constexpr size_t period_pow2() {
     return sizeof(state_type) * 8 - 2 * stream_mixin::is_mcg;
   }
 
@@ -387,47 +355,37 @@ protected:
 
   itype base_generate() { return state_ = bump(state_); }
 
-  itype base_generate0()
-  {
+  itype base_generate0() {
     itype old_state = state_;
     state_ = bump(state_);
     return old_state;
   }
 
 public:
-  result_type operator()()
-  {
+  result_type operator()() {
     if (output_previous)
       return this->output(base_generate0());
     else
       return this->output(base_generate());
   }
 
-  result_type operator()(result_type upper_bound)
-  {
+  result_type operator()(result_type upper_bound) {
     return bounded_rand(*this, upper_bound);
   }
 
 protected:
-  static itype advance(itype state,
-                       itype delta,
-                       itype cur_mult,
+  static itype advance(itype state, itype delta, itype cur_mult,
                        itype cur_plus);
 
-  static itype distance(itype cur_state,
-                        itype newstate,
-                        itype cur_mult,
-                        itype cur_plus,
-                        itype mask = ~itype(0U));
+  static itype distance(itype cur_state, itype newstate, itype cur_mult,
+                        itype cur_plus, itype mask = ~itype(0U));
 
-  itype distance(itype newstate, itype mask = itype(~itype(0U))) const
-  {
+  itype distance(itype newstate, itype mask = itype(~itype(0U))) const {
     return distance(state_, newstate, multiplier(), increment(), mask);
   }
 
 public:
-  void advance(itype delta)
-  {
+  void advance(itype delta) {
     state_ = advance(state_, delta, this->multiplier(), this->increment());
   }
 
@@ -435,8 +393,7 @@ public:
 
   void discard(itype delta) { advance(delta); }
 
-  bool wrapped()
-  {
+  bool wrapped() {
     if (stream_mixin::is_mcg) {
       // For MCGs, the low order two bits never change. In this
       // implementation, we keep them fixed at 3 to make this test
@@ -448,149 +405,93 @@ public:
   }
 
   engine(itype state = itype(0xcafef00dd15ea5e5ULL))
-    : state_(this->is_mcg ? state | state_type(3U)
-                          : bump(state + this->increment()))
-  {
+      : state_(this->is_mcg ? state | state_type(3U)
+                            : bump(state + this->increment())) {
     // Nothing else to do.
   }
 
   // This function may or may not exist.  It thus has to be a template
   // to use SFINAE; users don't have to worry about its template-ness.
 
-  template<typename sm = stream_mixin>
+  template <typename sm = stream_mixin>
   engine(itype state, typename sm::stream_state stream_seed)
-    : stream_mixin(stream_seed)
-    , state_(this->is_mcg ? state | state_type(3U)
-                          : bump(state + this->increment()))
-  {
+      : stream_mixin(stream_seed),
+        state_(this->is_mcg ? state | state_type(3U)
+                            : bump(state + this->increment())) {
     // Nothing else to do.
   }
 
-  template<typename SeedSeq>
+  template <typename SeedSeq>
   engine(
-    SeedSeq&& seedSeq,
-    typename std::enable_if<!stream_mixin::can_specify_stream &&
-                              !std::is_convertible<SeedSeq, itype>::value &&
-                              !std::is_convertible<SeedSeq, engine>::value,
-                            no_specifiable_stream_tag>::type = {})
-    : engine(generate_one<itype>(std::forward<SeedSeq>(seedSeq)))
-  {
+      SeedSeq &&seedSeq,
+      typename std::enable_if<!stream_mixin::can_specify_stream &&
+                                  !std::is_convertible<SeedSeq, itype>::value &&
+                                  !std::is_convertible<SeedSeq, engine>::value,
+                              no_specifiable_stream_tag>::type = {})
+      : engine(generate_one<itype>(std::forward<SeedSeq>(seedSeq))) {
     // Nothing else to do.
   }
 
-  template<typename SeedSeq>
+  template <typename SeedSeq>
   engine(
-    SeedSeq&& seedSeq,
-    typename std::enable_if<stream_mixin::can_specify_stream &&
-                              !std::is_convertible<SeedSeq, itype>::value &&
-                              !std::is_convertible<SeedSeq, engine>::value,
-                            can_specify_stream_tag>::type = {})
-  {
+      SeedSeq &&seedSeq,
+      typename std::enable_if<stream_mixin::can_specify_stream &&
+                                  !std::is_convertible<SeedSeq, itype>::value &&
+                                  !std::is_convertible<SeedSeq, engine>::value,
+                              can_specify_stream_tag>::type = {}) {
     itype seeddata[2];
     generate_to<2>(std::forward<SeedSeq>(seedSeq), seeddata);
     seed(seeddata[1], seeddata[0]);
   }
 
-  template<typename... Args>
-  void seed(Args&&... args)
-  {
+  template <typename... Args> void seed(Args &&...args) {
     new (this) engine(std::forward<Args>(args)...);
   }
 
-  template<typename xtype1,
-           typename itype1,
-           typename output_mixin1,
-           bool output_previous1,
-           typename stream_mixin_lhs,
-           typename multiplier_mixin_lhs,
-           typename stream_mixin_rhs,
-           typename multiplier_mixin_rhs>
-  friend bool operator==(const engine<xtype1,
-                                      itype1,
-                                      output_mixin1,
-                                      output_previous1,
-                                      stream_mixin_lhs,
-                                      multiplier_mixin_lhs>&,
-                         const engine<xtype1,
-                                      itype1,
-                                      output_mixin1,
-                                      output_previous1,
-                                      stream_mixin_rhs,
-                                      multiplier_mixin_rhs>&);
+  template <typename xtype1, typename itype1, typename output_mixin1,
+            bool output_previous1, typename stream_mixin_lhs,
+            typename multiplier_mixin_lhs, typename stream_mixin_rhs,
+            typename multiplier_mixin_rhs>
+  friend bool
+  operator==(const engine<xtype1, itype1, output_mixin1, output_previous1,
+                          stream_mixin_lhs, multiplier_mixin_lhs> &,
+             const engine<xtype1, itype1, output_mixin1, output_previous1,
+                          stream_mixin_rhs, multiplier_mixin_rhs> &);
 
-  template<typename xtype1,
-           typename itype1,
-           typename output_mixin1,
-           bool output_previous1,
-           typename stream_mixin_lhs,
-           typename multiplier_mixin_lhs,
-           typename stream_mixin_rhs,
-           typename multiplier_mixin_rhs>
-  friend itype1 operator-(const engine<xtype1,
-                                       itype1,
-                                       output_mixin1,
-                                       output_previous1,
-                                       stream_mixin_lhs,
-                                       multiplier_mixin_lhs>&,
-                          const engine<xtype1,
-                                       itype1,
-                                       output_mixin1,
-                                       output_previous1,
-                                       stream_mixin_rhs,
-                                       multiplier_mixin_rhs>&);
+  template <typename xtype1, typename itype1, typename output_mixin1,
+            bool output_previous1, typename stream_mixin_lhs,
+            typename multiplier_mixin_lhs, typename stream_mixin_rhs,
+            typename multiplier_mixin_rhs>
+  friend itype1
+  operator-(const engine<xtype1, itype1, output_mixin1, output_previous1,
+                         stream_mixin_lhs, multiplier_mixin_lhs> &,
+            const engine<xtype1, itype1, output_mixin1, output_previous1,
+                         stream_mixin_rhs, multiplier_mixin_rhs> &);
 
-  template<typename CharT,
-           typename Traits,
-           typename xtype1,
-           typename itype1,
-           typename output_mixin1,
-           bool output_previous1,
-           typename stream_mixin1,
-           typename multiplier_mixin1>
-  friend std::basic_ostream<CharT, Traits>& operator<<(
-    std::basic_ostream<CharT, Traits>& out,
-    const engine<xtype1,
-                 itype1,
-                 output_mixin1,
-                 output_previous1,
-                 stream_mixin1,
-                 multiplier_mixin1>&);
+  template <typename CharT, typename Traits, typename xtype1, typename itype1,
+            typename output_mixin1, bool output_previous1,
+            typename stream_mixin1, typename multiplier_mixin1>
+  friend std::basic_ostream<CharT, Traits> &
+  operator<<(std::basic_ostream<CharT, Traits> &out,
+             const engine<xtype1, itype1, output_mixin1, output_previous1,
+                          stream_mixin1, multiplier_mixin1> &);
 
-  template<typename CharT,
-           typename Traits,
-           typename xtype1,
-           typename itype1,
-           typename output_mixin1,
-           bool output_previous1,
-           typename stream_mixin1,
-           typename multiplier_mixin1>
-  friend std::basic_istream<CharT, Traits>& operator>>(
-    std::basic_istream<CharT, Traits>& in,
-    engine<xtype1,
-           itype1,
-           output_mixin1,
-           output_previous1,
-           stream_mixin1,
-           multiplier_mixin1>& rng);
+  template <typename CharT, typename Traits, typename xtype1, typename itype1,
+            typename output_mixin1, bool output_previous1,
+            typename stream_mixin1, typename multiplier_mixin1>
+  friend std::basic_istream<CharT, Traits> &
+  operator>>(std::basic_istream<CharT, Traits> &in,
+             engine<xtype1, itype1, output_mixin1, output_previous1,
+                    stream_mixin1, multiplier_mixin1> &rng);
 };
 
-template<typename CharT,
-         typename Traits,
-         typename xtype,
-         typename itype,
-         typename output_mixin,
-         bool output_previous,
-         typename stream_mixin,
-         typename multiplier_mixin>
-std::basic_ostream<CharT, Traits>&
-operator<<(std::basic_ostream<CharT, Traits>& out,
-           const engine<xtype,
-                        itype,
-                        output_mixin,
-                        output_previous,
-                        stream_mixin,
-                        multiplier_mixin>& rng)
-{
+template <typename CharT, typename Traits, typename xtype, typename itype,
+          typename output_mixin, bool output_previous, typename stream_mixin,
+          typename multiplier_mixin>
+std::basic_ostream<CharT, Traits> &
+operator<<(std::basic_ostream<CharT, Traits> &out,
+           const engine<xtype, itype, output_mixin, output_previous,
+                        stream_mixin, multiplier_mixin> &rng) {
   using pcg_extras::operator<<;
 
   auto orig_flags = out.flags(std::ios_base::dec | std::ios_base::left);
@@ -604,23 +505,13 @@ operator<<(std::basic_ostream<CharT, Traits>& out,
   return out;
 }
 
-template<typename CharT,
-         typename Traits,
-         typename xtype,
-         typename itype,
-         typename output_mixin,
-         bool output_previous,
-         typename stream_mixin,
-         typename multiplier_mixin>
-std::basic_istream<CharT, Traits>&
-operator>>(std::basic_istream<CharT, Traits>& in,
-           engine<xtype,
-                  itype,
-                  output_mixin,
-                  output_previous,
-                  stream_mixin,
-                  multiplier_mixin>& rng)
-{
+template <typename CharT, typename Traits, typename xtype, typename itype,
+          typename output_mixin, bool output_previous, typename stream_mixin,
+          typename multiplier_mixin>
+std::basic_istream<CharT, Traits> &
+operator>>(std::basic_istream<CharT, Traits> &in,
+           engine<xtype, itype, output_mixin, output_previous, stream_mixin,
+                  multiplier_mixin> &rng) {
   using pcg_extras::operator>>;
 
   auto orig_flags = in.flags(std::ios_base::dec | std::ios_base::skipws);
@@ -648,23 +539,12 @@ operator>>(std::basic_istream<CharT, Traits>& in,
   return in;
 }
 
-template<typename xtype,
-         typename itype,
-         typename output_mixin,
-         bool output_previous,
-         typename stream_mixin,
-         typename multiplier_mixin>
-itype
-engine<xtype,
-       itype,
-       output_mixin,
-       output_previous,
-       stream_mixin,
-       multiplier_mixin>::advance(itype state,
-                                  itype delta,
-                                  itype cur_mult,
-                                  itype cur_plus)
-{
+template <typename xtype, typename itype, typename output_mixin,
+          bool output_previous, typename stream_mixin,
+          typename multiplier_mixin>
+itype engine<xtype, itype, output_mixin, output_previous, stream_mixin,
+             multiplier_mixin>::advance(itype state, itype delta,
+                                        itype cur_mult, itype cur_plus) {
   // The method used here is based on Brown, "Random Number Generation
   // with Arbitrary Stride,", Transactions of the American Nuclear
   // Society (Nov. 1994).  The algorithm is very similar to fast
@@ -689,24 +569,13 @@ engine<xtype,
   return acc_mult * state + acc_plus;
 }
 
-template<typename xtype,
-         typename itype,
-         typename output_mixin,
-         bool output_previous,
-         typename stream_mixin,
-         typename multiplier_mixin>
-itype
-engine<xtype,
-       itype,
-       output_mixin,
-       output_previous,
-       stream_mixin,
-       multiplier_mixin>::distance(itype cur_state,
-                                   itype newstate,
-                                   itype cur_mult,
-                                   itype cur_plus,
-                                   itype mask)
-{
+template <typename xtype, typename itype, typename output_mixin,
+          bool output_previous, typename stream_mixin,
+          typename multiplier_mixin>
+itype engine<xtype, itype, output_mixin, output_previous, stream_mixin,
+             multiplier_mixin>::distance(itype cur_state, itype newstate,
+                                         itype cur_mult, itype cur_plus,
+                                         itype mask) {
   constexpr itype ONE = 1u; // itype could be weird, so use constant
   bool is_mcg = cur_plus == itype(0);
   itype the_bit = is_mcg ? itype(4u) : itype(1u);
@@ -724,32 +593,18 @@ engine<xtype,
   return is_mcg ? distance >> 2 : distance;
 }
 
-template<typename xtype,
-         typename itype,
-         typename output_mixin,
-         bool output_previous,
-         typename stream_mixin_lhs,
-         typename multiplier_mixin_lhs,
-         typename stream_mixin_rhs,
-         typename multiplier_mixin_rhs>
-itype
-operator-(const engine<xtype,
-                       itype,
-                       output_mixin,
-                       output_previous,
-                       stream_mixin_lhs,
-                       multiplier_mixin_lhs>& lhs,
-          const engine<xtype,
-                       itype,
-                       output_mixin,
-                       output_previous,
-                       stream_mixin_rhs,
-                       multiplier_mixin_rhs>& rhs)
-{
+template <typename xtype, typename itype, typename output_mixin,
+          bool output_previous, typename stream_mixin_lhs,
+          typename multiplier_mixin_lhs, typename stream_mixin_rhs,
+          typename multiplier_mixin_rhs>
+itype operator-(const engine<xtype, itype, output_mixin, output_previous,
+                             stream_mixin_lhs, multiplier_mixin_lhs> &lhs,
+                const engine<xtype, itype, output_mixin, output_previous,
+                             stream_mixin_rhs, multiplier_mixin_rhs> &rhs) {
   static_assert(
-    std::is_same<stream_mixin_lhs, stream_mixin_rhs>::value &&
-      std::is_same<multiplier_mixin_lhs, multiplier_mixin_rhs>::value,
-    "Incomparable generators");
+      std::is_same<stream_mixin_lhs, stream_mixin_rhs>::value &&
+          std::is_same<multiplier_mixin_lhs, multiplier_mixin_rhs>::value,
+      "Incomparable generators");
   if (lhs.increment() == rhs.increment()) {
     return rhs.distance(lhs.state_);
   } else {
@@ -763,108 +618,61 @@ operator-(const engine<xtype,
   }
 }
 
-template<typename xtype,
-         typename itype,
-         typename output_mixin,
-         bool output_previous,
-         typename stream_mixin_lhs,
-         typename multiplier_mixin_lhs,
-         typename stream_mixin_rhs,
-         typename multiplier_mixin_rhs>
-bool
-operator==(const engine<xtype,
-                        itype,
-                        output_mixin,
-                        output_previous,
-                        stream_mixin_lhs,
-                        multiplier_mixin_lhs>& lhs,
-           const engine<xtype,
-                        itype,
-                        output_mixin,
-                        output_previous,
-                        stream_mixin_rhs,
-                        multiplier_mixin_rhs>& rhs)
-{
+template <typename xtype, typename itype, typename output_mixin,
+          bool output_previous, typename stream_mixin_lhs,
+          typename multiplier_mixin_lhs, typename stream_mixin_rhs,
+          typename multiplier_mixin_rhs>
+bool operator==(const engine<xtype, itype, output_mixin, output_previous,
+                             stream_mixin_lhs, multiplier_mixin_lhs> &lhs,
+                const engine<xtype, itype, output_mixin, output_previous,
+                             stream_mixin_rhs, multiplier_mixin_rhs> &rhs) {
   return (lhs.multiplier() == rhs.multiplier()) &&
          (lhs.increment() == rhs.increment()) && (lhs.state_ == rhs.state_);
 }
 
-template<typename xtype,
-         typename itype,
-         typename output_mixin,
-         bool output_previous,
-         typename stream_mixin_lhs,
-         typename multiplier_mixin_lhs,
-         typename stream_mixin_rhs,
-         typename multiplier_mixin_rhs>
+template <typename xtype, typename itype, typename output_mixin,
+          bool output_previous, typename stream_mixin_lhs,
+          typename multiplier_mixin_lhs, typename stream_mixin_rhs,
+          typename multiplier_mixin_rhs>
 inline bool
-operator!=(const engine<xtype,
-                        itype,
-                        output_mixin,
-                        output_previous,
-                        stream_mixin_lhs,
-                        multiplier_mixin_lhs>& lhs,
-           const engine<xtype,
-                        itype,
-                        output_mixin,
-                        output_previous,
-                        stream_mixin_rhs,
-                        multiplier_mixin_rhs>& rhs)
-{
+operator!=(const engine<xtype, itype, output_mixin, output_previous,
+                        stream_mixin_lhs, multiplier_mixin_lhs> &lhs,
+           const engine<xtype, itype, output_mixin, output_previous,
+                        stream_mixin_rhs, multiplier_mixin_rhs> &rhs) {
   return !operator==(lhs, rhs);
 }
 
-template<typename xtype,
-         typename itype,
-         template<typename XT, typename IT>
-         class output_mixin,
-         bool output_previous = (sizeof(itype) <= 8),
-         template<typename IT> class multiplier_mixin = default_multiplier>
-using oneseq_base = engine<xtype,
-                           itype,
-                           output_mixin<xtype, itype>,
-                           output_previous,
-                           oneseq_stream<itype>,
-                           multiplier_mixin<itype>>;
+template <typename xtype, typename itype,
+          template <typename XT, typename IT> class output_mixin,
+          bool output_previous = (sizeof(itype) <= 8),
+          template <typename IT> class multiplier_mixin = default_multiplier>
+using oneseq_base =
+    engine<xtype, itype, output_mixin<xtype, itype>, output_previous,
+           oneseq_stream<itype>, multiplier_mixin<itype>>;
 
-template<typename xtype,
-         typename itype,
-         template<typename XT, typename IT>
-         class output_mixin,
-         bool output_previous = (sizeof(itype) <= 8),
-         template<typename IT> class multiplier_mixin = default_multiplier>
-using unique_base = engine<xtype,
-                           itype,
-                           output_mixin<xtype, itype>,
-                           output_previous,
-                           unique_stream<itype>,
-                           multiplier_mixin<itype>>;
+template <typename xtype, typename itype,
+          template <typename XT, typename IT> class output_mixin,
+          bool output_previous = (sizeof(itype) <= 8),
+          template <typename IT> class multiplier_mixin = default_multiplier>
+using unique_base =
+    engine<xtype, itype, output_mixin<xtype, itype>, output_previous,
+           unique_stream<itype>, multiplier_mixin<itype>>;
 
-template<typename xtype,
-         typename itype,
-         template<typename XT, typename IT>
-         class output_mixin,
-         bool output_previous = (sizeof(itype) <= 8),
-         template<typename IT> class multiplier_mixin = default_multiplier>
-using setseq_base = engine<xtype,
-                           itype,
-                           output_mixin<xtype, itype>,
-                           output_previous,
-                           specific_stream<itype>,
-                           multiplier_mixin<itype>>;
+template <typename xtype, typename itype,
+          template <typename XT, typename IT> class output_mixin,
+          bool output_previous = (sizeof(itype) <= 8),
+          template <typename IT> class multiplier_mixin = default_multiplier>
+using setseq_base =
+    engine<xtype, itype, output_mixin<xtype, itype>, output_previous,
+           specific_stream<itype>, multiplier_mixin<itype>>;
 
-template<typename xtype,
-         typename itype,
-         template<typename XT, typename IT>
-         class output_mixin,
-         bool output_previous = (sizeof(itype) <= 8),
-         template<typename IT> class multiplier_mixin = default_multiplier>
-using mcg_base = engine<xtype,
-                        itype,
-                        output_mixin<xtype, itype>,
-                        output_previous,
-                        no_stream<itype>,
-                        multiplier_mixin<itype>>;
+template <typename xtype, typename itype,
+          template <typename XT, typename IT> class output_mixin,
+          bool output_previous = (sizeof(itype) <= 8),
+          template <typename IT> class multiplier_mixin = default_multiplier>
+using mcg_base =
+    engine<xtype, itype, output_mixin<xtype, itype>, output_previous,
+           no_stream<itype>, multiplier_mixin<itype>>;
 
 /*
  * OUTPUT FUNCTIONS.
@@ -886,11 +694,8 @@ using mcg_base = engine<xtype,
  * Fast.  A good performer.
  */
 
-template<typename xtype, typename itype>
-struct xsh_rs_mixin
-{
-  static xtype output(itype internal)
-  {
+template <typename xtype, typename itype> struct xsh_rs_mixin {
+  static xtype output(itype internal) {
     constexpr bitcount_t bits = bitcount_t(sizeof(itype) * 8);
     constexpr bitcount_t xtypebits = bitcount_t(sizeof(xtype) * 8);
     constexpr bitcount_t sparebits = bits - xtypebits;
@@ -906,7 +711,7 @@ struct xsh_rs_mixin
     constexpr bitcount_t bottomspare = sparebits - topspare;
     constexpr bitcount_t xshift = topspare + (xtypebits + maxrandshift) / 2;
     bitcount_t rshift =
-      opbits ? bitcount_t(internal >> (bits - opbits)) & mask : 0;
+        opbits ? bitcount_t(internal >> (bits - opbits)) & mask : 0;
     internal ^= internal >> xshift;
     xtype result = xtype(internal >> (bottomspare - maxrandshift + rshift));
     return result;
@@ -919,11 +724,8 @@ struct xsh_rs_mixin
  * Fast.  A good performer.  Slightly better statistically than XSH RS.
  */
 
-template<typename xtype, typename itype>
-struct xsh_rr_mixin
-{
-  static xtype output(itype internal)
-  {
+template <typename xtype, typename itype> struct xsh_rr_mixin {
+  static xtype output(itype internal) {
     constexpr bitcount_t bits = bitcount_t(sizeof(itype) * 8);
     constexpr bitcount_t xtypebits = bitcount_t(sizeof(xtype) * 8);
     constexpr bitcount_t sparebits = bits - xtypebits;
@@ -933,14 +735,14 @@ struct xsh_rr_mixin
                                         : xtypebits >= 16 ? 4
                                                           : 3;
     constexpr bitcount_t opbits =
-      sparebits >= wantedopbits ? wantedopbits : sparebits;
+        sparebits >= wantedopbits ? wantedopbits : sparebits;
     constexpr bitcount_t amplifier = wantedopbits - opbits;
     constexpr bitcount_t mask = (1 << opbits) - 1;
     constexpr bitcount_t topspare = opbits;
     constexpr bitcount_t bottomspare = sparebits - topspare;
     constexpr bitcount_t xshift = (topspare + xtypebits) / 2;
     bitcount_t rot =
-      opbits ? bitcount_t(internal >> (bits - opbits)) & mask : 0;
+        opbits ? bitcount_t(internal >> (bits - opbits)) & mask : 0;
     bitcount_t amprot = (rot << amplifier) & mask;
     internal ^= internal >> xshift;
     xtype result = xtype(internal >> bottomspare);
@@ -953,11 +755,8 @@ struct xsh_rr_mixin
  * RXS -- random xorshift
  */
 
-template<typename xtype, typename itype>
-struct rxs_mixin
-{
-  static xtype output_rxs(itype internal)
-  {
+template <typename xtype, typename itype> struct rxs_mixin {
+  static xtype output_rxs(itype internal) {
     constexpr bitcount_t bits = bitcount_t(sizeof(itype) * 8);
     constexpr bitcount_t xtypebits = bitcount_t(sizeof(xtype) * 8);
     constexpr bitcount_t shift = bits - xtypebits;
@@ -992,15 +791,11 @@ struct rxs_mixin
  * "universal" constant.
  */
 
-template<typename T>
-struct mcg_multiplier
-{
+template <typename T> struct mcg_multiplier {
   // Not defined for an arbitrary type
 };
 
-template<typename T>
-struct mcg_unmultiplier
-{
+template <typename T> struct mcg_unmultiplier {
   // Not defined for an arbitrary type
 };
 
@@ -1016,22 +811,15 @@ PCG_DEFINE_CONSTANT(uint32_t, mcg, unmultiplier, 2897767785U)
 PCG_DEFINE_CONSTANT(uint64_t, mcg, multiplier, 12605985483714917081ULL)
 PCG_DEFINE_CONSTANT(uint64_t, mcg, unmultiplier, 15009553638781119849ULL)
 
-PCG_DEFINE_CONSTANT(pcg128_t,
-                    mcg,
-                    multiplier,
+PCG_DEFINE_CONSTANT(pcg128_t, mcg, multiplier,
                     PCG_128BIT_CONSTANT(17766728186571221404ULL,
                                         12605985483714917081ULL))
-PCG_DEFINE_CONSTANT(pcg128_t,
-                    mcg,
-                    unmultiplier,
+PCG_DEFINE_CONSTANT(pcg128_t, mcg, unmultiplier,
                     PCG_128BIT_CONSTANT(14422606686972528997ULL,
                                         15009553638781119849ULL))
 
-template<typename xtype, typename itype>
-struct rxs_m_xs_mixin
-{
-  static xtype output(itype internal)
-  {
+template <typename xtype, typename itype> struct rxs_m_xs_mixin {
+  static xtype output(itype internal) {
     constexpr bitcount_t xtypebits = bitcount_t(sizeof(xtype) * 8);
     constexpr bitcount_t bits = bitcount_t(sizeof(itype) * 8);
     constexpr bitcount_t opbits = xtypebits >= 128  ? 6
@@ -1042,7 +830,7 @@ struct rxs_m_xs_mixin
     constexpr bitcount_t shift = bits - xtypebits;
     constexpr bitcount_t mask = (1 << opbits) - 1;
     bitcount_t rshift =
-      opbits ? bitcount_t(internal >> (bits - opbits)) & mask : 0;
+        opbits ? bitcount_t(internal >> (bits - opbits)) & mask : 0;
     internal ^= internal >> (opbits + rshift);
     internal *= mcg_multiplier<itype>::multiplier();
     xtype result = internal >> shift;
@@ -1050,8 +838,7 @@ struct rxs_m_xs_mixin
     return result;
   }
 
-  static itype unoutput(itype internal)
-  {
+  static itype unoutput(itype internal) {
     constexpr bitcount_t bits = bitcount_t(sizeof(itype) * 8);
     constexpr bitcount_t opbits = bits >= 128  ? 6
                                   : bits >= 64 ? 5
@@ -1075,11 +862,8 @@ struct rxs_m_xs_mixin
  * RXS M -- random xorshift, mcg multiply
  */
 
-template<typename xtype, typename itype>
-struct rxs_m_mixin
-{
-  static xtype output(itype internal)
-  {
+template <typename xtype, typename itype> struct rxs_m_mixin {
+  static xtype output(itype internal) {
     constexpr bitcount_t xtypebits = bitcount_t(sizeof(xtype) * 8);
     constexpr bitcount_t bits = bitcount_t(sizeof(itype) * 8);
     constexpr bitcount_t opbits = xtypebits >= 128  ? 6
@@ -1113,11 +897,8 @@ struct rxs_m_mixin
  * out the permutation without having the low-order bits.
  */
 
-template<typename xtype, typename itype>
-struct dxsm_mixin
-{
-  inline xtype output(itype internal)
-  {
+template <typename xtype, typename itype> struct dxsm_mixin {
+  inline xtype output(itype internal) {
     constexpr bitcount_t xtypebits = bitcount_t(sizeof(xtype) * 8);
     constexpr bitcount_t itypebits = bitcount_t(sizeof(itype) * 8);
     static_assert(xtypebits <= itypebits / 2,
@@ -1141,11 +922,8 @@ struct dxsm_mixin
  * Useful for 128-bit types that are split across two CPU registers.
  */
 
-template<typename xtype, typename itype>
-struct xsl_rr_mixin
-{
-  static xtype output(itype internal)
-  {
+template <typename xtype, typename itype> struct xsl_rr_mixin {
+  static xtype output(itype internal) {
     constexpr bitcount_t xtypebits = bitcount_t(sizeof(xtype) * 8);
     constexpr bitcount_t bits = bitcount_t(sizeof(itype) * 8);
     constexpr bitcount_t sparebits = bits - xtypebits;
@@ -1155,7 +933,7 @@ struct xsl_rr_mixin
                                         : xtypebits >= 16 ? 4
                                                           : 3;
     constexpr bitcount_t opbits =
-      sparebits >= wantedopbits ? wantedopbits : sparebits;
+        sparebits >= wantedopbits ? wantedopbits : sparebits;
     constexpr bitcount_t amplifier = wantedopbits - opbits;
     constexpr bitcount_t mask = (1 << opbits) - 1;
     constexpr bitcount_t topspare = sparebits;
@@ -1163,7 +941,7 @@ struct xsl_rr_mixin
     constexpr bitcount_t xshift = (topspare + xtypebits) / 2;
 
     bitcount_t rot =
-      opbits ? bitcount_t(internal >> (bits - opbits)) & mask : 0;
+        opbits ? bitcount_t(internal >> (bits - opbits)) & mask : 0;
     bitcount_t amprot = (rot << amplifier) & mask;
     internal ^= internal >> xshift;
     xtype result = xtype(internal >> bottomspare);
@@ -1179,37 +957,24 @@ struct xsl_rr_mixin
  * If you really want an invertable 128-bit RNG, I guess this is the one.
  */
 
-template<typename T>
-struct halfsize_trait
-{};
-template<>
-struct halfsize_trait<pcg128_t>
-{
+template <typename T> struct halfsize_trait {};
+template <> struct halfsize_trait<pcg128_t> {
   typedef uint64_t type;
 };
-template<>
-struct halfsize_trait<uint64_t>
-{
+template <> struct halfsize_trait<uint64_t> {
   typedef uint32_t type;
 };
-template<>
-struct halfsize_trait<uint32_t>
-{
+template <> struct halfsize_trait<uint32_t> {
   typedef uint16_t type;
 };
-template<>
-struct halfsize_trait<uint16_t>
-{
+template <> struct halfsize_trait<uint16_t> {
   typedef uint8_t type;
 };
 
-template<typename xtype, typename itype>
-struct xsl_rr_rr_mixin
-{
+template <typename xtype, typename itype> struct xsl_rr_rr_mixin {
   typedef typename halfsize_trait<itype>::type htype;
 
-  static itype output(itype internal)
-  {
+  static itype output(itype internal) {
     constexpr bitcount_t htypebits = bitcount_t(sizeof(htype) * 8);
     constexpr bitcount_t bits = bitcount_t(sizeof(itype) * 8);
     constexpr bitcount_t sparebits = bits - htypebits;
@@ -1219,14 +984,14 @@ struct xsl_rr_rr_mixin
                                         : htypebits >= 16 ? 4
                                                           : 3;
     constexpr bitcount_t opbits =
-      sparebits >= wantedopbits ? wantedopbits : sparebits;
+        sparebits >= wantedopbits ? wantedopbits : sparebits;
     constexpr bitcount_t amplifier = wantedopbits - opbits;
     constexpr bitcount_t mask = (1 << opbits) - 1;
     constexpr bitcount_t topspare = sparebits;
     constexpr bitcount_t xshift = (topspare + htypebits) / 2;
 
     bitcount_t rot =
-      opbits ? bitcount_t(internal >> (bits - opbits)) & mask : 0;
+        opbits ? bitcount_t(internal >> (bits - opbits)) & mask : 0;
     bitcount_t amprot = (rot << amplifier) & mask;
     internal ^= internal >> xshift;
     htype lowbits = htype(internal);
@@ -1245,11 +1010,8 @@ struct xsl_rr_rr_mixin
  * You shouldn't use this at 64-bits or less.
  */
 
-template<typename xtype, typename itype>
-struct xsh_mixin
-{
-  static xtype output(itype internal)
-  {
+template <typename xtype, typename itype> struct xsh_mixin {
+  static xtype output(itype internal) {
     constexpr bitcount_t xtypebits = bitcount_t(sizeof(xtype) * 8);
     constexpr bitcount_t bits = bitcount_t(sizeof(itype) * 8);
     constexpr bitcount_t sparebits = bits - xtypebits;
@@ -1269,11 +1031,8 @@ struct xsh_mixin
  * You shouldn't use this at 64-bits or less.
  */
 
-template<typename xtype, typename itype>
-struct xsl_mixin
-{
-  inline xtype output(itype internal)
-  {
+template <typename xtype, typename itype> struct xsl_mixin {
+  inline xtype output(itype internal) {
     constexpr bitcount_t xtypebits = bitcount_t(sizeof(xtype) * 8);
     constexpr bitcount_t bits = bitcount_t(sizeof(itype) * 8);
     constexpr bitcount_t sparebits = bits - xtypebits;
@@ -1289,9 +1048,7 @@ struct xsl_mixin
 
 /* ---- End of Output Functions ---- */
 
-template<typename baseclass>
-struct inside_out : private baseclass
-{
+template <typename baseclass> struct inside_out : private baseclass {
   inside_out() = delete;
 
   typedef typename baseclass::result_type result_type;
@@ -1299,31 +1056,27 @@ struct inside_out : private baseclass
   static_assert(sizeof(result_type) == sizeof(state_type),
                 "Require a RNG whose output function is a permutation");
 
-  static bool external_step(result_type& randval, size_t i)
-  {
+  static bool external_step(result_type &randval, size_t i) {
     state_type state = baseclass::unoutput(randval);
     state = state * baseclass::multiplier() + baseclass::increment() +
             state_type(i * 2);
     result_type result = baseclass::output(state);
     randval = result;
     state_type zero =
-      baseclass::is_mcg ? state & state_type(3U) : state_type(0U);
+        baseclass::is_mcg ? state & state_type(3U) : state_type(0U);
     return result == zero;
   }
 
-  static bool external_advance(result_type& randval,
-                               size_t i,
-                               result_type delta,
-                               bool forwards = true)
-  {
+  static bool external_advance(result_type &randval, size_t i,
+                               result_type delta, bool forwards = true) {
     state_type state = baseclass::unoutput(randval);
     state_type mult = baseclass::multiplier();
     state_type inc = baseclass::increment() + state_type(i * 2);
     state_type zero =
-      baseclass::is_mcg ? state & state_type(3U) : state_type(0U);
+        baseclass::is_mcg ? state & state_type(3U) : state_type(0U);
     state_type dist_to_zero = baseclass::distance(state, zero, mult, inc);
     bool crosses_zero =
-      forwards ? dist_to_zero <= delta : (-dist_to_zero) <= delta;
+        forwards ? dist_to_zero <= delta : (-dist_to_zero) <= delta;
     if (!forwards)
       delta = -delta;
     state = baseclass::advance(state, delta, mult, inc);
@@ -1332,13 +1085,9 @@ struct inside_out : private baseclass
   }
 };
 
-template<bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename baseclass,
-         typename extvalclass,
-         bool kdd = true>
-class extended : public baseclass
-{
+template <bitcount_t table_pow2, bitcount_t advance_pow2, typename baseclass,
+          typename extvalclass, bool kdd = true>
+class extended : public baseclass {
 public:
   typedef typename baseclass::state_type state_type;
   typedef typename baseclass::result_type result_type;
@@ -1353,15 +1102,15 @@ private:
   static constexpr size_t table_size = 1UL << table_pow2;
   static constexpr size_t table_shift = stypebits - table_pow2;
   static constexpr state_type table_mask =
-    (state_type(1U) << table_pow2) - state_type(1U);
+      (state_type(1U) << table_pow2) - state_type(1U);
 
   static constexpr bool may_tick =
-    (advance_pow2 < stypebits) && (advance_pow2 < tick_limit_pow2);
+      (advance_pow2 < stypebits) && (advance_pow2 < tick_limit_pow2);
   static constexpr size_t tick_shift = stypebits - advance_pow2;
   static constexpr state_type tick_mask =
-    may_tick ? state_type((uint64_t(1) << (advance_pow2 * may_tick)) - 1)
-             // ^-- stupidity to appease GCC warnings
-             : ~state_type(0U);
+      may_tick ? state_type((uint64_t(1) << (advance_pow2 * may_tick)) - 1)
+               // ^-- stupidity to appease GCC warnings
+               : ~state_type(0U);
 
   static constexpr bool may_tock = stypebits < tick_limit_pow2;
 
@@ -1371,8 +1120,7 @@ private:
 
   PCG_NOINLINE void advance_table(state_type delta, bool isForwards = true);
 
-  result_type& get_extended_value()
-  {
+  result_type &get_extended_value() {
     state_type state = this->state_;
     if (kdd && baseclass::is_mcg) {
       // The low order bits of an MCG are constant, so drop them.
@@ -1395,26 +1143,22 @@ private:
   }
 
 public:
-  static constexpr size_t period_pow2()
-  {
+  static constexpr size_t period_pow2() {
     return baseclass::period_pow2() + table_size * extvalclass::period_pow2();
   }
 
-  PCG_ALWAYS_INLINE result_type operator()()
-  {
+  PCG_ALWAYS_INLINE result_type operator()() {
     result_type rhs = get_extended_value();
     result_type lhs = this->baseclass::operator()();
     return lhs ^ rhs;
   }
 
-  result_type operator()(result_type upper_bound)
-  {
+  result_type operator()(result_type upper_bound) {
     return bounded_rand(*this, upper_bound);
   }
 
-  void set(result_type wanted)
-  {
-    result_type& rhs = get_extended_value();
+  void set(result_type wanted) {
+    result_type &rhs = get_extended_value();
     result_type lhs = this->baseclass::operator()();
     rhs = lhs ^ wanted;
   }
@@ -1423,134 +1167,87 @@ public:
 
   void backstep(state_type distance) { advance(distance, false); }
 
-  extended(const result_type* data)
-    : baseclass()
-  {
-    datainit(data);
-  }
+  extended(const result_type *data) : baseclass() { datainit(data); }
 
-  extended(const result_type* data, state_type seed)
-    : baseclass(seed)
-  {
+  extended(const result_type *data, state_type seed) : baseclass(seed) {
     datainit(data);
   }
 
   // This function may or may not exist.  It thus has to be a template
   // to use SFINAE; users don't have to worry about its template-ness.
 
-  template<typename bc = baseclass>
-  extended(const result_type* data,
-           state_type seed,
+  template <typename bc = baseclass>
+  extended(const result_type *data, state_type seed,
            typename bc::stream_state stream_seed)
-    : baseclass(seed, stream_seed)
-  {
+      : baseclass(seed, stream_seed) {
     datainit(data);
   }
 
-  extended()
-    : baseclass()
-  {
-    selfinit();
-  }
+  extended() : baseclass() { selfinit(); }
 
-  extended(state_type seed)
-    : baseclass(seed)
-  {
-    selfinit();
-  }
+  extended(state_type seed) : baseclass(seed) { selfinit(); }
 
   // This function may or may not exist.  It thus has to be a template
   // to use SFINAE; users don't have to worry about its template-ness.
 
-  template<typename bc = baseclass>
+  template <typename bc = baseclass>
   extended(state_type seed, typename bc::stream_state stream_seed)
-    : baseclass(seed, stream_seed)
-  {
+      : baseclass(seed, stream_seed) {
     selfinit();
   }
 
 private:
   void selfinit();
-  void datainit(const result_type* data);
+  void datainit(const result_type *data);
 
 public:
-  template<typename SeedSeq,
-           typename = typename std::enable_if<
-             !std::is_convertible<SeedSeq, result_type>::value &&
-             !std::is_convertible<SeedSeq, extended>::value>::type>
-  extended(SeedSeq&& seedSeq)
-    : baseclass(seedSeq)
-  {
+  template <typename SeedSeq,
+            typename = typename std::enable_if<
+                !std::is_convertible<SeedSeq, result_type>::value &&
+                !std::is_convertible<SeedSeq, extended>::value>::type>
+  extended(SeedSeq &&seedSeq) : baseclass(seedSeq) {
     generate_to<table_size>(seedSeq, data_);
   }
 
-  template<typename... Args>
-  void seed(Args&&... args)
-  {
+  template <typename... Args> void seed(Args &&...args) {
     new (this) extended(std::forward<Args>(args)...);
   }
 
-  template<bitcount_t table_pow2_,
-           bitcount_t advance_pow2_,
-           typename baseclass_,
-           typename extvalclass_,
-           bool kdd_>
-  friend bool operator==(
-    const extended<table_pow2_, advance_pow2_, baseclass_, extvalclass_, kdd_>&,
-    const extended<table_pow2_,
-                   advance_pow2_,
-                   baseclass_,
-                   extvalclass_,
-                   kdd_>&);
+  template <bitcount_t table_pow2_, bitcount_t advance_pow2_,
+            typename baseclass_, typename extvalclass_, bool kdd_>
+  friend bool operator==(const extended<table_pow2_, advance_pow2_, baseclass_,
+                                        extvalclass_, kdd_> &,
+                         const extended<table_pow2_, advance_pow2_, baseclass_,
+                                        extvalclass_, kdd_> &);
 
-  template<typename CharT,
-           typename Traits,
-           bitcount_t table_pow2_,
-           bitcount_t advance_pow2_,
-           typename baseclass_,
-           typename extvalclass_,
-           bool kdd_>
-  friend std::basic_ostream<CharT, Traits>& operator<<(
-    std::basic_ostream<CharT, Traits>& out,
-    const extended<table_pow2_,
-                   advance_pow2_,
-                   baseclass_,
-                   extvalclass_,
-                   kdd_>&);
+  template <typename CharT, typename Traits, bitcount_t table_pow2_,
+            bitcount_t advance_pow2_, typename baseclass_,
+            typename extvalclass_, bool kdd_>
+  friend std::basic_ostream<CharT, Traits> &
+  operator<<(std::basic_ostream<CharT, Traits> &out,
+             const extended<table_pow2_, advance_pow2_, baseclass_,
+                            extvalclass_, kdd_> &);
 
-  template<typename CharT,
-           typename Traits,
-           bitcount_t table_pow2_,
-           bitcount_t advance_pow2_,
-           typename baseclass_,
-           typename extvalclass_,
-           bool kdd_>
-  friend std::basic_istream<CharT, Traits>& operator>>(
-    std::basic_istream<CharT, Traits>& in,
-    extended<table_pow2_, advance_pow2_, baseclass_, extvalclass_, kdd_>&);
+  template <typename CharT, typename Traits, bitcount_t table_pow2_,
+            bitcount_t advance_pow2_, typename baseclass_,
+            typename extvalclass_, bool kdd_>
+  friend std::basic_istream<CharT, Traits> &operator>>(
+      std::basic_istream<CharT, Traits> &in,
+      extended<table_pow2_, advance_pow2_, baseclass_, extvalclass_, kdd_> &);
 };
 
-template<bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename baseclass,
-         typename extvalclass,
-         bool kdd>
-void
-extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>::datainit(
-  const result_type* data)
-{
+template <bitcount_t table_pow2, bitcount_t advance_pow2, typename baseclass,
+          typename extvalclass, bool kdd>
+void extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>::datainit(
+    const result_type *data) {
   for (size_t i = 0; i < table_size; ++i)
     data_[i] = data[i];
 }
 
-template<bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename baseclass,
-         typename extvalclass,
-         bool kdd>
-void
-extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>::selfinit()
-{
+template <bitcount_t table_pow2, bitcount_t advance_pow2, typename baseclass,
+          typename extvalclass, bool kdd>
+void extended<table_pow2, advance_pow2, baseclass, extvalclass,
+              kdd>::selfinit() {
   // We need to fill the extended table with something, and we have
   // very little provided data, so we use the base generator to
   // produce values.  Although not ideal (use a seed sequence, folks!),
@@ -1569,48 +1266,35 @@ extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>::selfinit()
   }
 }
 
-template<bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename baseclass,
-         typename extvalclass,
-         bool kdd>
-bool
-operator==(
-  const extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>& lhs,
-  const extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>& rhs)
-{
-  auto& base_lhs = static_cast<const baseclass&>(lhs);
-  auto& base_rhs = static_cast<const baseclass&>(rhs);
-  return base_lhs == base_rhs && std::equal(std::begin(lhs.data_),
-                                            std::end(lhs.data_),
-                                            std::begin(rhs.data_));
+template <bitcount_t table_pow2, bitcount_t advance_pow2, typename baseclass,
+          typename extvalclass, bool kdd>
+bool operator==(
+    const extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd> &lhs,
+    const extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>
+        &rhs) {
+  auto &base_lhs = static_cast<const baseclass &>(lhs);
+  auto &base_rhs = static_cast<const baseclass &>(rhs);
+  return base_lhs == base_rhs &&
+         std::equal(std::begin(lhs.data_), std::end(lhs.data_),
+                    std::begin(rhs.data_));
 }
 
-template<bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename baseclass,
-         typename extvalclass,
-         bool kdd>
-inline bool
-operator!=(
-  const extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>& lhs,
-  const extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>& rhs)
-{
+template <bitcount_t table_pow2, bitcount_t advance_pow2, typename baseclass,
+          typename extvalclass, bool kdd>
+inline bool operator!=(
+    const extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd> &lhs,
+    const extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>
+        &rhs) {
   return !operator==(lhs, rhs);
 }
 
-template<typename CharT,
-         typename Traits,
-         bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename baseclass,
-         typename extvalclass,
-         bool kdd>
-std::basic_ostream<CharT, Traits>&
-operator<<(
-  std::basic_ostream<CharT, Traits>& out,
-  const extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>& rng)
-{
+template <typename CharT, typename Traits, bitcount_t table_pow2,
+          bitcount_t advance_pow2, typename baseclass, typename extvalclass,
+          bool kdd>
+std::basic_ostream<CharT, Traits> &
+operator<<(std::basic_ostream<CharT, Traits> &out,
+           const extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>
+               &rng) {
   using pcg_extras::operator<<;
 
   auto orig_flags = out.flags(std::ios_base::dec | std::ios_base::left);
@@ -1619,7 +1303,7 @@ operator<<(
 
   out << rng.multiplier() << space << rng.increment() << space << rng.state_;
 
-  for (const auto& datum : rng.data_)
+  for (const auto &datum : rng.data_)
     out << space << datum;
 
   out.flags(orig_flags);
@@ -1627,19 +1311,14 @@ operator<<(
   return out;
 }
 
-template<typename CharT,
-         typename Traits,
-         bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename baseclass,
-         typename extvalclass,
-         bool kdd>
-std::basic_istream<CharT, Traits>&
-operator>>(std::basic_istream<CharT, Traits>& in,
-           extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>& rng)
-{
+template <typename CharT, typename Traits, bitcount_t table_pow2,
+          bitcount_t advance_pow2, typename baseclass, typename extvalclass,
+          bool kdd>
+std::basic_istream<CharT, Traits> &operator>>(
+    std::basic_istream<CharT, Traits> &in,
+    extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd> &rng) {
   extended<table_pow2, advance_pow2, baseclass, extvalclass> new_rng;
-  auto& base_rng = static_cast<baseclass&>(new_rng);
+  auto &base_rng = static_cast<baseclass &>(new_rng);
   in >> base_rng;
 
   if (in.fail())
@@ -1649,7 +1328,7 @@ operator>>(std::basic_istream<CharT, Traits>& in,
 
   auto orig_flags = in.flags(std::ios_base::dec | std::ios_base::skipws);
 
-  for (auto& datum : new_rng.data_) {
+  for (auto &datum : new_rng.data_) {
     in >> datum;
     if (in.fail())
       goto bail;
@@ -1662,14 +1341,10 @@ bail:
   return in;
 }
 
-template<bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename baseclass,
-         typename extvalclass,
-         bool kdd>
-void
-extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>::advance_table()
-{
+template <bitcount_t table_pow2, bitcount_t advance_pow2, typename baseclass,
+          typename extvalclass, bool kdd>
+void extended<table_pow2, advance_pow2, baseclass, extvalclass,
+              kdd>::advance_table() {
   bool carry = false;
   for (size_t i = 0; i < table_size; ++i) {
     if (carry) {
@@ -1680,16 +1355,10 @@ extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>::advance_table()
   }
 }
 
-template<bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename baseclass,
-         typename extvalclass,
-         bool kdd>
-void
-extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>::advance_table(
-  state_type delta,
-  bool isForwards)
-{
+template <bitcount_t table_pow2, bitcount_t advance_pow2, typename baseclass,
+          typename extvalclass, bool kdd>
+void extended<table_pow2, advance_pow2, baseclass, extvalclass,
+              kdd>::advance_table(state_type delta, bool isForwards) {
   typedef typename baseclass::state_type base_state_t;
   typedef typename extvalclass::state_type ext_state_t;
   constexpr bitcount_t basebits = sizeof(base_state_t) * 8;
@@ -1707,25 +1376,18 @@ extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>::advance_table(
       carry = 0;
     }
     carry +=
-      insideout::external_advance(data_[i], i + 1, trunc_delta, isForwards);
+        insideout::external_advance(data_[i], i + 1, trunc_delta, isForwards);
   }
 }
 
-template<bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename baseclass,
-         typename extvalclass,
-         bool kdd>
-void
-extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>::advance(
-  state_type distance,
-  bool forwards)
-{
-  static_assert(kdd,
-                "Efficient advance is too hard for non-kdd extension. "
-                "For a weak advance, cast to base class");
+template <bitcount_t table_pow2, bitcount_t advance_pow2, typename baseclass,
+          typename extvalclass, bool kdd>
+void extended<table_pow2, advance_pow2, baseclass, extvalclass, kdd>::advance(
+    state_type distance, bool forwards) {
+  static_assert(kdd, "Efficient advance is too hard for non-kdd extension. "
+                     "For a weak advance, cast to base class");
   state_type zero =
-    baseclass::is_mcg ? this->state_ & state_type(3U) : state_type(0U);
+      baseclass::is_mcg ? this->state_ & state_type(3U) : state_type(0U);
   if (may_tick) {
     state_type ticks = distance >> (advance_pow2 * may_tick);
     // ^-- stupidity to appease GCC
@@ -1764,28 +1426,28 @@ typedef oneseq_base<uint16_t, uint32_t, xsh_rs_mixin> oneseq_xsh_rs_32_16;
 typedef oneseq_base<uint32_t, uint64_t, xsh_rs_mixin> oneseq_xsh_rs_64_32;
 typedef oneseq_base<uint64_t, pcg128_t, xsh_rs_mixin> oneseq_xsh_rs_128_64;
 typedef oneseq_base<uint64_t, pcg128_t, xsh_rs_mixin, true, cheap_multiplier>
-  cm_oneseq_xsh_rs_128_64;
+    cm_oneseq_xsh_rs_128_64;
 
 typedef unique_base<uint8_t, uint16_t, xsh_rs_mixin> unique_xsh_rs_16_8;
 typedef unique_base<uint16_t, uint32_t, xsh_rs_mixin> unique_xsh_rs_32_16;
 typedef unique_base<uint32_t, uint64_t, xsh_rs_mixin> unique_xsh_rs_64_32;
 typedef unique_base<uint64_t, pcg128_t, xsh_rs_mixin> unique_xsh_rs_128_64;
 typedef unique_base<uint64_t, pcg128_t, xsh_rs_mixin, true, cheap_multiplier>
-  cm_unique_xsh_rs_128_64;
+    cm_unique_xsh_rs_128_64;
 
 typedef setseq_base<uint8_t, uint16_t, xsh_rs_mixin> setseq_xsh_rs_16_8;
 typedef setseq_base<uint16_t, uint32_t, xsh_rs_mixin> setseq_xsh_rs_32_16;
 typedef setseq_base<uint32_t, uint64_t, xsh_rs_mixin> setseq_xsh_rs_64_32;
 typedef setseq_base<uint64_t, pcg128_t, xsh_rs_mixin> setseq_xsh_rs_128_64;
 typedef setseq_base<uint64_t, pcg128_t, xsh_rs_mixin, true, cheap_multiplier>
-  cm_setseq_xsh_rs_128_64;
+    cm_setseq_xsh_rs_128_64;
 
 typedef mcg_base<uint8_t, uint16_t, xsh_rs_mixin> mcg_xsh_rs_16_8;
 typedef mcg_base<uint16_t, uint32_t, xsh_rs_mixin> mcg_xsh_rs_32_16;
 typedef mcg_base<uint32_t, uint64_t, xsh_rs_mixin> mcg_xsh_rs_64_32;
 typedef mcg_base<uint64_t, pcg128_t, xsh_rs_mixin> mcg_xsh_rs_128_64;
 typedef mcg_base<uint64_t, pcg128_t, xsh_rs_mixin, true, cheap_multiplier>
-  cm_mcg_xsh_rs_128_64;
+    cm_mcg_xsh_rs_128_64;
 
 /* Predefined types for XSH RR */
 
@@ -1794,28 +1456,28 @@ typedef oneseq_base<uint16_t, uint32_t, xsh_rr_mixin> oneseq_xsh_rr_32_16;
 typedef oneseq_base<uint32_t, uint64_t, xsh_rr_mixin> oneseq_xsh_rr_64_32;
 typedef oneseq_base<uint64_t, pcg128_t, xsh_rr_mixin> oneseq_xsh_rr_128_64;
 typedef oneseq_base<uint64_t, pcg128_t, xsh_rr_mixin, true, cheap_multiplier>
-  cm_oneseq_xsh_rr_128_64;
+    cm_oneseq_xsh_rr_128_64;
 
 typedef unique_base<uint8_t, uint16_t, xsh_rr_mixin> unique_xsh_rr_16_8;
 typedef unique_base<uint16_t, uint32_t, xsh_rr_mixin> unique_xsh_rr_32_16;
 typedef unique_base<uint32_t, uint64_t, xsh_rr_mixin> unique_xsh_rr_64_32;
 typedef unique_base<uint64_t, pcg128_t, xsh_rr_mixin> unique_xsh_rr_128_64;
 typedef unique_base<uint64_t, pcg128_t, xsh_rr_mixin, true, cheap_multiplier>
-  cm_unique_xsh_rr_128_64;
+    cm_unique_xsh_rr_128_64;
 
 typedef setseq_base<uint8_t, uint16_t, xsh_rr_mixin> setseq_xsh_rr_16_8;
 typedef setseq_base<uint16_t, uint32_t, xsh_rr_mixin> setseq_xsh_rr_32_16;
 typedef setseq_base<uint32_t, uint64_t, xsh_rr_mixin> setseq_xsh_rr_64_32;
 typedef setseq_base<uint64_t, pcg128_t, xsh_rr_mixin> setseq_xsh_rr_128_64;
 typedef setseq_base<uint64_t, pcg128_t, xsh_rr_mixin, true, cheap_multiplier>
-  cm_setseq_xsh_rr_128_64;
+    cm_setseq_xsh_rr_128_64;
 
 typedef mcg_base<uint8_t, uint16_t, xsh_rr_mixin> mcg_xsh_rr_16_8;
 typedef mcg_base<uint16_t, uint32_t, xsh_rr_mixin> mcg_xsh_rr_32_16;
 typedef mcg_base<uint32_t, uint64_t, xsh_rr_mixin> mcg_xsh_rr_64_32;
 typedef mcg_base<uint64_t, pcg128_t, xsh_rr_mixin> mcg_xsh_rr_128_64;
 typedef mcg_base<uint64_t, pcg128_t, xsh_rr_mixin, true, cheap_multiplier>
-  cm_mcg_xsh_rr_128_64;
+    cm_mcg_xsh_rr_128_64;
 
 /* Predefined types for RXS M XS */
 
@@ -1825,7 +1487,7 @@ typedef oneseq_base<uint32_t, uint32_t, rxs_m_xs_mixin> oneseq_rxs_m_xs_32_32;
 typedef oneseq_base<uint64_t, uint64_t, rxs_m_xs_mixin> oneseq_rxs_m_xs_64_64;
 typedef oneseq_base<pcg128_t, pcg128_t, rxs_m_xs_mixin> oneseq_rxs_m_xs_128_128;
 typedef oneseq_base<pcg128_t, pcg128_t, rxs_m_xs_mixin, true, cheap_multiplier>
-  cm_oneseq_rxs_m_xs_128_128;
+    cm_oneseq_rxs_m_xs_128_128;
 
 typedef unique_base<uint8_t, uint8_t, rxs_m_xs_mixin> unique_rxs_m_xs_8_8;
 typedef unique_base<uint16_t, uint16_t, rxs_m_xs_mixin> unique_rxs_m_xs_16_16;
@@ -1833,7 +1495,7 @@ typedef unique_base<uint32_t, uint32_t, rxs_m_xs_mixin> unique_rxs_m_xs_32_32;
 typedef unique_base<uint64_t, uint64_t, rxs_m_xs_mixin> unique_rxs_m_xs_64_64;
 typedef unique_base<pcg128_t, pcg128_t, rxs_m_xs_mixin> unique_rxs_m_xs_128_128;
 typedef unique_base<pcg128_t, pcg128_t, rxs_m_xs_mixin, true, cheap_multiplier>
-  cm_unique_rxs_m_xs_128_128;
+    cm_unique_rxs_m_xs_128_128;
 
 typedef setseq_base<uint8_t, uint8_t, rxs_m_xs_mixin> setseq_rxs_m_xs_8_8;
 typedef setseq_base<uint16_t, uint16_t, rxs_m_xs_mixin> setseq_rxs_m_xs_16_16;
@@ -1841,7 +1503,7 @@ typedef setseq_base<uint32_t, uint32_t, rxs_m_xs_mixin> setseq_rxs_m_xs_32_32;
 typedef setseq_base<uint64_t, uint64_t, rxs_m_xs_mixin> setseq_rxs_m_xs_64_64;
 typedef setseq_base<pcg128_t, pcg128_t, rxs_m_xs_mixin> setseq_rxs_m_xs_128_128;
 typedef setseq_base<pcg128_t, pcg128_t, rxs_m_xs_mixin, true, cheap_multiplier>
-  cm_setseq_rxs_m_xs_128_128;
+    cm_setseq_rxs_m_xs_128_128;
 
 // MCG versions don't make sense here, so aren't defined.
 
@@ -1852,28 +1514,28 @@ typedef oneseq_base<uint16_t, uint32_t, rxs_m_mixin> oneseq_rxs_m_32_16;
 typedef oneseq_base<uint32_t, uint64_t, rxs_m_mixin> oneseq_rxs_m_64_32;
 typedef oneseq_base<uint64_t, pcg128_t, rxs_m_mixin> oneseq_rxs_m_128_64;
 typedef oneseq_base<uint64_t, pcg128_t, rxs_m_mixin, true, cheap_multiplier>
-  cm_oneseq_rxs_m_128_64;
+    cm_oneseq_rxs_m_128_64;
 
 typedef unique_base<uint8_t, uint16_t, rxs_m_mixin> unique_rxs_m_16_8;
 typedef unique_base<uint16_t, uint32_t, rxs_m_mixin> unique_rxs_m_32_16;
 typedef unique_base<uint32_t, uint64_t, rxs_m_mixin> unique_rxs_m_64_32;
 typedef unique_base<uint64_t, pcg128_t, rxs_m_mixin> unique_rxs_m_128_64;
 typedef unique_base<uint64_t, pcg128_t, rxs_m_mixin, true, cheap_multiplier>
-  cm_unique_rxs_m_128_64;
+    cm_unique_rxs_m_128_64;
 
 typedef setseq_base<uint8_t, uint16_t, rxs_m_mixin> setseq_rxs_m_16_8;
 typedef setseq_base<uint16_t, uint32_t, rxs_m_mixin> setseq_rxs_m_32_16;
 typedef setseq_base<uint32_t, uint64_t, rxs_m_mixin> setseq_rxs_m_64_32;
 typedef setseq_base<uint64_t, pcg128_t, rxs_m_mixin> setseq_rxs_m_128_64;
 typedef setseq_base<uint64_t, pcg128_t, rxs_m_mixin, true, cheap_multiplier>
-  cm_setseq_rxs_m_128_64;
+    cm_setseq_rxs_m_128_64;
 
 typedef mcg_base<uint8_t, uint16_t, rxs_m_mixin> mcg_rxs_m_16_8;
 typedef mcg_base<uint16_t, uint32_t, rxs_m_mixin> mcg_rxs_m_32_16;
 typedef mcg_base<uint32_t, uint64_t, rxs_m_mixin> mcg_rxs_m_64_32;
 typedef mcg_base<uint64_t, pcg128_t, rxs_m_mixin> mcg_rxs_m_128_64;
 typedef mcg_base<uint64_t, pcg128_t, rxs_m_mixin, true, cheap_multiplier>
-  cm_mcg_rxs_m_128_64;
+    cm_mcg_rxs_m_128_64;
 
 /* Predefined types for DXSM */
 
@@ -1882,130 +1544,122 @@ typedef oneseq_base<uint16_t, uint32_t, dxsm_mixin> oneseq_dxsm_32_16;
 typedef oneseq_base<uint32_t, uint64_t, dxsm_mixin> oneseq_dxsm_64_32;
 typedef oneseq_base<uint64_t, pcg128_t, dxsm_mixin> oneseq_dxsm_128_64;
 typedef oneseq_base<uint64_t, pcg128_t, dxsm_mixin, true, cheap_multiplier>
-  cm_oneseq_dxsm_128_64;
+    cm_oneseq_dxsm_128_64;
 
 typedef unique_base<uint8_t, uint16_t, dxsm_mixin> unique_dxsm_16_8;
 typedef unique_base<uint16_t, uint32_t, dxsm_mixin> unique_dxsm_32_16;
 typedef unique_base<uint32_t, uint64_t, dxsm_mixin> unique_dxsm_64_32;
 typedef unique_base<uint64_t, pcg128_t, dxsm_mixin> unique_dxsm_128_64;
 typedef unique_base<uint64_t, pcg128_t, dxsm_mixin, true, cheap_multiplier>
-  cm_unique_dxsm_128_64;
+    cm_unique_dxsm_128_64;
 
 typedef setseq_base<uint8_t, uint16_t, dxsm_mixin> setseq_dxsm_16_8;
 typedef setseq_base<uint16_t, uint32_t, dxsm_mixin> setseq_dxsm_32_16;
 typedef setseq_base<uint32_t, uint64_t, dxsm_mixin> setseq_dxsm_64_32;
 typedef setseq_base<uint64_t, pcg128_t, dxsm_mixin> setseq_dxsm_128_64;
 typedef setseq_base<uint64_t, pcg128_t, dxsm_mixin, true, cheap_multiplier>
-  cm_setseq_dxsm_128_64;
+    cm_setseq_dxsm_128_64;
 
 typedef mcg_base<uint8_t, uint16_t, dxsm_mixin> mcg_dxsm_16_8;
 typedef mcg_base<uint16_t, uint32_t, dxsm_mixin> mcg_dxsm_32_16;
 typedef mcg_base<uint32_t, uint64_t, dxsm_mixin> mcg_dxsm_64_32;
 typedef mcg_base<uint64_t, pcg128_t, dxsm_mixin> mcg_dxsm_128_64;
 typedef mcg_base<uint64_t, pcg128_t, dxsm_mixin, true, cheap_multiplier>
-  cm_mcg_dxsm_128_64;
+    cm_mcg_dxsm_128_64;
 
 /* Predefined types for XSL RR (only defined for "large" types) */
 
 typedef oneseq_base<uint32_t, uint64_t, xsl_rr_mixin> oneseq_xsl_rr_64_32;
 typedef oneseq_base<uint64_t, pcg128_t, xsl_rr_mixin> oneseq_xsl_rr_128_64;
 typedef oneseq_base<uint64_t, pcg128_t, xsl_rr_mixin, true, cheap_multiplier>
-  cm_oneseq_xsl_rr_128_64;
+    cm_oneseq_xsl_rr_128_64;
 
 typedef unique_base<uint32_t, uint64_t, xsl_rr_mixin> unique_xsl_rr_64_32;
 typedef unique_base<uint64_t, pcg128_t, xsl_rr_mixin> unique_xsl_rr_128_64;
 typedef unique_base<uint64_t, pcg128_t, xsl_rr_mixin, true, cheap_multiplier>
-  cm_unique_xsl_rr_128_64;
+    cm_unique_xsl_rr_128_64;
 
 typedef setseq_base<uint32_t, uint64_t, xsl_rr_mixin> setseq_xsl_rr_64_32;
 typedef setseq_base<uint64_t, pcg128_t, xsl_rr_mixin> setseq_xsl_rr_128_64;
 typedef setseq_base<uint64_t, pcg128_t, xsl_rr_mixin, true, cheap_multiplier>
-  cm_setseq_xsl_rr_128_64;
+    cm_setseq_xsl_rr_128_64;
 
 typedef mcg_base<uint32_t, uint64_t, xsl_rr_mixin> mcg_xsl_rr_64_32;
 typedef mcg_base<uint64_t, pcg128_t, xsl_rr_mixin> mcg_xsl_rr_128_64;
 typedef mcg_base<uint64_t, pcg128_t, xsl_rr_mixin, true, cheap_multiplier>
-  cm_mcg_xsl_rr_128_64;
+    cm_mcg_xsl_rr_128_64;
 
 /* Predefined types for XSL RR RR (only defined for "large" types) */
 
 typedef oneseq_base<uint64_t, uint64_t, xsl_rr_rr_mixin> oneseq_xsl_rr_rr_64_64;
 typedef oneseq_base<pcg128_t, pcg128_t, xsl_rr_rr_mixin>
-  oneseq_xsl_rr_rr_128_128;
+    oneseq_xsl_rr_rr_128_128;
 typedef oneseq_base<pcg128_t, pcg128_t, xsl_rr_rr_mixin, true, cheap_multiplier>
-  cm_oneseq_xsl_rr_rr_128_128;
+    cm_oneseq_xsl_rr_rr_128_128;
 
 typedef unique_base<uint64_t, uint64_t, xsl_rr_rr_mixin> unique_xsl_rr_rr_64_64;
 typedef unique_base<pcg128_t, pcg128_t, xsl_rr_rr_mixin>
-  unique_xsl_rr_rr_128_128;
+    unique_xsl_rr_rr_128_128;
 typedef unique_base<pcg128_t, pcg128_t, xsl_rr_rr_mixin, true, cheap_multiplier>
-  cm_unique_xsl_rr_rr_128_128;
+    cm_unique_xsl_rr_rr_128_128;
 
 typedef setseq_base<uint64_t, uint64_t, xsl_rr_rr_mixin> setseq_xsl_rr_rr_64_64;
 typedef setseq_base<pcg128_t, pcg128_t, xsl_rr_rr_mixin>
-  setseq_xsl_rr_rr_128_128;
+    setseq_xsl_rr_rr_128_128;
 typedef setseq_base<pcg128_t, pcg128_t, xsl_rr_rr_mixin, true, cheap_multiplier>
-  cm_setseq_xsl_rr_rr_128_128;
+    cm_setseq_xsl_rr_rr_128_128;
 
 // MCG versions don't make sense here, so aren't defined.
 
 /* Extended generators */
 
-template<bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename BaseRNG,
-         bool kdd = true>
+template <bitcount_t table_pow2, bitcount_t advance_pow2, typename BaseRNG,
+          bool kdd = true>
 using ext_std8 =
-  extended<table_pow2, advance_pow2, BaseRNG, oneseq_rxs_m_xs_8_8, kdd>;
+    extended<table_pow2, advance_pow2, BaseRNG, oneseq_rxs_m_xs_8_8, kdd>;
 
-template<bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename BaseRNG,
-         bool kdd = true>
+template <bitcount_t table_pow2, bitcount_t advance_pow2, typename BaseRNG,
+          bool kdd = true>
 using ext_std16 =
-  extended<table_pow2, advance_pow2, BaseRNG, oneseq_rxs_m_xs_16_16, kdd>;
+    extended<table_pow2, advance_pow2, BaseRNG, oneseq_rxs_m_xs_16_16, kdd>;
 
-template<bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename BaseRNG,
-         bool kdd = true>
+template <bitcount_t table_pow2, bitcount_t advance_pow2, typename BaseRNG,
+          bool kdd = true>
 using ext_std32 =
-  extended<table_pow2, advance_pow2, BaseRNG, oneseq_rxs_m_xs_32_32, kdd>;
+    extended<table_pow2, advance_pow2, BaseRNG, oneseq_rxs_m_xs_32_32, kdd>;
 
-template<bitcount_t table_pow2,
-         bitcount_t advance_pow2,
-         typename BaseRNG,
-         bool kdd = true>
+template <bitcount_t table_pow2, bitcount_t advance_pow2, typename BaseRNG,
+          bool kdd = true>
 using ext_std64 =
-  extended<table_pow2, advance_pow2, BaseRNG, oneseq_rxs_m_xs_64_64, kdd>;
+    extended<table_pow2, advance_pow2, BaseRNG, oneseq_rxs_m_xs_64_64, kdd>;
 
-template<bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
+template <bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
 using ext_oneseq_rxs_m_xs_32_32 =
-  ext_std32<table_pow2, advance_pow2, oneseq_rxs_m_xs_32_32, kdd>;
+    ext_std32<table_pow2, advance_pow2, oneseq_rxs_m_xs_32_32, kdd>;
 
-template<bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
+template <bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
 using ext_mcg_xsh_rs_64_32 =
-  ext_std32<table_pow2, advance_pow2, mcg_xsh_rs_64_32, kdd>;
+    ext_std32<table_pow2, advance_pow2, mcg_xsh_rs_64_32, kdd>;
 
-template<bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
+template <bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
 using ext_oneseq_xsh_rs_64_32 =
-  ext_std32<table_pow2, advance_pow2, oneseq_xsh_rs_64_32, kdd>;
+    ext_std32<table_pow2, advance_pow2, oneseq_xsh_rs_64_32, kdd>;
 
-template<bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
+template <bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
 using ext_setseq_xsh_rr_64_32 =
-  ext_std32<table_pow2, advance_pow2, setseq_xsh_rr_64_32, kdd>;
+    ext_std32<table_pow2, advance_pow2, setseq_xsh_rr_64_32, kdd>;
 
-template<bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
+template <bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
 using ext_mcg_xsl_rr_128_64 =
-  ext_std64<table_pow2, advance_pow2, mcg_xsl_rr_128_64, kdd>;
+    ext_std64<table_pow2, advance_pow2, mcg_xsl_rr_128_64, kdd>;
 
-template<bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
+template <bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
 using ext_oneseq_xsl_rr_128_64 =
-  ext_std64<table_pow2, advance_pow2, oneseq_xsl_rr_128_64, kdd>;
+    ext_std64<table_pow2, advance_pow2, oneseq_xsl_rr_128_64, kdd>;
 
-template<bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
+template <bitcount_t table_pow2, bitcount_t advance_pow2, bool kdd = true>
 using ext_setseq_xsl_rr_128_64 =
-  ext_std64<table_pow2, advance_pow2, setseq_xsl_rr_128_64, kdd>;
+    ext_std64<table_pow2, advance_pow2, setseq_xsl_rr_128_64, kdd>;
 
 } // namespace pcg_engines
 
@@ -2042,9 +1696,9 @@ typedef pcg_engines::ext_oneseq_xsh_rs_64_32<1, 32, true> pcg32_k2_fast;
 // These eight extended RNGs have about as much state as arc4random
 //
 //  - the k variants are k-dimensionally equidistributed
-//  - the c variants offer better crypographic security
+//  - the c variants offer are intended to be harder to predict
 //
-// (just how good the cryptographic security is is an open question)
+// (neither is intended for use in cryptographic applications)
 
 typedef pcg_engines::ext_setseq_xsh_rr_64_32<6, 16, true> pcg32_k64;
 typedef pcg_engines::ext_mcg_xsh_rs_64_32<6, 32, true> pcg32_k64_oneseq;
@@ -2065,9 +1719,9 @@ typedef pcg_engines::ext_mcg_xsl_rr_128_64<5, 128, false> pcg64_c32_fast;
 // These eight extended RNGs have more state than the Mersenne twister
 //
 //  - the k variants are k-dimensionally equidistributed
-//  - the c variants offer better crypographic security
+//  - the c variants offer are intended to be harder to predict
 //
-// (just how good the cryptographic security is is an open question)
+// (neither is intended for use in cryptographic applications)
 
 typedef pcg_engines::ext_setseq_xsh_rr_64_32<10, 16, true> pcg32_k1024;
 typedef pcg_engines::ext_oneseq_xsh_rs_64_32<10, 32, true> pcg32_k1024_fast;
