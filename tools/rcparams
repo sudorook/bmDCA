@@ -13,7 +13,7 @@ pkgconfig_find() {
   local dir
   local pkg_config
   dir="$(readlink -f "${1}")"
-  pkg_config=$(find "${dir}" -type d -name "pkgconfig" -print 2>/dev/null | \
+  pkg_config=$(find "${dir}" -type d -name "pkgconfig" -print 2> /dev/null |
                tr '\n' ':')
   if [[ -n "${pkg_config}" ]]; then
     if ! [[ "${PKG_CONFIG_PATH}" =~ ${pkg_config} ]]; then
@@ -32,7 +32,7 @@ pkgconfig_find() {
 #   $1 - library name input to pkg-config
 ld_lib_add() {
   local lib_path
-  lib_path=$(pkg-config --libs "${1}" 2>/dev/null | \
+  lib_path=$(pkg-config --libs "${1}" 2> /dev/null |
              sed -n "s,-L\(.*\)\ -l.*,\1,p")
   if [[ -n "${lib_path}" ]]; then
     if ! [[ "${LD_LIBRARY_PATH}" =~ ${lib_path} ]]; then
@@ -85,7 +85,6 @@ set_alias() {
   fi
 }
 
-
 #
 # Set aliases and load paths
 #
@@ -96,4 +95,4 @@ set_gcc /usr/local/bin/gcc-11  # from Homebrew
 
 # Look for pkg-config directories
 pkgconfig_find /usr/local/Cellar  # from Homebrew
-ld_lib_add armadillo 
+ld_lib_add armadillo
