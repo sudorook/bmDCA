@@ -33,4 +33,5 @@ distclean-local:
 	rm -rf autom4te.cache \
 	rm -f compile \
 	rm -f depcomp \
+	rm -f install-sh~ \
 	rm -rf src/.deps/
