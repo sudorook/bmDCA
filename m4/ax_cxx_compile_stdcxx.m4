@@ -1,3 +1,29 @@
+dnl SPDX-FileCopyrightText: 2008 Benjamin Kosnik <bkoz@redhat.com>
+dnl SPDX-FileCopyrightText: 2012 Zack Weinberg <zackw@panix.com>
+dnl SPDX-FileCopyrightText: 2013 Roy Stogner <roystgnr@ices.utexas.edu>
+dnl SPDX-FileCopyrightText: 2014 - 2015 Alexey Sokolov <sokolov@google.com>
+dnl SPDX-FileCopyrightText: 2015 Paul Norman <penorman@mac.com>
+dnl SPDX-FileCopyrightText: 2015 Moritz Klammler <moritz@klammler.eu>
+dnl SPDX-FileCopyrightText: 2016 - 2018 Krzesimir Nowak <qdlacz@gmail.com>
+dnl SPDX-FileCopyrightText: 2019 Enji Cooper <yaneurabeya@gmail.com>
+dnl SPDX-FileCopyrightText: 2020 Jason Merrill <jason@redhat.com>
+dnl SPDX-FileCopyrightText: 2021 Jörn Heusipp <osmanx@problemloesungsmaschine.de>
+dnl
+dnl SPDX-License-Identifier: GPL-3.0-or-later
+dnl
+dnl This program is free software: you can redistribute it and/or modify it
+dnl under the terms of the GNU General Public License as published by the Free
+dnl Software Foundation, either version 3 of the License, or (at your option)
+dnl any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful, but
+dnl WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+dnl or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+dnl for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License along
+dnl with this program. If not, see <https://www.gnu.org/licenses/>.
+
 # ===========================================================================
 #  https://www.gnu.org/software/autoconf-archive/ax_cxx_compile_stdcxx.html
 # ===========================================================================

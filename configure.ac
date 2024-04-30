@@ -1,3 +1,20 @@
+dnl SPDX-FileCopyrightText: 2019 - 2022 sudorook <daemon@nullcodon.com>
+dnl
+dnl SPDX-License-Identifier: GPL-3.0-or-later
+dnl
+dnl This program is free software: you can redistribute it and/or modify it
+dnl under the terms of the GNU General Public License as published by the Free
+dnl Software Foundation, either version 3 of the License, or (at your option)
+dnl any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful, but
+dnl WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+dnl or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+dnl for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License along
+dnl with this program. If not, see <https://www.gnu.org/licenses/>.
+
 AC_PREREQ([2.68])
 
 AC_INIT([bmDCA],
