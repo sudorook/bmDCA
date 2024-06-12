@@ -178,7 +178,7 @@ MSAStats::computeMSAStats()
     aa_background_frequencies[i] = aa_background_frequencies[i] * (1. - theta);
   }
 
-  // Use the positonal and backgrounds frequencies to estimate the relative
+  // Use the positional and backgrounds frequencies to estimate the relative
   // entropy gradient for each position.
   arma::Mat<double> tmp = frequency_1p * (1. - pseudocount);
   tmp.each_col() += pseudocount * aa_background_frequencies;
@@ -209,7 +209,7 @@ MSAStats::computeErrorMSA(int reps, unsigned seed)
 {
   msa_rms = arma::Col<double>(reps, arma::fill::zeros);
 
-  // parition MSA into equal subsets
+  // partition MSA into equal subsets
   int M_1 = (int)((M + 1) / 2);
   int M_2 = (int)(M / 2);
 
@@ -246,7 +246,7 @@ MSAStats::computeErrorMSA(int reps, unsigned seed)
     arma::Col<double> weights_1 = arma::Col<double>(M_1, arma::fill::zeros);
     arma::Col<double> weights_2 = arma::Col<double>(M_2, arma::fill::zeros);
 
-    // Parition the MSA into two subsets. Use the full MSA sequence weights to
+    // Partition the MSA into two subsets. Use the full MSA sequence weights to
     // estimate effective sequence size for each subset.
 #pragma omp parallel
     {

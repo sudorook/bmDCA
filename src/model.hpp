@@ -29,7 +29,7 @@
  *
  * The inference scheme for learning parameters is not known at compile time.
  * Instead, it's set via the config file at runtime. This Model class defines a
- * set of vitrual functions to be shared amongst all classes derived from this
+ * set of virtual functions to be shared amongst all classes derived from this
  * one. A common function table allows an instance of any derived class
  * specified in the config file, recast to a Model, to be loaded at runtime.
  */

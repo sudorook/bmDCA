@@ -769,7 +769,7 @@ Sim::run(void)
   arma::wall_clock timer;
   timer.tic();
 
-  // Instantiate the PCG random number generator and unifrom random
+  // Instantiate the PCG random number generator and uniform random
   // distribution.
   rng.seed(random_seed);
 
@@ -1139,7 +1139,7 @@ Sim::run(void)
  * @return (bool) flag for whether to resample the sequences.
  *
  * This function is called when M > 1 sequences are sampled per MC trajectory.
- * If sequences along a trajectory are too correlated, burn-beteween time is
+ * If sequences along a trajectory are too correlated, burn-between time is
  * increased. If energy after burn-in and after burn-in + M x burn-between is
  * too much lower, then burn-in time is increased.
  */
@@ -1223,7 +1223,7 @@ Sim::checkErgodicity(void)
  *
  * @param energies pointer to energy data structure
  * @param msa pointer to the MSA
- * @param params ponter to the Potts parameters
+ * @param params pointer to the Potts parameters
  */
 void
 Sim::computeMSAEnergies(arma::Col<double>* energies,

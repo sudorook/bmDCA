@@ -197,7 +197,7 @@ Generator::writeAASequences(std::string output_file)
  * @return (bool) flag for whether to resample the sequences.
  *
  * This function is called when M > 1 sequences are sampled per MC trajectory.
- * If sequences along a trajectory are too correlated, burn-beteween time is
+ * If sequences along a trajectory are too correlated, burn-between time is
  * increased. If energy after burn-in and after burn-in + M x burn-between is
  * too much lower, then burn-in time is increased.
  */
@@ -386,7 +386,7 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
     sample_stats = new SampleStats3D(&samples_3d, &(model));
   }
 
-  // Instantiate the PCG random number generator and unifrom random
+  // Instantiate the PCG random number generator and uniform random
   // distribution.
   rng.seed(random_seed);
 

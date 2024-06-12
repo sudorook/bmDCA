@@ -173,7 +173,7 @@ Sampler::sampleEnergies(arma::Mat<double>* p,
 /**
  * @brief Sample MCMC trajectories of sequences (Metropolis-Hastings).
  *
- * @param p address of arma::Cube where sampled sequeces are stored
+ * @param p address of arma::Cube where sampled sequences are stored
  * @param walkers number of independent trajectories
  * @param samples_per_walk number of samples per trajectory
  * @param burn_in burn-in time
@@ -273,7 +273,7 @@ Sampler::sampleSequences(arma::Cube<int>* p,
 /**
  * @brief Sample independent sequences (Metropolis-Hastings).
  *
- * @param ptr address of arma::Mat where sampled sequeces are stored
+ * @param ptr address of arma::Mat where sampled sequences are stored
  * @param walkers number of independent trajectories
  * @param burn_in burn-in time
  * @param seed random seed for RNG
@@ -336,7 +336,7 @@ Sampler::sampleSequences(arma::Mat<int>* ptr,
 /**
  * @brief Sample MCMC trajectories of sequences (Zanella).
  *
- * @param p address of arma::Cube where sampled sequeces are stored
+ * @param p address of arma::Cube where sampled sequences are stored
  * @param walkers number of independent trajectories
  * @param samples_per_walk number of samples per trajectory
  * @param burn_in burn-in time
@@ -582,7 +582,7 @@ Sampler::sampleSequencesZanellaSqrt(arma::Cube<int>* p,
 /**
  * @brief Sample independent sequences (ZanellaSqrt).
  *
- * @param ptr address of arma::Mat where sampled sequeces are stored
+ * @param ptr address of arma::Mat where sampled sequences are stored
  * @param walkers number of independent trajectories
  * @param burn_in burn-in time
  * @param seed random seed for RNG
@@ -739,7 +739,7 @@ Sampler::sampleSequencesZanellaSqrt(arma::Mat<int>* ptr,
 /**
  * @brief Sample MCMC trajectories of sequences (ZanellaBarker).
  *
- * @param p address of arma::Cube where sampled sequeces are stored
+ * @param p address of arma::Cube where sampled sequences are stored
  * @param walkers number of independent trajectories
  * @param samples_per_walk number of samples per trajectory
  * @param burn_in burn-in time
@@ -985,7 +985,7 @@ Sampler::sampleSequencesZanellaBarker(arma::Cube<int>* p,
 /**
  * @brief Sample independent sequences (ZanellaBarker).
  *
- * @param ptr address of arma::Mat where sampled sequeces are stored
+ * @param ptr address of arma::Mat where sampled sequences are stored
  * @param walkers number of independent trajectories
  * @param burn_in burn-in time
  * @param seed random seed for RNG

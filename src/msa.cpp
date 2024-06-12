@@ -653,7 +653,7 @@ MSA::filterSimilarSequences(double threshold, bool verbose)
 };
 
 /**
- * @brief Set position indicies to protect from processing.
+ * @brief Set position indices to protect from processing.
  *
  * @param keep vector of indices
  */
@@ -664,7 +664,7 @@ MSA::setKeepPositions(std::vector<size_t> keep)
 };
 
 /**
- * @brief Set sequence indicies to protect from processing.
+ * @brief Set sequence indices to protect from processing.
  *
  * @param keep vector of indices
  */

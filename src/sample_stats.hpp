@@ -28,7 +28,7 @@
  * @brief Abstract class for computing statistics for sampled sequences.
  *
  * Because 1p/2p statistics are more efficiently computed with different data
- * structures depending on whether or not mutliple sequences are sampled along
+ * structures depending on whether or not multiple sequences are sampled along
  * trajectories, the SampleStats abstract class acts as a wrapper around the
  * key functions. SampleStats2D or SampleStats3D can be recasted to
  * SampleStats.
@@ -50,7 +50,7 @@ public:
   virtual void computeStatsExtra(
     void) = 0; ///< compute the energies and sequence correlations
   virtual void computeStatsImportance(
-    void) = 0; ///< run an importance sampling to re-esimate parameters
+    void) = 0; ///< run an importance sampling to re-estimate parameters
   virtual void setMixingTime(
     int) = 0; ///< set the burn-between time for the samples
   virtual arma::Col<double> getStats(void) = 0; ///< return important metrics
