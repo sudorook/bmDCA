@@ -1,0 +1,22 @@
+#!/bin/bash
+
+ARMA2ASCII_BIN=../../src/arma2ascii
+BMDCA_BIN=../../src/bmdca
+BMDCA_SAMPLE_BIN=../../src/bmdca_sample
+NUMERIC2FASTA_BIN=../../src/numeric2fasta
+PROCESS_MSA_BIN=../../src/process_msa
+
+EXAMPLE_DIR=../../example/
+EXAMPLE_BMDCA_CONF=../../example/bmdca.conf
+EXAMPLE_BMDCA_SAMPLE_CONF=../../example/bmdca_sample.conf
+EXAMPLE_MSA=../../example/PF00014_full.fasta
+
+function check_dependencies {
+  local dep
+  for dep in "${@}"; do
+    if ! [ -f "${dep}" ]; then
+      echo "${dep@Q} missing." >&2
+      return 1
+    fi
+  done
+}
