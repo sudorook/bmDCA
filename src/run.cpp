@@ -145,10 +145,8 @@ Sim::initialize(void)
   // provided.
   if (!msa_validate) {
     if (cross_validate) {
-      std::pair<std::shared_ptr<MSA>, std::shared_ptr<MSA>> tmp =
+      std::tie(msa_train, msa_validate) =
         msa_train->partitionAlignment(validation_seqs, random_seed);
-      msa_train = tmp.first;
-      msa_validate = tmp.second;
       msa_validate->writeSequenceWeights("msa_weights_validate.txt");
       msa_validate->writeMatrix("msa_numerical_validate.txt");
     }
