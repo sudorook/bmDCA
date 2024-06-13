@@ -31,13 +31,8 @@
 
 #include "pcg_random.hpp"
 
-#ifndef AA_ALPHABET_SIZE
-#define AA_ALPHABET_SIZE 21
-#endif
-
-#ifndef NT_ALPHABET_SIZE
-#define NT_ALPHABET_SIZE 5
-#endif
+constexpr int AA_ALPHABET_SIZE = 21;
+constexpr int NT_ALPHABET_SIZE = 5;
 
 /**
  * @brief Constructor for reading MSA (and weights) from file.
