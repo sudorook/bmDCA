@@ -1,7 +1,14 @@
 bin_PROGRAMS = bmdca bmdca_sample arma2ascii numeric2fasta process_msa
 
 CXXFLAGS = -O3 -Wall -std=c++17 $(OPENMP_CXXFLAGS) $(ARMADILLO_CFLAGS) \
-           -DARMA_DONT_USE_HDF5 -DARMA_NO_DEBUG
+           -DARMA_DONT_USE_HDF5
+
+if DEBUG
+CXXFLAGS += -g
+else
+CXXFLAGS += -DARMA_NO_DEBUG
+endif
+
 if LINUX
 AM_LDFLAGS = -lm $(ARMADILLO_LIBS) -lopenblas -llapack
 endif

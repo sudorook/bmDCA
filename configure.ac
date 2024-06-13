@@ -49,6 +49,17 @@ AM_CONDITIONAL([LINUX], [test x$build_linux = xyes])
 AM_CONDITIONAL([MACOS], [test x$build_macos = xyes])
 AM_CONDITIONAL([WINDOWS], [test x$build_windows = xyes])
 
+# Add flag to build with debug symbols
+AC_ARG_ENABLE(debug,
+  [--enable-debug    Turn on debugging],
+  [case "${enableval}" in
+    yes) debug=true ;;
+    no)  debug=false ;;
+    *) AC_MSG_ERROR(bad value ${enableval} for --enable-debug) ;;
+  esac],
+  [debug=false])
+AM_CONDITIONAL(DEBUG, test x$debug = xtrue)
+
 AM_INIT_AUTOMAKE([foreign])
 AM_MAINTAINER_MODE([enable])
 AC_PREFIX_DEFAULT(/usr/local)
