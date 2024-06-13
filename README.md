@@ -245,38 +245,46 @@ Inference and sampling runs can be configured using a text file (see
      MSA against one another
 5. `stop_threshold` - manual exit threshold for error convergence (default:
    1e-05)
-6. `cross_validate` - subset the alignment to train one subset and validate the
+6. `train_mode` - parameter learning algorithm. See below sections about details
+   and specific parameters for each. Available options are:
+   - `original`
+   - `reparametrization`
+   - `adam`
+   - `adamw`
+   - `radam`
+   - `sddm`
+7. `cross_validate` - subset the alignment to train one subset and validate the
    model against the other subset to assess overfitting. _If the validation
    alignment is provided at the command line, this flag is ignored and no
    subsetting is performed._
-7. `validation_seqs` - number of effective sequences to sequester for
+8. `validation_seqs` - number of effective sequences to sequester for
    cross-validation. _If the validation alignment is provided at the command
    line, this flag is ignored and no subsetting is performed._
-8. `random_seed` - initial seed for the random number generator (default: 1)
-9. `output_binary` - flag to output data in binary format, which is faster and
-   more precise (default: true)
-10. `update_rule` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
+9. `random_seed` - initial seed for the random number generator (default: 1)
+10. `output_binary` - flag to output data in binary format, which is faster and
+    more precise (default: true)
+11. `update_rule` - sampler mode, 'mh' for Metropolis-Hastings and 'z-sqrt' or
     'z-barker' for Zanella, 2019. 'z-sqrt' corresponds to a balancing function
     of `sqrt(t)`, and 'z-barker' corresponds to `t/(1+t)`. (default: "mh")
-11. `update_burn_times` - flag to check tune the burn times during runtime using
+12. `update_burn_times` - flag to check tune the burn times during runtime using
     MCMC sample energies and autocorrelations (walkers > 1) or lookahead
     sampling of a small set of sequences (walkers == 1). (default: true)
-12. `burn_in_start` - initial burn-in time (default: 10000)
-13. `burn_between_start` - initial wait time between sampling sequences
+13. `burn_in_start` - initial burn-in time (default: 10000)
+14. `burn_between_start` - initial wait time between sampling sequences
     (default: 100)
-14. `adapt_up_time` - multiple to increase MCMC wait/burn-in time (default: 1.5)
-15. `adapt_down_time` - multiple to decrease MCMC wait/burn-in time (default
+15. `adapt_up_time` - multiple to increase MCMC wait/burn-in time (default: 1.5)
+16. `adapt_down_time` - multiple to decrease MCMC wait/burn-in time (default
     0.6)
-16. `step_important_max` - maximum number of importance sampling steps (default:
+17. `step_important_max` - maximum number of importance sampling steps (default:
     0, i.e.importance sampling disabled)
-17. `coherence_min` - (default=.9999)
-18. `use_ss` - flag to sample sequences equal to the effective number of
+18. `coherence_min` - (default=.9999)
+19. `use_ss` - flag to sample sequences equal to the effective number of
     sequences in the alignment (default: false)
-19. `samples_per_walk` - number of sequences to sample for each MCMC replicate
+20. `samples_per_walk` - number of sequences to sample for each MCMC replicate
     (default: 1000)
-20. `walkers` - number of independent MCMC replicates (default: 10)
+21. `walkers` - number of independent MCMC replicates (default: 10)
 
-#### ``[[original]]``
+#### `[[original]]`
 
 This model is a plain Boltzmann-machine without any model reparametrization and
 individual learning rates for each fields and coupling. This is the default:
