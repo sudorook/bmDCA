@@ -464,8 +464,6 @@ deleteAllFiles(const std::string directory)
   std::uintmax_t res = std::filesystem::remove_all(directory);
 
   if (res == 0) {
-    std::cerr << "ERROR: nothing deleted" << std::endl;
-  } else if (res < 0) {
     std::cerr << "ERROR: deletion of '" << directory << "' failed."
               << std::endl;
   }
