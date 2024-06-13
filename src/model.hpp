@@ -40,8 +40,8 @@ public:
   Model();
   virtual ~Model(){};
 
-  void setMSAStats(MSAStats*, MSAStats*);
-  void setSampleStats(SampleStats*);
+  void setMSAStats(std::shared_ptr<MSAStats>, std::shared_ptr<MSAStats>);
+  void setSampleStats(std::shared_ptr<SampleStats>);
   void setStep(int);
 
   double train_error_1p = 1000;      ///< training RMSE for fields
@@ -78,9 +78,9 @@ public:
   potts_model params_prev; ///< previous step parameters
 
 protected:
-  MSAStats* training = nullptr;   ///< pointer to training MSA stats
-  MSAStats* validation = nullptr; ///< pointer to validation MSA stats
-  SampleStats* samples = nullptr; ///< pointer to sampled sequence stats
+  std::shared_ptr<MSAStats> training;   ///< pointer to training MSA stats
+  std::shared_ptr<MSAStats> validation; ///< pointer to validation MSA stats
+  std::shared_ptr<SampleStats> samples; ///< pointer to sampled sequence stats
 
   std::string hyperparameter_file; ///< file string for storing hyperparams
 

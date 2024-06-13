@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <random>
 #include <string>
 #include <unordered_set>
@@ -903,7 +904,7 @@ MSA::sampleAlignment(int size, unsigned seed)
  * sequences in the validation set. Weights in the two subsets correspond to
  * the weights in the original full MSA.
  */
-std::vector<MSA*>
+std::pair<std::shared_ptr<MSA>, std::shared_ptr<MSA>>
 MSA::partitionAlignment(int validation_size, unsigned seed)
 {
   arma::arma_rng::set_seed(seed);
@@ -957,13 +958,7 @@ MSA::partitionAlignment(int validation_size, unsigned seed)
     }
   }
 
-  std::vector<MSA*> return_vector;
-  MSA* tmp;
-
-  tmp = new MSA(sub_alignment_1.t(), weights_1, M - size, N, Q);
-  return_vector.push_back(tmp);
-  tmp = new MSA(sub_alignment_2.t(), weights_2, size, N, Q);
-  return_vector.push_back(tmp);
-
-  return return_vector;
+  return std::make_pair(
+    std::make_shared<MSA>(sub_alignment_1.t(), weights_1, M - size, N, Q),
+    std::make_shared<MSA>(sub_alignment_2.t(), weights_2, size, N, Q));
 };

@@ -18,6 +18,7 @@
  */
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -129,22 +130,18 @@ main(int argc, char* argv[])
     std::exit(EXIT_FAILURE);
   }
 
-  MSA* msa_train = nullptr;
-  MSA* msa_validate = nullptr;
-
-  // Parse the multiple sequence alignment.
-  msa_train = new MSA(train_file, train_weight_file, is_numeric);
+  std::shared_ptr<MSA> msa_train =
+    std::make_shared<MSA>(train_file, train_weight_file, is_numeric);
+  std::shared_ptr<MSA> msa_validate(nullptr);
 
   // Only load the validation MSA if a validation MSA file is given.
   if (!validate_file.empty()) {
-    msa_validate = new MSA(validate_file, validate_weight_file, is_numeric);
+    msa_validate =
+      std::make_shared<MSA>(validate_file, validate_weight_file, is_numeric);
   }
 
   Sim sim = Sim(msa_train, msa_validate, config_file, dest_dir, force_restart);
   sim.run(); // run inference loop
-
-  delete msa_train;
-  delete msa_validate;
 
   return 0;
 };

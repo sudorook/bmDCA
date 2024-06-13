@@ -53,8 +53,8 @@
  * @param dest_dir directory to output bmDCA results
  * @param force_restart force the inference to start from the beginning
  */
-Sim::Sim(MSA* msa_train,
-         MSA* msa_validate,
+Sim::Sim(std::shared_ptr<MSA> msa_train,
+         std::shared_ptr<MSA> msa_validate,
          std::string config_file,
          std::string dest_dir,
          bool force_restart)
@@ -79,17 +79,17 @@ Sim::Sim(MSA* msa_train,
 
   // Load the training model.
   if (train_mode == "adam") {
-    model = new Adam();
+    model = std::make_shared<Adam>();
   } else if (train_mode == "adamw") {
-    model = new AdamW();
+    model = std::make_shared<AdamW>();
   } else if (train_mode == "original") {
-    model = new Original();
+    model = std::make_shared<Original>();
   } else if (train_mode == "radam") {
-    model = new RAdam();
+    model = std::make_shared<RAdam>();
   } else if (train_mode == "reparametrization") {
-    model = new Reparam();
+    model = std::make_shared<Reparam>();
   } else if (train_mode == "sgdm") {
-    model = new SGDM();
+    model = std::make_shared<SGDM>();
   } else {
     std::cerr << "ERROR: unrecognised training model '" << train_mode
               << "' given. Exiting." << std::endl;
@@ -145,10 +145,10 @@ Sim::initialize(void)
   // provided.
   if (!msa_validate) {
     if (cross_validate) {
-      std::vector<MSA*> tmp =
+      std::pair<std::shared_ptr<MSA>, std::shared_ptr<MSA>> tmp =
         msa_train->partitionAlignment(validation_seqs, random_seed);
-      msa_train = tmp[0];
-      msa_validate = tmp[1];
+      msa_train = tmp.first;
+      msa_validate = tmp.second;
       msa_validate->writeSequenceWeights("msa_weights_validate.txt");
       msa_validate->writeMatrix("msa_numerical_validate.txt");
     }
@@ -159,7 +159,7 @@ Sim::initialize(void)
   msa_train->writeSequenceWeights("msa_weights.txt");
 
   // Compute stats for training MSA
-  msa_train_stats = new MSAStats(msa_train, true);
+  msa_train_stats = std::make_shared<MSAStats>(msa_train, true);
   msa_train_stats->writeFrequency1p("msa_stat_1p.bin");
   msa_train_stats->writeFrequency2p("msa_stat_2p.bin");
   std::cout << std::endl;
@@ -171,7 +171,7 @@ Sim::initialize(void)
     msa_validate->writeSequenceWeights("msa_weights_validate.txt");
 
     // Compute stats for validation MSA
-    msa_validate_stats = new MSAStats(msa_validate, true);
+    msa_validate_stats = std::make_shared<MSAStats>(msa_validate, true);
     msa_validate_stats->writeFrequency1p("msa_stat_1p_validate.bin");
     msa_validate_stats->writeFrequency2p("msa_stat_2p_validate.bin");
     std::cout << std::endl;
@@ -206,32 +206,20 @@ Sim::initialize(void)
   if (samples_per_walk > 1) {
     samples_3d =
       arma::Cube<int>(samples_per_walk, N, walkers, arma::fill::zeros);
-    sample_stats =
-      new SampleStats3D(&samples_3d, &(model->params), &(model->params_prev));
+    sample_stats = std::make_shared<SampleStats3D>(
+      &samples_3d, &(model->params), &(model->params_prev));
     sample_stats->setMixingTime(burn_between);
   } else {
     samples_2d = arma::Mat<int>(walkers, N, arma::fill::zeros);
-    sample_stats =
-      new SampleStats2D(&samples_2d, &(model->params), &(model->params_prev));
+    sample_stats = std::make_shared<SampleStats2D>(
+      &samples_2d, &(model->params), &(model->params_prev));
   }
 
   model->setSampleStats(sample_stats);
   model->setStep(step_offset);
 
   // Initialize the sampler
-  sampler = new Sampler(N, Q, &(model->params));
-};
-
-/**
- * @brief Sim destructor.
- */
-Sim::~Sim(void)
-{
-  delete msa_train_stats;
-  delete msa_validate_stats;
-  delete model;
-  delete sampler;
-  delete sample_stats;
+  sampler = std::make_shared<Sampler>(N, Q, &(model->params));
 };
 
 /**
@@ -995,10 +983,13 @@ Sim::run(void)
       std::cout << timer.toc() << " sec" << std::endl;
     }
 
-    computeMSAEnergies(&msa_train_energies, msa_train, &(model->params));
+    computeMSAEnergies(&msa_train_energies,
+                       msa_train,
+                       std::make_shared<potts_model>(model->params));
     if (msa_validate) {
-      computeMSAEnergies(
-        &msa_validate_energies, msa_validate, &(model->params));
+      computeMSAEnergies(&msa_validate_energies,
+                         msa_validate,
+                         std::make_shared<potts_model>(model->params));
       diff_avg_energy =
         arma::mean(msa_train_energies) - arma::mean(msa_validate_energies);
     }
@@ -1231,8 +1222,8 @@ Sim::checkErgodicity(void)
  */
 void
 Sim::computeMSAEnergies(arma::Col<double>* energies,
-                        MSA* msa,
-                        potts_model* params)
+                        std::shared_ptr<MSA> msa,
+                        std::shared_ptr<potts_model> params)
 {
   int N = msa->N;
   int M = msa->M;

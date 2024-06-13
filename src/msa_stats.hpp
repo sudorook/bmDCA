@@ -23,6 +23,7 @@
 #include "msa.hpp"
 
 #include <armadillo>
+#include <memory>
 #include <string>
 
 /**
@@ -33,8 +34,8 @@
 class MSAStats
 {
 public:
-  explicit MSAStats(MSA*, bool = false);
-  void updateMSA(MSA*, bool = false);
+  explicit MSAStats(std::shared_ptr<MSA>, bool = false);
+  void updateMSA(std::shared_ptr<MSA>, bool = false);
 
   double getEffectiveM();
   double getN();
@@ -71,7 +72,7 @@ private:
   int Q;              ///< amino acid alphabet size
   double M_effective; ///< effect number of sequences
 
-  MSA* msa; ///< address of MSA for which to compute stats
+  std::shared_ptr<MSA> msa; ///< address of MSA for which to compute stats
 
   // void computeMSAStats(MSA*);
   void computeMSAStats();

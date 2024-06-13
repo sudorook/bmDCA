@@ -35,7 +35,8 @@ Model::Model(void){};
  * @param msa_validate pointer to stats for the validation MSA
  */
 void
-Model::setMSAStats(MSAStats* msa_train, MSAStats* msa_validate)
+Model::setMSAStats(std::shared_ptr<MSAStats> msa_train,
+                   std::shared_ptr<MSAStats> msa_validate)
 {
   training = msa_train;
   validation = msa_validate;
@@ -58,7 +59,7 @@ Model::setMSAStats(MSAStats* msa_train, MSAStats* msa_validate)
  * @param s pointer to the SampleStats sample statistics
  */
 void
-Model::setSampleStats(SampleStats* s)
+Model::setSampleStats(std::shared_ptr<SampleStats> s)
 {
   samples = s;
 };

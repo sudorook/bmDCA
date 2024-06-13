@@ -44,15 +44,6 @@ Generator::Generator(potts_model params, int n, int q, std::string config_file)
 };
 
 /**
- * @brief Generator destructor.
- */
-Generator::~Generator(void)
-{
-  delete sample_stats;
-  delete sampler;
-};
-
-/**
  * @brief Function for where hyperparameter checks can go...
  *
  * Empty for now, but if checks for whether the input hyperparameters are
@@ -392,11 +383,11 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
   // the 3d (arma::Cube) if more than 1 sampled.
   if (samples_per_walk == 1) {
     samples_2d = arma::Mat<int>(walkers, N, arma::fill::zeros);
-    sample_stats = new SampleStats2D(&samples_2d, &(model));
+    sample_stats = std::make_shared<SampleStats2D>(&samples_2d, &(model));
   } else {
     samples_3d =
       arma::Cube<int>(samples_per_walk, N, walkers, arma::fill::zeros);
-    sample_stats = new SampleStats3D(&samples_3d, &(model));
+    sample_stats = std::make_shared<SampleStats3D>(&samples_3d, &(model));
   }
 
   // Instantiate the PCG random number generator and uniform random
@@ -408,7 +399,7 @@ Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
   burn_in = burn_in_start;
   burn_between = burn_between_start;
 
-  sampler = new Sampler(N, Q, &model);
+  sampler = std::make_shared<Sampler>(N, Q, &model);
 
   if ((samples_per_walk == 1) & update_burn_time) {
     std::cout << "setting burn time to... " << std::flush;

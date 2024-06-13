@@ -24,6 +24,7 @@
 #include "sample_stats.hpp"
 #include "sampler.hpp"
 #include "utils.hpp"
+#include <memory>
 #include <string>
 
 /**
@@ -37,7 +38,6 @@ class Generator
 {
 public:
   Generator(potts_model, int, int, std::string);
-  ~Generator(void);
   void run(int, int, std::string);
   void writeAASequences(std::string);
   void writeNumericalSequences(std::string);
@@ -72,8 +72,9 @@ private:
     samples_3d;      ///< efficiently store sequences when samples_per_run>1
   potts_model model; ///< structure for Potts model parameters
 
-  Sampler* sampler;          ///< sampler
-  SampleStats* sample_stats; ///< pointer for sampled sequence statistics
+  std::shared_ptr<Sampler> sampler; ///< sampler
+  std::shared_ptr<SampleStats>
+    sample_stats; ///< pointer for sampled sequence statistics
 
   void estimateBurnTime(void);
   bool checkErgodicity(void);

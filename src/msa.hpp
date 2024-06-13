@@ -21,6 +21,7 @@
 #define SRC_MSA_HPP_
 
 #include <armadillo>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -63,7 +64,9 @@ public:
   void writeHammingDistances(std::string);
 
   MSA sampleAlignment(int = 0, unsigned = 0);
-  std::vector<MSA*> partitionAlignment(int = 0, unsigned = 0);
+  std::pair<std::shared_ptr<MSA>, std::shared_ptr<MSA>> partitionAlignment(
+    int = 0,
+    unsigned = 0);
 
 private:
   std::vector<SeqRecord>

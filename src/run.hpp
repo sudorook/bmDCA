@@ -29,6 +29,7 @@
 #include "utils.hpp"
 
 #include <cstdint>
+#include <memory>
 #include <string>
 
 /**
@@ -37,8 +38,11 @@
 class Sim
 {
 public:
-  Sim(MSA*, MSA*, std::string, std::string, bool);
-  ~Sim(void);
+  Sim(std::shared_ptr<MSA>,
+      std::shared_ptr<MSA>,
+      std::string,
+      std::string,
+      bool);
   void run(void);
 
 private:
@@ -115,22 +119,27 @@ private:
   arma::Mat<int> samples_2d;  ///< stores samples when samples_per_walk == 1
 
   // Stats from original MSA
-  MSA* msa_train = nullptr;               ///< address of training MSA
-  MSA* msa_validate = nullptr;            ///< address of validation MSA
-  MSAStats* msa_train_stats = nullptr;    ///< address of training MSA stats
-  MSAStats* msa_validate_stats = nullptr; ///< address of validation MSA stats
+  std::shared_ptr<MSA> msa_train;            ///< address of training MSA
+  std::shared_ptr<MSA> msa_validate;         ///< address of validation MSA
+  std::shared_ptr<MSAStats> msa_train_stats; ///< address of training MSA stats
+  std::shared_ptr<MSAStats>
+    msa_validate_stats; ///< address of validation MSA stats
 
   arma::Col<double> msa_train_energies;    ///< energies for training MSA
   arma::Col<double> msa_validate_energies; ///< energies for validation MSA
-  void computeMSAEnergies(arma::Col<double>*, MSA*, potts_model*);
+  void computeMSAEnergies(arma::Col<double>*,
+                          std::shared_ptr<MSA>,
+                          std::shared_ptr<potts_model>);
   void writeMSAEnergies(int);
   void writeMSAEnergies(std::string);
 
-  Model* model; ///< training model
+  // TODO: should these be std::unique_ptr?
+  std::shared_ptr<Model> model; ///< training model
 
-  Sampler* sampler; ///< Potts model sampler
+  std::shared_ptr<Sampler> sampler; ///< Potts model sampler
 
-  SampleStats* sample_stats; ///< address of sample sequence statistics
+  std::shared_ptr<SampleStats>
+    sample_stats; ///< address of sample sequence statistics
 
   pcg32 rng;                      ///< PCG32 random number generator
   arma::Mat<uint64_t> rng_buffer; ///< stores rng values to write to run log

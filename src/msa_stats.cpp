@@ -36,7 +36,7 @@
  * @param msa address of MSA instance
  * @param verbose flag to print MSA info
  */
-MSAStats::MSAStats(MSA* msa, bool verbose)
+MSAStats::MSAStats(std::shared_ptr<MSA> msa, bool verbose)
   : msa(msa)
 {
   // Initialize
@@ -89,7 +89,7 @@ MSAStats::MSAStats(MSA* msa, bool verbose)
  * @param verbose print MSA info
  */
 void
-MSAStats::updateMSA(MSA* new_msa, bool verbose)
+MSAStats::updateMSA(std::shared_ptr<MSA> new_msa, bool verbose)
 {
   msa = new_msa;
 
