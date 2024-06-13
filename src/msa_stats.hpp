@@ -33,7 +33,7 @@
 class MSAStats
 {
 public:
-  MSAStats(MSA*, bool = false);
+  explicit MSAStats(MSA*, bool = false);
   void updateMSA(MSA*, bool = false);
 
   double getEffectiveM();
