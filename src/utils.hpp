@@ -94,17 +94,67 @@ void convertFrequencyToAscii(std::string);
 
 void convertParametersToAscii(std::string, std::string);
 
-int
-Theta(double);
+/**
+ * @brief Step function.
+ *
+ * @param x input value
+ *
+ * @return 1 or 0
+ */
+template<typename T, typename U>
+U
+Theta(T x)
+{
+  if (x > 0)
+    return 1;
+  return 0;
+}
 
-int
-Delta(double);
+/**
+ * @brief Delta function.
+ *
+ * @param x input value
+ *
+ * @return 1 or 0
+ */
+template<typename T, typename U>
+U
+Delta(T x)
+{
+  if (x == 0)
+    return 1;
+  return 0;
+}
 
-double
-Max(double, double);
+/**
+ * @brief Return larger of two values
+ *
+ * @param a first value
+ * @param b second value
+ *
+ * @return larger of a or b
+ */
+template<typename T>
+T
+Max(T a, T b)
+{
+  return (a > b) ? a : b;
+}
 
-double
-Min(double, double);
+/**
+ * @brief Return smaller of two values
+ *
+ * @param a first value
+ * @param b second value
+ *
+ * @return smaller of a or b
+ */
+template<typename T>
+T
+Min(T a, T b)
+{
+  return (a < b) ? a : b;
+}
 
 int deleteFile(std::string);
 

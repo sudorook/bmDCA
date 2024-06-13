@@ -324,7 +324,7 @@ convertParametersToAscii(const std::string h_file, const std::string J_file)
 
   // Generate an output file name.
   std::string output_file;
-  for (int i = 0; i < Min(h_name.size(), J_name.size()); i++) {
+  for (int i = 0; i < Min<int>(h_name.size(), J_name.size()); i++) {
     if (h_name[i] == J_name[i]) {
       if ((output_file.back() == '_') && (h_name[i] == '_'))
         continue;
@@ -359,68 +359,6 @@ convertParametersToAscii(const std::string h_file, const std::string J_file)
     }
   }
   return;
-};
-
-/**
- * @brief Step function.
- *
- * @param x input value
- *
- * @return 1 or 0
- */
-int
-Theta(const double x)
-{
-  if (x > 0)
-    return 1;
-  return 0;
-};
-
-/**
- * @brief Delta function.
- *
- * @param x input value
- *
- * @return 1 or 0
- */
-int
-Delta(const double x)
-{
-  if (x == 0)
-    return 1;
-  return 0;
-};
-
-/**
- * @brief Return larger of two values
- *
- * @param a first value
- * @param b second value
- *
- * @return larger of a or b
- */
-double
-Max(const double a, const double b)
-{
-  if (a > b)
-    return a;
-  return b;
-};
-
-/**
- * @brief Return smaller of two values
- *
- * @param a first value
- * @param b second value
- *
- * @return smaller of a or b
- */
-double
-Min(const double a, const double b)
-{
-  if (a < b)
-    return a;
-  return b;
 };
 
 /**

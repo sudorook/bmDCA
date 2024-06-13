@@ -609,12 +609,13 @@ Original::updateLearningRates(void)
       for (int a = 0; a < Q; a++) {
         for (int b = 0; b < Q; b++) {
           double alfa = gradient.J(i, j)(a, b) * gradient_prev.J(i, j)(a, b);
-          alfa =
-            Theta(alfa) * adapt_up + Theta(-alfa) * adapt_down + Delta(alfa);
+          alfa = Theta<double, double>(alfa) * adapt_up +
+                 Theta<double, double>(-alfa) * adapt_down +
+                 Delta<double, double>(alfa);
 
-          learning_rates.J(i, j)(a, b) =
-            Min(learn_rate_J_max,
-                Max(learn_rate_J_min, alfa * learning_rates.J(i, j)(a, b)));
+          learning_rates.J(i, j)(a, b) = Min<double>(
+            learn_rate_J_max,
+            Max<double>(learn_rate_J_min, alfa * learning_rates.J(i, j)(a, b)));
         }
       }
     }
@@ -623,9 +624,12 @@ Original::updateLearningRates(void)
   for (int i = 0; i < N; i++) {
     for (int a = 0; a < Q; a++) {
       double alfa = gradient.h(a, i) * gradient_prev.h(a, i);
-      alfa = Theta(alfa) * adapt_up + Theta(-alfa) * adapt_down + Delta(alfa);
-      learning_rates.h(a, i) = Min(
-        learn_rate_h_max, Max(learn_rate_h_min, alfa * learning_rates.h(a, i)));
+      alfa = Theta<double, double>(alfa) * adapt_up +
+             Theta<double, double>(-alfa) * adapt_down +
+             Delta<double, double>(alfa);
+      learning_rates.h(a, i) = Min<double>(
+        learn_rate_h_max,
+        Max<double>(learn_rate_h_min, alfa * learning_rates.h(a, i)));
     }
   }
 };

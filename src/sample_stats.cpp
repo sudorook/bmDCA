@@ -720,7 +720,7 @@ SampleStats3D::computeCorrelations(void)
          pow(2.0 * dinf / static_cast<double>((reps * (reps - 1) * M)), 2));
 
   int i_auto = 1;
-  int i_check = Max(static_cast<double>(M) / 10.0, 1.0);
+  int i_check = Max<int>(static_cast<int>(M / 10.0), 1);
 
   overlap_cross = 2.0 * dinf / static_cast<double>(reps * (reps - 1) * M);
   overlap_auto = d(i_auto) / static_cast<double>(count(i_auto));
@@ -776,10 +776,11 @@ SampleStats3D::computeSampleStats(void)
           n1squared(aa) += pow(n1(aa, rep), 2);
         }
         frequency_1p(aa, i) = n1av(aa) / M / reps;
-        frequency_1p_sigma(aa, i) = Max(sqrt((n1squared(aa) / (M * M * reps) -
-                                              pow(n1av(aa) / (M * reps), 2)) /
-                                             sqrt(reps)),
-                                        0);
+        frequency_1p_sigma(aa, i) =
+          Max<double>(sqrt((n1squared(aa) / (M * M * reps) -
+                            pow(n1av(aa) / (M * reps), 2)) /
+                           sqrt(reps)),
+                      0);
       }
     }
   }
@@ -900,10 +901,10 @@ SampleStats3D::computeSampleStatsImportance(void)
       }
       frequency_1p(aa, i) = static_cast<double>(n1av(aa));
       frequency_1p_sigma(aa, i) =
-        Max(sqrt((static_cast<double>(n1squared(aa)) -
-                  pow(static_cast<double>(n1av(aa)), 2)) *
-                 sqrt(sumw)),
-            0);
+        Max<double>(sqrt((static_cast<double>(n1squared(aa)) -
+                          pow(static_cast<double>(n1av(aa)), 2)) *
+                         sqrt(sumw)),
+                    0);
     }
   }
 
@@ -927,10 +928,10 @@ SampleStats3D::computeSampleStatsImportance(void)
           }
           frequency_2p(i, j)(aa1, aa2) = static_cast<double>(n2av(aa1, aa2));
           frequency_2p_sigma(i, j)(aa1, aa2) =
-            Max(sqrt((static_cast<double>(n2squared(aa1, aa2)) -
-                      pow(static_cast<double>(n2av(aa1, aa2)), 2)) *
-                     sqrt(sumw)),
-                0);
+            Max<double>(sqrt((static_cast<double>(n2squared(aa1, aa2)) -
+                              pow(static_cast<double>(n2av(aa1, aa2)), 2)) *
+                             sqrt(sumw)),
+                        0);
         }
       }
     }
