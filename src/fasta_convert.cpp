@@ -103,13 +103,12 @@ main(int argc, char* argv[])
   arma::Mat<int> alignment = arma::Mat<int>(M, N);
 
   int counter = 0;
-  int i = 0;
   std::string line;
   std::getline(input_stream, line);
   while (std::getline(input_stream, line)) {
     std::istringstream iss(line);
     int n;
-    i = 0;
+    int i = 0;
 
     while (iss >> n) {
       alignment(counter, i) = n;

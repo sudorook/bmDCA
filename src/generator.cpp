@@ -70,11 +70,13 @@ void
 Generator::loadParameters(std::string file_name)
 {
   std::ifstream file(file_name);
-  bool reading_bmdca_section = false;
   if (file.is_open()) {
     std::string line;
+    bool reading_bmdca_section = false;
     while (std::getline(file, line)) {
-      if (line[0] == '#' || line.empty()) {
+      if (line.empty()) {
+        continue;
+      } else if (line[0] == '#') {
         continue;
       } else if (line[0] == '[') {
         if (line == "[bmDCA_sample]") {

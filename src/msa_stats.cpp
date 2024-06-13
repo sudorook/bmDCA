@@ -127,9 +127,9 @@ MSAStats::computeMSAStats()
   {
 #pragma omp for
     for (int i = 0; i < N; i++) {
-      int* align_ptr = msa->alignment.colptr(i);
+      const int* align_ptr = msa->alignment.colptr(i);
       double* freq_ptr = frequency_1p.colptr(i);
-      double* weight_ptr = msa->sequence_weights.memptr();
+      const double* weight_ptr = msa->sequence_weights.memptr();
       for (int m = 0; m < M; m++) {
         *(freq_ptr + *(align_ptr + m)) += *(weight_ptr + m);
       }
@@ -147,11 +147,11 @@ MSAStats::computeMSAStats()
 #pragma omp for schedule(dynamic, 1)
     for (int i = 0; i < N; i++) {
       for (int j = i + 1; j < N; j++) {
-        double* weight_ptr = msa->sequence_weights.memptr();
+        const double* weight_ptr = msa->sequence_weights.memptr();
         frequency_2p(i, j).zeros();
 
-        int* align_ptr1 = msa->alignment.colptr(i);
-        int* align_ptr2 = msa->alignment.colptr(j);
+        const int* align_ptr1 = msa->alignment.colptr(i);
+        const int* align_ptr2 = msa->alignment.colptr(j);
         for (int m = 0; m < M; m++) {
           frequency_2p(i, j)(*(align_ptr1 + m), *(align_ptr2 + m)) +=
             *(weight_ptr + m);
@@ -271,8 +271,8 @@ MSAStats::computeErrorMSA(int reps, unsigned seed)
     MSA msa_1 = MSA(alignment_1.t(), weights_1, M_1, N, Q);
     MSA msa_2 = MSA(alignment_2.t(), weights_2, M_2, N, Q);
 
-    double M_1_effective = arma::sum(msa_1.sequence_weights);
-    double M_2_effective = arma::sum(msa_2.sequence_weights);
+    const double M_1_effective = arma::sum(msa_1.sequence_weights);
+    const double M_2_effective = arma::sum(msa_2.sequence_weights);
 
     arma::Mat<double> msa_1_frequency_1p =
       arma::Mat<double>(Q, N, arma::fill::zeros);
@@ -290,9 +290,9 @@ MSAStats::computeErrorMSA(int reps, unsigned seed)
     {
 #pragma omp for
       for (int i = 0; i < N; i++) {
-        int* align_ptr = msa_1.alignment.colptr(i);
+        const int* align_ptr = msa_1.alignment.colptr(i);
         double* freq_ptr = msa_1_frequency_1p.colptr(i);
-        double* weight_ptr = msa_1.sequence_weights.memptr();
+        const double* weight_ptr = msa_1.sequence_weights.memptr();
         for (int m = 0; m < M_1; m++) {
           *(freq_ptr + *(align_ptr + m)) += *(weight_ptr + m);
         }
@@ -304,9 +304,9 @@ MSAStats::computeErrorMSA(int reps, unsigned seed)
     {
 #pragma omp for
       for (int i = 0; i < N; i++) {
-        int* align_ptr = msa_2.alignment.colptr(i);
+        const int* align_ptr = msa_2.alignment.colptr(i);
         double* freq_ptr = msa_2_frequency_1p.colptr(i);
-        double* weight_ptr = msa_2.sequence_weights.memptr();
+        const double* weight_ptr = msa_2.sequence_weights.memptr();
         for (int m = 0; m < M_2; m++) {
           *(freq_ptr + *(align_ptr + m)) += *(weight_ptr + m);
         }
@@ -320,11 +320,11 @@ MSAStats::computeErrorMSA(int reps, unsigned seed)
 #pragma omp for schedule(dynamic, 1)
       for (int i = 0; i < N; i++) {
         for (int j = i + 1; j < N; j++) {
-          double* weight_ptr = msa_1.sequence_weights.memptr();
+          const double* weight_ptr = msa_1.sequence_weights.memptr();
           msa_1_frequency_2p(i, j) = arma::Mat<double>(Q, Q, arma::fill::zeros);
 
-          int* align_ptr1 = msa_1.alignment.colptr(i);
-          int* align_ptr2 = msa_1.alignment.colptr(j);
+          const int* align_ptr1 = msa_1.alignment.colptr(i);
+          const int* align_ptr2 = msa_1.alignment.colptr(j);
           for (int m = 0; m < M_1; m++) {
             msa_1_frequency_2p(i, j)(*(align_ptr1 + m), *(align_ptr2 + m)) +=
               *(weight_ptr + m);
@@ -338,11 +338,11 @@ MSAStats::computeErrorMSA(int reps, unsigned seed)
 #pragma omp for schedule(dynamic, 1)
       for (int i = 0; i < N; i++) {
         for (int j = i + 1; j < N; j++) {
-          double* weight_ptr = msa_2.sequence_weights.memptr();
+          const double* weight_ptr = msa_2.sequence_weights.memptr();
           msa_2_frequency_2p(i, j) = arma::Mat<double>(Q, Q, arma::fill::zeros);
 
-          int* align_ptr1 = msa_2.alignment.colptr(i);
-          int* align_ptr2 = msa_2.alignment.colptr(j);
+          const int* align_ptr1 = msa_2.alignment.colptr(i);
+          const int* align_ptr2 = msa_2.alignment.colptr(j);
           for (int m = 0; m < M_2; m++) {
             msa_2_frequency_2p(i, j)(*(align_ptr1 + m), *(align_ptr2 + m)) +=
               *(weight_ptr + m);

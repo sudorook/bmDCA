@@ -440,10 +440,10 @@ MSA::printAlignment(void)
  * @return number of positions
  */
 int
-MSA::getNTSequenceLength(std::string sequence)
+MSA::getNTSequenceLength(const std::string& sequence)
 {
   int valid_nt_count = 0;
-  for (std::string::iterator it = sequence.begin(); it != sequence.end();
+  for (std::string::const_iterator it = sequence.begin(); it != sequence.end();
        ++it) {
     switch (*it) {
       case '-':
@@ -475,10 +475,10 @@ MSA::getNTSequenceLength(std::string sequence)
  * @return number of positions
  */
 int
-MSA::getAASequenceLength(std::string sequence)
+MSA::getAASequenceLength(const std::string& sequence)
 {
   int valid_aa_count = 0;
-  for (std::string::iterator it = sequence.begin(); it != sequence.end();
+  for (std::string::const_iterator it = sequence.begin(); it != sequence.end();
        ++it) {
     switch (*it) {
       case '-':

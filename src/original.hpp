@@ -40,18 +40,18 @@ class Original : public Model
 public:
   Original(void);
 
-  void update(void);
-  void initialize(void);
-  void reset(void);
-  void restore(int, bool = true);
+  void update(void) override;
+  void initialize(void) override;
+  void reset(void) override;
+  void restore(int, bool = true) override;
 
-  void writeData(std::string, bool = true);
-  void writeStep(int, bool = true);
-  void deleteStep(int, bool = true);
+  void writeData(std::string, bool = true) override;
+  void writeStep(int, bool = true) override;
+  void deleteStep(int, bool = true) override;
 
-  void loadHyperparameters(std::string);
-  void writeHyperparameters(std::string, bool = true);
-  bool isValidStep(int, bool = true);
+  void loadHyperparameters(std::string) override;
+  void writeHyperparameters(std::string, bool = true) override;
+  bool isValidStep(int, bool = true) override;
 
 private:
   potts_model gradient;       ///< model gradient
@@ -78,9 +78,9 @@ private:
   void updateLearningRates(void);
   void updateParameters(void);
 
-  bool compareHyperparameters(std::string);
+  bool compareHyperparameters(std::string) override;
   bool compareHyperparameter(std::string, std::string);
-  void checkHyperparameters(void);
+  void checkHyperparameters(void) override;
   void setHyperparameter(std::string, std::string);
 
   void writeParams(std::string, std::string);

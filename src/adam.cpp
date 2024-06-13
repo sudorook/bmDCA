@@ -38,11 +38,14 @@ void
 Adam::loadHyperparameters(std::string file_name)
 {
   std::ifstream file(file_name);
-  bool reading_adam_section = false;
   if (file.is_open()) {
     std::string line;
+    bool reading_adam_section = false;
     while (std::getline(file, line)) {
-      if (line[0] == '#' || line.empty()) {
+      if (line.empty()) {
+        reading_adam_section = false;
+        continue;
+      } else if (line[0] == '#') {
         reading_adam_section = false;
         continue;
       } else if (line[0] == '[') {
@@ -78,12 +81,14 @@ bool
 Adam::compareHyperparameters(std::string file_name)
 {
   std::ifstream file(file_name);
-  bool reading_adam_section = false;
   bool all_same = true;
   if (file.is_open()) {
     std::string line;
+    bool reading_adam_section = false;
     while (std::getline(file, line)) {
-      if (line[0] == '#' || line.empty()) {
+      if (line.empty()) {
+        continue;
+      } else if (line[0] == '#') {
         continue;
       } else if (line[0] == '[') {
         if (line == "[[adam]]") {
@@ -115,7 +120,7 @@ Adam::compareHyperparameters(std::string file_name)
  * @param value value at which to set hyperparameter
  */
 void
-Adam::setHyperparameter(std::string key, std::string value)
+Adam::setHyperparameter(const std::string key, const std::string value)
 {
   // It's not possible to use switch blocks on strings because they are char*
   // arrays, not actual types.
@@ -296,10 +301,9 @@ Adam::initialize(void)
   params_prev.h = arma::Mat<double>(Q, N, arma::fill::zeros);
 
   if (initial_params == "profile") {
-    double avg;
-    double* freq_ptr = nullptr;
+    const double* freq_ptr = nullptr;
     for (int i = 0; i < N; i++) {
-      avg = 0;
+      double avg = 0;
       freq_ptr = training->frequency_1p.colptr(i);
       for (int aa = 0; aa < Q; aa++) {
         avg +=
@@ -358,7 +362,7 @@ Adam::reset()
   }
 
   if (initial_params == "profile") {
-    double* freq_ptr = nullptr;
+    const double* freq_ptr = nullptr;
     for (int i = 0; i < N; i++) {
       double avg = 0;
       freq_ptr = training->frequency_1p.colptr(i);

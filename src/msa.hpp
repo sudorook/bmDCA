@@ -68,8 +68,8 @@ public:
 private:
   std::vector<SeqRecord>
     seq_records; ///< vector of sequences loaded from a FASTA file
-  int getAASequenceLength(std::string);
-  int getNTSequenceLength(std::string);
+  int getAASequenceLength(const std::string&);
+  int getNTSequenceLength(const std::string&);
   void readInputMSA(std::string);
   void readInputNumericMSA(std::string);
   void readSequenceWeights(std::string);

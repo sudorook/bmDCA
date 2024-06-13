@@ -38,11 +38,14 @@ void
 AdamW::loadHyperparameters(std::string file_name)
 {
   std::ifstream file(file_name);
-  bool reading_adamw_section = false;
   if (file.is_open()) {
     std::string line;
+    bool reading_adamw_section = false;
     while (std::getline(file, line)) {
-      if (line[0] == '#' || line.empty()) {
+      if (line.empty()) {
+        reading_adamw_section = false;
+        continue;
+      } else if (line[0] == '#') {
         reading_adamw_section = false;
         continue;
       } else if (line[0] == '[') {
@@ -78,12 +81,14 @@ bool
 AdamW::compareHyperparameters(std::string file_name)
 {
   std::ifstream file(file_name);
-  bool reading_adamw_section = false;
   bool all_same = true;
   if (file.is_open()) {
     std::string line;
+    bool reading_adamw_section = false;
     while (std::getline(file, line)) {
-      if (line[0] == '#' || line.empty()) {
+      if (line.empty()) {
+        continue;
+      } else if (line[0] == '#') {
         continue;
       } else if (line[0] == '[') {
         if (line == "[[adamw]]") {
@@ -338,10 +343,9 @@ AdamW::initialize(void)
   params_prev.h = arma::Mat<double>(Q, N, arma::fill::zeros);
 
   if (initial_params == "profile") {
-    double avg;
-    double* freq_ptr = nullptr;
+    const double* freq_ptr = nullptr;
     for (int i = 0; i < N; i++) {
-      avg = 0;
+      double avg = 0;
       freq_ptr = training->frequency_1p.colptr(i);
       for (int aa = 0; aa < Q; aa++) {
         avg +=
@@ -400,10 +404,9 @@ AdamW::reset()
   }
 
   if (initial_params == "profile") {
-    double avg;
-    double* freq_ptr = nullptr;
+    const double* freq_ptr = nullptr;
     for (int i = 0; i < N; i++) {
-      avg = 0;
+      double avg = 0;
       freq_ptr = training->frequency_1p.colptr(i);
       for (int aa = 0; aa < Q; aa++) {
         avg +=

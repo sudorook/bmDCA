@@ -194,7 +194,7 @@ Sampler::sampleSequences(arma::Cube<int>* p,
   {
 #pragma omp for
     for (size_t walker = 0; walker < walkers; walker++) {
-      arma::Mat<int>* ptr = (arma::Mat<int>*)&((*p).slice(walker));
+      arma::Mat<int>* ptr = static_cast<arma::Mat<int>*>(&((*p).slice(walker)));
 
       assert(N != 0); // avoid divide-by-0 during modulo division
 
@@ -357,7 +357,7 @@ Sampler::sampleSequencesZanellaSqrt(arma::Cube<int>* p,
   {
 #pragma omp for
     for (size_t walker = 0; walker < walkers; walker++) {
-      arma::Mat<int>* ptr = (arma::Mat<int>*)&((*p).slice(walker));
+      arma::Mat<int>* ptr = static_cast<arma::Mat<int>*>(&((*p).slice(walker)));
 
       pcg32 rng;
       rng.seed(seed + walker);
@@ -760,7 +760,7 @@ Sampler::sampleSequencesZanellaBarker(arma::Cube<int>* p,
   {
 #pragma omp for
     for (size_t walker = 0; walker < walkers; walker++) {
-      arma::Mat<int>* ptr = (arma::Mat<int>*)&((*p).slice(walker));
+      arma::Mat<int>* ptr = static_cast<arma::Mat<int>*>(&((*p).slice(walker)));
 
       pcg32 rng;
       rng.seed(seed + walker);

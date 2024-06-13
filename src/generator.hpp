@@ -43,10 +43,10 @@ public:
   void writeNumericalSequences(std::string);
 
 private:
-  int N;                ///< number of positions
-  int Q;                ///< number of amino acids
-  int samples_per_walk; ///< number of independent sampling runs
-  int walkers;          ///< number of sequences sampled from independent runs
+  int N;                    ///< number of positions
+  int Q;                    ///< number of amino acids
+  int samples_per_walk = 1; ///< number of independent sampling runs
+  int walkers = 1000; ///< number of sequences sampled from independent runs
 
   int resample_max = 20;         ///< max number of times to resample sequences
   unsigned random_seed = 1;      ///< random seed for the PCG RNG
@@ -61,8 +61,8 @@ private:
     "mh";                   ///< update rule for accepting proposed samples
   double temperature = 1.0; ///< temperature for sampling
 
-  int burn_in;      ///< stores current burn-in time
-  int burn_between; ///< stores current burn-between time
+  int burn_in = 100000;    ///< stores current burn-in time
+  int burn_between = 1000; ///< stores current burn-between time
 
   pcg32 rng; ///< the RNG for the sampler
 

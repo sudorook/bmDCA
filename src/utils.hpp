@@ -24,7 +24,7 @@
 #include <cstdint>
 #include <string>
 
-#define BINS 201
+constexpr int BINS = 201;
 
 /**
  * @brief Structure for storing 1D histograms.
