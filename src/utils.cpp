@@ -91,7 +91,7 @@ SeqRecord::getSequence(void)
  * @return potts_model structure with fields and couplings
  */
 potts_model
-loadPottsModel(std::string h_file, std::string J_file)
+loadPottsModel(const std::string h_file, const std::string J_file)
 {
   potts_model params;
   params.h.load(h_file);
@@ -107,7 +107,7 @@ loadPottsModel(std::string h_file, std::string J_file)
  * @return potts_model structure with fields and couplings
  */
 potts_model
-loadPottsModelAscii(std::string parameters_file)
+loadPottsModelAscii(const std::string parameters_file)
 {
   std::ifstream input_stream(parameters_file);
 
@@ -186,7 +186,7 @@ loadPottsModelAscii(std::string parameters_file)
  * @param stats_file file string for output
  */
 void
-convertFrequencyToAscii(std::string stats_file)
+convertFrequencyToAscii(const std::string stats_file)
 {
   int idx = stats_file.find_last_of(".");
   std::string stats_name = stats_file.substr(0, idx);
@@ -286,7 +286,7 @@ convertFrequencyToAscii(std::string stats_file)
  * @param J_file file string for couplings input
  */
 void
-convertParametersToAscii(std::string h_file, std::string J_file)
+convertParametersToAscii(const std::string h_file, const std::string J_file)
 {
   // Check file extensions and parse out file names.
   int idx = h_file.find_last_of(".");
@@ -369,7 +369,7 @@ convertParametersToAscii(std::string h_file, std::string J_file)
  * @return 1 or 0
  */
 int
-Theta(double x)
+Theta(const double x)
 {
   if (x > 0)
     return 1;
@@ -384,7 +384,7 @@ Theta(double x)
  * @return 1 or 0
  */
 int
-Delta(double x)
+Delta(const double x)
 {
   if (x == 0)
     return 1;
@@ -400,7 +400,7 @@ Delta(double x)
  * @return larger of a or b
  */
 double
-Max(double a, double b)
+Max(const double a, const double b)
 {
   if (a > b)
     return a;
@@ -416,7 +416,7 @@ Max(double a, double b)
  * @return smaller of a or b
  */
 double
-Min(double a, double b)
+Min(const double a, const double b)
 {
   if (a < b)
     return a;
@@ -459,7 +459,7 @@ checkFileExists(const std::string filename)
  * @param directory input directory
  */
 void
-deleteAllFiles(std::string directory)
+deleteAllFiles(const std::string directory)
 {
   std::uintmax_t res = std::filesystem::remove_all(directory);
 
@@ -479,7 +479,7 @@ deleteAllFiles(std::string directory)
  * @return (char) nucleotide
  */
 char
-convertNT(int n)
+convertNT(const int n)
 {
   char nt = '\0';
   switch (n) {
@@ -510,7 +510,7 @@ convertNT(int n)
  * @return (char)amino acid
  */
 char
-convertAA(int n)
+convertAA(const int n)
 {
   char aa = '\0';
   switch (n) {
@@ -588,7 +588,7 @@ convertAA(int n)
  * @param hist histogram1d structure to write
  */
 void
-writeHistogram1D(std::string file, histogram1d hist)
+writeHistogram1D(const std::string file, const histogram1d& hist)
 {
   std::ofstream output_stream(file);
   int N = hist.range.n_elem;
@@ -607,7 +607,7 @@ writeHistogram1D(std::string file, histogram1d hist)
  * @param hist histogram2d structure to write
  */
 void
-writeHistogram2D(std::string file, histogram2d hist)
+writeHistogram2D(const std::string file, const histogram2d& hist)
 {
   std::ofstream output_stream(file);
   int N1 = hist.grid.n_rows;
@@ -632,7 +632,7 @@ writeHistogram2D(std::string file, histogram2d hist)
  * @param model linear model to save
  */
 void
-writeLinearModel(std::string file, linear_model model)
+writeLinearModel(const std::string file, const linear_model& model)
 {
   std::ofstream output_stream(file);
   output_stream << "a" << "\t" << model.a << std::endl;

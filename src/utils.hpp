@@ -115,10 +115,13 @@ void deleteAllFiles(std::string);
 char
 convertAA(int);
 
-void writeHistogram1D(std::string, histogram1d);
+void
+writeHistogram1D(std::string, histogram1d&);
 
-void writeHistogram2D(std::string, histogram2d);
+void
+writeHistogram2D(std::string, histogram2d&);
 
-void writeLinearModel(std::string, linear_model);
+void
+writeLinearModel(std::string, linear_model&);
 
 #endif // SRC_UTILS_HPP_
