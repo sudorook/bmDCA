@@ -71,13 +71,13 @@ class SampleStats2D : public SampleStats
 public:
   SampleStats2D(arma::Mat<int>*, potts_model*, potts_model* = nullptr);
 
-  void computeStats(void);
-  void computeStatsExtra(void);
-  void writeStep(int, bool = true);
-  void writeData(std::string, bool = true);
-  void computeStatsImportance(void);
-  void setMixingTime(int);
-  arma::Col<double> getStats(void);
+  void computeStats(void) override;
+  void computeStatsExtra(void) override;
+  void writeStep(int, bool = true) override;
+  void writeData(std::string, bool = true) override;
+  void computeStatsImportance(void) override;
+  void setMixingTime(int) override;
+  arma::Col<double> getStats(void) override;
 
 private:
   void computeEnergies(void);
@@ -90,8 +90,8 @@ private:
   void writeFrequency1pAscii(std::string);
   void writeFrequency2pAscii(std::string);
 
-  void writeSamples(std::string);
-  void writeSampleEnergies(std::string);
+  void writeSamples(std::string) override;
+  void writeSampleEnergies(std::string) override;
 
   double Z_ratio;   ///< for importance sampling...
   double sumw_inv;  ///< for importance sampling...
@@ -119,13 +119,13 @@ class SampleStats3D : public SampleStats
 public:
   SampleStats3D(arma::Cube<int>*, potts_model*, potts_model* = nullptr);
 
-  void computeStats(void);
-  void computeStatsExtra(void);
-  void writeStep(int, bool = true);
-  void writeData(std::string, bool = true);
-  void computeStatsImportance(void);
-  void setMixingTime(int);
-  arma::Col<double> getStats(void);
+  void computeStats(void) override;
+  void computeStatsExtra(void) override;
+  void writeStep(int, bool = true) override;
+  void writeData(std::string, bool = true) override;
+  void computeStatsImportance(void) override;
+  void setMixingTime(int) override;
+  arma::Col<double> getStats(void) override;
 
 private:
   void computeEnergies(void);
@@ -139,8 +139,8 @@ private:
   void writeFrequency1pAscii(std::string, std::string);
   void writeFrequency2pAscii(std::string, std::string);
 
-  void writeSamples(std::string);
-  void writeSampleEnergies(std::string);
+  void writeSamples(std::string) override;
+  void writeSampleEnergies(std::string) override;
   void writeSampleEnergiesRelaxation(std::string);
 
   arma::Mat<double>
