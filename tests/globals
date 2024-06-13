@@ -12,11 +12,16 @@ EXAMPLE_BMDCA_SAMPLE_CONF=../../example/bmdca_sample.conf
 EXAMPLE_MSA=../../example/PF00014_full.fasta
 
 function check_dependencies {
-  local dep
-  for dep in "${@}"; do
-    if ! [ -f "${dep}" ]; then
-      echo "${dep@Q} missing." >&2
-      return 1
-    fi
-  done
+  if [ -f ${ARMA2ASCII_BIN} ] && [ -f "${BMDCA_BIN}" ] && [ -f "${BMDCA_SAMPLE_BIN}" ] && [ -f "${NUMERIC2FASTA_BIN}" ] && [ -f "${PROCESS_MSA_BIN}" ]; then
+    :
+  else
+    echo "Build bmDCA before running any tests." >&2
+    exit 1
+  fi
+  if [ -d "${EXAMPLE_DIR}" ] && [ -f "${EXAMPLE_BMDCA_SAMPLE_CONF}" ] && [ -f "${EXAMPLE_BMDCA_CONF}" ] && [ -f "${EXAMPLE_MSA}" ]; then
+    :
+  else
+    echo "Config files in example/ are missing..." >&2
+    exit 1
+  fi
 }

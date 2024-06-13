@@ -3,11 +3,7 @@ set -eu
 
 source ../globals
 
-check_dependencies \
-  "${PROCESS_MSA_BIN}" \
-  "${EXAMPLE_MSA}" \
-  "${BMDCA_BIN}" \
-  "${EXAMPLE_BMDCA_CONF}"
+check_dependencies
 
 rm -rf results_continuous results_2_steps
 rm -f num_msa.txt weights.txt

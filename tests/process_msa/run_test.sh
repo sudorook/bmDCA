@@ -3,9 +3,7 @@ set -eu
 
 source ../globals
 
-check_dependencies \
-  "${PROCESS_MSA_BIN}" \
-  "${EXAMPLE_MSA}"
+check_dependencies
 
 rm -f num_msa.txt weights.txt
 

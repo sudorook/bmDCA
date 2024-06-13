@@ -3,8 +3,7 @@ set -eu
 
 source ../globals
 
-check_dependencies \
-  "${NUMERIC2FASTA_BIN}"
+check_dependencies
 
 rm -f tmp.fasta
 "${NUMERIC2FASTA_BIN}" -n source.txt -o tmp.fasta

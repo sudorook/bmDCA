@@ -6,7 +6,7 @@ for dir in *; do
     pushd "${dir}" > /dev/null
     if [ -f "run_test.sh" ]; then
       echo -n "${dir}:" >&2
-      ./run_test.sh > /dev/null 2>&1
+      ./run_test.sh > /dev/null
       echo " good."
     fi
     popd > /dev/null
