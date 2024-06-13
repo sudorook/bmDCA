@@ -228,7 +228,7 @@ can be converted to FASTA format.
 Inference and sampling runs can be configured using a text file (see
 `example/bmdca.conf`). The fields in the file are as follows:
 
-### [bmDCA]
+### `[bmDCA]`
 
 1. `count_max` - maximum number of iterations for Boltzmann learning process
    (default: 2000)
@@ -276,7 +276,7 @@ Inference and sampling runs can be configured using a text file (see
     (default: 1000)
 20. `walkers` - number of independent MCMC replicates (default: 10)
 
-#### [[original]]
+#### ``[[original]]``
 
 This model is a plain Boltzmann-machine without any model reparametrization and
 individual learning rates for each fields and coupling. This is the default:
@@ -308,7 +308,7 @@ individual learning rates for each fields and coupling. This is the default:
 15. `use_pos_reg` - use position-specific regularizer derived from relative
     entropy gradient for coupling frequencies in the MSA (default: false)
 
-#### [[reparametrization]]
+#### `[[reparametrization]]`
 
 Re-parametrized model described in Figliuzzi, 2018.
 
@@ -336,7 +336,7 @@ Re-parametrized model described in Figliuzzi, 2018.
 13. `adapt_down` - scaling factor by which learning rates are decreased. Keep
     `adapt_up` x `adapt_down` less than 1 (default: 0.6)
 
-#### [[adam]]
+#### `[[adam]]`
 
 Adam (adaptive moments) is a momentum-based variant of stochastic gradient
 descent where momentum terms are scaled by the second moment, so as to reduce or
@@ -354,7 +354,7 @@ but tends to overfit small alignments very quickly.
 7. `learn_rate_h` - learning rate for fields (default: 0.01)
 8. `learn_rate_J` - learning rate for couplings (default: 0.01)
 
-#### [[adamw]]
+#### `[[adamw]]`
 
 Modified version of Adam that uses weight decay instead of L2 regularization.
 The rationale is that the regularization terms in ordinary Adam get scaled up or
@@ -384,7 +384,7 @@ moments.
 15. `anneal_cool` - number of iterations to decrease from `eta_max` to `eta_min`
     (default: 0)
 
-#### [[radam]]
+#### `[[radam]]`
 
 Variant of Adam with rectified initial iterations so that the early updates,
 where there are too few points to compute the second moment, follow SGDM, and
@@ -401,7 +401,7 @@ later ones use Adam's adaptive moments.
 7. `learn_rate_h` - learning rate for fields (default: 0.01)
 8. `learn_rate_J` - learning rate for couplings (default: 0.01)
 
-#### [[sgdm]]
+#### `[[sgdm]]`
 
 Stochastic gradient descent with momentum.
 
@@ -419,7 +419,7 @@ Stochastic gradient descent with momentum.
 9. `learn_rate_h` - learning rate for fields (default: 0.01)
 10. `learn_rate_J` - learning rate for couplings (default: 0.01)
 
-### [bmDCA_sample]
+### `[bmDCA_sample]`
 
 1. `resample_max` - number of time to attempt to resample a set of decorrelated
    MCMC sequences before giving up (default: 20)
@@ -555,7 +555,7 @@ columns absent.
 These files (e.g. `msa_numerical.txt`, `samples_%d.txt`) contain integer-encoded
 sequences of an MSA. These are space-delimited files, e.g.:
 
-```
+```txt
 4914 53 21
 0 2 10 10 13 16 1 7 6 13 2 1 12 19 17 17 15 19 20 5 18 6 18 18 6 15 2 12 15 5 19 20 6 6 2 7 6 12 9 12 16 5 1 16 4 4 4 2 11 15 18 2 0
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 5 6 20 9 6 2 6 6 12 9 12 12 5 3 17 3 6 17 2 17 16 10 2 9
@@ -588,7 +588,7 @@ details.
 Learned parameters saved in text files are called `parameters_%d.txt`. They
 contain the parameters for both J and h, formatted as follows:
 
-```
+```txt
 J [position index i] [position index j] [amino acid index a] [amino acid index b]
 .
 .
@@ -610,7 +610,7 @@ have a different format.
 
 For 1 position (1p) frequencies:
 
-```
+```txt
 [position index] [amino acid frequencies (21)]
 .
 .
@@ -622,7 +622,7 @@ amino acids.
 
 For 2 position (2p) frequencies:
 
-```
+```txt
 [position index i] [position index j] [amino acid frequencies (21x21)]
 .
 .

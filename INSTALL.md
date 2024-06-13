@@ -304,7 +304,7 @@ bmdca
 If the installation worked correctly, this will print the usage information,
 e.g.:
 
-```
+```txt
 bmdca usage:
 (e.g. bmdca -i <input MSA> -r -d <directory> -c <config file>)
   -i: input MSA (FASTA format)
@@ -317,7 +317,7 @@ bmdca usage:
   -f: force a restart of the inference loop
 ```
 
-For full details and usage examples, see the [README](README.md).
+For full details and usage examples, see the [README](./README.md).
 
 ### Additional notes for Windows 10
 
