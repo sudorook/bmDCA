@@ -19,8 +19,10 @@
 
 #include "utils.hpp"
 
+#include <cstdint>
 #include <cstdio>
 #include <dirent.h>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -429,18 +431,13 @@ Min(double a, double b)
  * @return 0 (success) or 1 (failure)
  */
 int
-deleteFile(std::string filename)
+deleteFile(const std::string filename)
 {
-  std::fstream fs;
-  fs.open(filename);
-  if (!fs.fail()) {
-    if (std::remove(filename.c_str()) != 0) {
-      fs.close();
-      return 1;
-    }
+  if (std::filesystem::remove(filename)) {
+    return 0;
+  } else {
+    return 1;
   }
-  fs.close();
-  return 0;
 };
 
 /**
@@ -451,17 +448,9 @@ deleteFile(std::string filename)
  * @return 0 (success) or 1 (failure)
  */
 bool
-checkFileExists(std::string filename)
+checkFileExists(const std::string filename)
 {
-  std::fstream fs;
-  fs.open(filename);
-  if (fs.fail()) {
-    fs.close();
-    return false;
-  } else {
-    fs.close();
-    return true;
-  }
+  return std::filesystem::exists(filename);
 };
 
 /**
@@ -471,25 +460,15 @@ checkFileExists(std::string filename)
  */
 void
 deleteAllFiles(std::string directory)
-// deleteAllFiles(const std::string *directory)
 {
-  DIR* dp;
-  struct dirent* dirp;
+  std::uintmax_t res = std::filesystem::remove_all(directory);
 
-  dp = opendir(".");
-  // dp = opendir(*directory);
-  while ((dirp = readdir(dp)) != nullptr) {
-    std::string fname = dirp->d_name;
-    if (fname == ".")
-      continue;
-    if (fname == "..")
-      continue;
-    if (std::remove(fname.c_str()) != 0) {
-      std::cerr << "ERROR: deletion of '" << fname << "' failed." << std::endl;
-    }
+  if (res == 0) {
+    std::cerr << "ERROR: nothing deleted" << std::endl;
+  } else if (res < 0) {
+    std::cerr << "ERROR: deletion of '" << directory << "' failed."
+              << std::endl;
   }
-  closedir(dp);
-  return;
 };
 
 /**
