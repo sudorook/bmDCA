@@ -17,11 +17,13 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef REPARAM_HPP
-#define REPARAM_HPP
+#ifndef SRC_REPARAM_HPP_
+#define SRC_REPARAM_HPP_
 
 #include "model.hpp"
 #include "utils.hpp"
+
+#include <string>
 
 /**
  * @brief 'Original' gradient descent algorithm using a reparameterized model.
@@ -93,4 +95,4 @@ private:
   void writeLearningRatesAscii(std::string);
 };
 
-#endif
+#endif // SRC_REPARAM_HPP_

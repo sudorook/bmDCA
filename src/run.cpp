@@ -26,7 +26,7 @@
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
-#include <random>
+// #include <random>
 #include <regex>
 #include <sstream>
 #include <string>
@@ -188,7 +188,7 @@ Sim::initialize(void)
     samples_per_walk = 1;
     burn_between_start = 0;
     burn_between = 0;
-    walkers = (int)(round(msa_train_stats->getM()));
+    walkers = static_cast<int>((round(msa_train_stats->getM())));
   }
 
   int N = msa_train_stats->getN();
@@ -243,11 +243,14 @@ void
 Sim::loadHyperparameters(std::string file_name)
 {
   std::ifstream file(file_name);
-  bool reading_bmdca_section = false;
   if (file.is_open()) {
     std::string line;
+    bool reading_bmdca_section = false;
     while (std::getline(file, line)) {
-      if (line[0] == '#' || line.empty()) {
+      if (line.empty()) {
+        reading_bmdca_section = false;
+        continue;
+      } else if (line[0] == '#') {
         reading_bmdca_section = false;
         continue;
       } else if (line[0] == '[') {
@@ -283,12 +286,14 @@ bool
 Sim::compareHyperparameters(std::string file_name)
 {
   std::ifstream file(file_name);
-  bool reading_bmdca_section = false;
   bool all_same = true;
   if (file.is_open()) {
     std::string line;
+    bool reading_bmdca_section = false;
     while (std::getline(file, line)) {
-      if (line[0] == '#' || line.empty()) {
+      if (line.empty()) {
+        continue;
+      } else if (line[0] == '#') {
         continue;
       } else if (line[0] == '[') {
         if (line == "[bmDCA]") {
@@ -320,7 +325,7 @@ Sim::compareHyperparameters(std::string file_name)
  * @param value value at which to set hyperparameter
  */
 void
-Sim::setHyperparameter(std::string key, std::string value)
+Sim::setHyperparameter(const std::string key, const std::string value)
 {
   // It's not possible to use switch blocks on strings because they are char*
   // arrays, not actual types.
@@ -569,7 +574,7 @@ Sim::setStepOffset(void)
 
   std::vector<int> steps;
   std::vector<int> invalid_steps;
-  while ((dirp = readdir(dp)) != NULL) {
+  while ((dirp = readdir(dp)) != nullptr) {
     std::string fname = dirp->d_name;
     if (output_binary) {
       if (fname.find("samples_") == std::string::npos)
@@ -775,7 +780,7 @@ Sim::run(void)
 
   // Initialize the buffer.
   run_buffer = arma::Mat<double>(save_period, 24, arma::fill::zeros);
-  rng_buffer = arma::Mat<unsigned long>(save_period, 3, arma::fill::zeros);
+  rng_buffer = arma::Mat<uint64_t>(save_period, 3, arma::fill::zeros);
   int buffer_offset = 0;
 
   if (step_offset == 0) {
@@ -821,7 +826,6 @@ Sim::run(void)
 
     // Sampling from MCMC (keep trying until correct properties found)
     bool flag_mc = true;
-    unsigned seed;
     while (flag_mc) {
       if (update_burn_time & (samples_per_walk == 1)) {
         std::cout << "setting burn time to... " << std::flush;
@@ -861,9 +865,12 @@ Sim::run(void)
           }
 
           if (flag_twaiting_up) {
-            burn_in = (int)(round((double)burn_in * adapt_up_time));
+            burn_in = static_cast<int>(
+              round(static_cast<double>(burn_in) * adapt_up_time));
           } else if (flag_twaiting_down) {
-            burn_in = Max((int)(round((double)burn_in * adapt_down_time)), 1);
+            burn_in = Max(static_cast<int>(round(static_cast<double>(burn_in) *
+                                                 adapt_down_time)),
+                          1);
           }
           if (!flag_twaiting_up) {
             flag_burn = false;
@@ -875,10 +882,10 @@ Sim::run(void)
       // Draw from MCMC
       std::cout << "sampling model... " << std::flush;
       timer.tic();
-      seed = rng();
+      unsigned seed = rng();
       {
         std::stringstream ss;
-        unsigned long rng_mult = 0, rng_inc = 0, rng_state = 0;
+        uint64_t rng_mult = 0, rng_inc = 0, rng_state = 0;
         ss << rng;
         ss >> rng_mult >> rng_inc >> rng_state;
         rng_buffer((step - 1) % save_period, 0) = rng_mult;
@@ -1023,31 +1030,22 @@ Sim::run(void)
     run_buffer((step - 1) % save_period, 3) = burn_in;
     run_buffer((step - 1) % save_period, 4) = burn_between;
 
-    double e_start = 0;
-    double e_start_sigma = 0;
-    double e_end = 0;
-    double e_end_sigma = 0;
-    double e_err = 0;
-
-    double total_corr = 0;
-    double auto_corr = 0;
-    double cross_corr = 0;
-    double auto_cross_err = 0;
+    double total_corr;
 
     // Get sample statistics
     if (samples_per_walk > 1) {
       arma::Col<double> stats = sample_stats->getStats();
 
-      e_start = stats.at(0);
-      e_start_sigma = stats.at(1);
-      e_end = stats.at(2);
-      e_end_sigma = stats.at(3);
-      e_err = stats.at(4);
+      double e_start = stats.at(0);
+      double e_start_sigma = stats.at(1);
+      double e_end = stats.at(2);
+      double e_end_sigma = stats.at(3);
+      double e_err = stats.at(4);
 
       total_corr = stats.at(5);
-      auto_corr = stats.at(7);
-      cross_corr = stats.at(8);
-      auto_cross_err = stats.at(13);
+      double auto_corr = stats.at(7);
+      double cross_corr = stats.at(8);
+      double auto_cross_err = stats.at(13);
 
       run_buffer((step - 1) % save_period, 5) = total_corr;
       run_buffer((step - 1) % save_period, 6) = auto_corr;
@@ -1192,27 +1190,33 @@ Sim::checkErgodicity(void)
   }
 
   if (flag_deltat_up) {
-    burn_between = (int)(round((double)burn_between * adapt_up_time));
+    burn_between = static_cast<int>(
+      round(static_cast<double>(burn_between) * adapt_up_time));
     std::cout << "increasing burn-between time to " << burn_between
               << std::endl;
   } else if (flag_deltat_down) {
-    burn_between = Max((int)(round((double)burn_between * adapt_down_time)), 1);
+    burn_between = Max(static_cast<int>(round(
+                         static_cast<double>(burn_between) * adapt_down_time)),
+                       1);
     std::cout << "decreasing burn-between time to " << burn_between
               << std::endl;
   }
 
   if (flag_twaiting_up) {
-    burn_in = (int)(round((double)burn_in * adapt_up_time));
+    burn_in =
+      static_cast<int>(round(static_cast<double>(burn_in) * adapt_up_time));
     std::cout << "increasing burn-in time to " << burn_in << std::endl;
   } else if (flag_twaiting_down) {
-    burn_in = Max((int)(round((double)burn_in * adapt_down_time)), 1);
+    burn_in = Max(
+      static_cast<int>(round(static_cast<double>(burn_in) * adapt_down_time)),
+      1);
     std::cout << "decreasing burn-in time to " << burn_in << std::endl;
   }
 
   // If burn-in or burn-between times were increased, then the sequences need
   // to be resampled to ensure proper mixing.
   bool flag_mc = true;
-  if (not flag_deltat_up and not flag_twaiting_up) {
+  if (!flag_deltat_up && !flag_twaiting_up) {
     flag_mc = false;
   }
   return flag_mc;
@@ -1273,7 +1277,7 @@ Sim::writeStep(int step)
  * for the MSA and sampled sequences.
  */
 void
-Sim::writeData(std::string id)
+Sim::writeData(const std::string id)
 {
   model->writeData(id, output_binary);
   sample_stats->writeData(id, output_binary);
@@ -1324,7 +1328,7 @@ Sim::writeMSAEnergies(int step)
  * computed using the currently inferred Potts model.
  */
 void
-Sim::writeMSAEnergies(std::string id)
+Sim::writeMSAEnergies(const std::string id)
 {
   {
     std::ofstream output_stream("msa_energies_" + id + ".txt");
@@ -1355,64 +1359,26 @@ void
 Sim::initializeRunLog()
 {
   std::ofstream stream{ run_log_file, std::ios_base::out };
-  stream << "step"
-         << "\t"
-         << "walkers"
-         << "\t"
-         << "samples-per-walk"
-         << "\t"
-         << "burn-in"
-         << "\t";
+  stream << "step" << "\t" << "walkers" << "\t" << "samples-per-walk" << "\t"
+         << "burn-in" << "\t";
   if (samples_per_walk > 1) {
-    stream << "burn-between"
-           << "\t";
+    stream << "burn-between" << "\t";
   }
-  stream << "total-corr"
-         << "\t";
+  stream << "total-corr" << "\t";
   if (samples_per_walk > 1) {
-    stream << "auto-corr"
-           << "\t"
-           << "cross-corr"
-           << "\t"
-           << "auto-cross-err"
-           << "\t"
-           << "energy-start-avg"
-           << "\t"
-           << "energy-start-sigma"
-           << "\t"
-           << "energy-end-avg"
-           << "\t"
-           << "energy-end-sigma"
-           << "\t"
-           << "energy-err"
-           << "\t";
+    stream << "auto-corr" << "\t" << "cross-corr" << "\t" << "auto-cross-err"
+           << "\t" << "energy-start-avg" << "\t" << "energy-start-sigma" << "\t"
+           << "energy-end-avg" << "\t" << "energy-end-sigma" << "\t"
+           << "energy-err" << "\t";
   }
-  stream << "train-err-1p"
-         << "\t"
-         << "train-err-2p"
-         << "\t"
-         << "train-err-tot"
-         << "\t"
-         << "train-err-tot-min"
-         << "\t";
+  stream << "train-err-1p" << "\t" << "train-err-2p" << "\t" << "train-err-tot"
+         << "\t" << "train-err-tot-min" << "\t";
   if (cross_validate) {
-    stream << "validate-err-1p"
-           << "\t"
-           << "validate-err-2p"
-           << "\t"
-           << "validate-err-tot"
-           << "\t"
-           << "validate-err-tot-min"
-           << "\t"
-           << "diff-avg-energy"
-           << "\t";
+    stream << "validate-err-1p" << "\t" << "validate-err-2p" << "\t"
+           << "validate-err-tot" << "\t" << "validate-err-tot-min" << "\t"
+           << "diff-avg-energy" << "\t";
   }
-  stream << "rng-mult"
-         << "\t"
-         << "rng-inc"
-         << "\t"
-         << "rng-state"
-         << "\t"
+  stream << "rng-mult" << "\t" << "rng-inc" << "\t" << "rng-state" << "\t"
          << "duration" << std::endl;
   stream.close();
 };
@@ -1436,10 +1402,10 @@ Sim::writeRunLog(int current_step, int offset, bool keep)
     n_entries = current_step;
   }
   for (int i = 0 + offset; i < n_entries; i++) {
-    stream << (int)run_buffer(i, 0) << "\t";
-    stream << (int)run_buffer(i, 1) << "\t";
-    stream << (int)run_buffer(i, 2) << "\t";
-    stream << (int)run_buffer(i, 3) << "\t";
+    stream << static_cast<int>(run_buffer(i, 0)) << "\t";
+    stream << static_cast<int>(run_buffer(i, 1)) << "\t";
+    stream << static_cast<int>(run_buffer(i, 2)) << "\t";
+    stream << static_cast<int>(run_buffer(i, 3)) << "\t";
     if (samples_per_walk > 1) {
       stream << run_buffer(i, 4) << "\t";
     }

@@ -156,7 +156,7 @@ Adam::setHyperparameter(std::string key, std::string value)
  * hyperparameters. Empty by default.
  */
 void
-Adam::checkHyperparameters(void){};
+Adam::checkHyperparameters(void) {};
 
 /**
  * @brief Write stored hyperparameters to file
@@ -358,10 +358,9 @@ Adam::reset()
   }
 
   if (initial_params == "profile") {
-    double avg;
     double* freq_ptr = nullptr;
     for (int i = 0; i < N; i++) {
-      avg = 0;
+      double avg = 0;
       freq_ptr = training->frequency_1p.colptr(i);
       for (int aa = 0; aa < Q; aa++) {
         avg +=
@@ -476,7 +475,8 @@ Adam::updateGradients(void)
         samples->frequency_1p(aa, i) - training->frequency_1p(aa, i) +
         lambda_reg_h *
           (alpha_reg * params.h(aa, i) +
-           (1. - alpha_reg) * (0.5 - (double)std::signbit(params.h(aa, i))));
+           (1. - alpha_reg) *
+             (0.5 - static_cast<double>(std::signbit(params.h(aa, i)))));
       train_error_1p += pow(delta, 2);
       gradient.h(aa, i) = -delta;
     }
@@ -492,8 +492,8 @@ Adam::updateGradients(void)
               samples->frequency_2p(i, j)(aa1, aa2) -
               lambda_reg_J *
                 (alpha_reg * params.J(i, j)(aa1, aa2) +
-                 (1. - alpha_reg) *
-                   (0.5 - (double)std::signbit(params.J(i, j)(aa1, aa2)))));
+                 (1. - alpha_reg) * (0.5 - static_cast<double>(std::signbit(
+                                             params.J(i, j)(aa1, aa2))))));
           train_error_2p += pow(delta, 2);
           gradient.J(i, j)(aa1, aa2) = -delta;
         }
@@ -509,7 +509,8 @@ Adam::updateGradients(void)
           samples->frequency_1p(aa, i) - validation->frequency_1p(aa, i) +
           lambda_reg_h *
             (alpha_reg * params.h(aa, i) +
-             (1. - alpha_reg) * (0.5 - (double)std::signbit(params.h(aa, i))));
+             (1. - alpha_reg) *
+               (0.5 - static_cast<double>(std::signbit(params.h(aa, i)))));
         validation_error_1p += pow(delta, 2);
       }
     }
@@ -524,8 +525,8 @@ Adam::updateGradients(void)
                 samples->frequency_2p(i, j)(aa1, aa2) -
                 lambda_reg_J *
                   (alpha_reg * params.J(i, j)(aa1, aa2) +
-                   (1. - alpha_reg) *
-                     (0.5 - (double)std::signbit(params.J(i, j)(aa1, aa2)))));
+                   (1. - alpha_reg) * (0.5 - static_cast<double>(std::signbit(
+                                               params.J(i, j)(aa1, aa2))))));
             validation_error_2p += pow(delta, 2);
           }
         }

@@ -17,8 +17,8 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef BMDCA_RUN_HPP
-#define BMDCA_RUN_HPP
+#ifndef SRC_RUN_HPP_
+#define SRC_RUN_HPP_
 
 #include "model.hpp"
 #include "msa.hpp"
@@ -27,6 +27,9 @@
 #include "sample_stats.hpp"
 #include "sampler.hpp"
 #include "utils.hpp"
+
+#include <cstdint>
+#include <string>
 
 /**
  * @brief Class for performing Boltzmann-machine inference.
@@ -129,9 +132,8 @@ private:
 
   SampleStats* sample_stats; ///< address of sample sequence statistics
 
-  pcg32 rng; ///< PCG32 random number generator
-  arma::Mat<unsigned long>
-    rng_buffer; ///< stores rng values to write to run log
+  pcg32 rng;                      ///< PCG32 random number generator
+  arma::Mat<uint64_t> rng_buffer; ///< stores rng values to write to run log
 };
 
-#endif
+#endif // SRC_RUN_HPP_

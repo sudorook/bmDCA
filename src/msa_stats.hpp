@@ -17,12 +17,13 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef MSA_STATS_HPP
-#define MSA_STATS_HPP
+#ifndef SRC_MSA_STATS_HPP_
+#define SRC_MSA_STATS_HPP_
 
 #include "msa.hpp"
 
 #include <armadillo>
+#include <string>
 
 /**
  * @brief Class for computing the sequence statistics for a MSA.
@@ -78,4 +79,4 @@ private:
   arma::Col<double> aa_background_frequencies; ///< background aa frequencies
 };
 
-#endif
+#endif // SRC_MSA_STATS_HPP_

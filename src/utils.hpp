@@ -17,10 +17,11 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef UTILS_HPP
-#define UTILS_HPP
+#ifndef SRC_UTILS_HPP_
+#define SRC_UTILS_HPP_
 
 #include <armadillo>
+#include <cstdint>
 #include <string>
 
 #define BINS 201
@@ -30,11 +31,11 @@
  */
 typedef struct histogram1d
 {
-  arma::Mat<unsigned long long int> range; ///< histogram counts
-  int bins = BINS;                         ///< number of bins in histogram
-  double bin_width;                        ///< width of bins
-  double min = 0;                          ///< minimum value
-  double max = 1;                          ///< maximum value
+  arma::Mat<uint64_t> range; ///< histogram counts
+  int bins = BINS;           ///< number of bins in histogram
+  double bin_width;          ///< width of bins
+  double min = 0;            ///< minimum value
+  double max = 1;            ///< maximum value
 } histogram1d;
 
 /**
@@ -42,11 +43,11 @@ typedef struct histogram1d
  */
 typedef struct histogram2d
 {
-  arma::Mat<unsigned long long int> grid; ///< histogram counts
-  int bins = BINS;                        ///< number of bins in histogram
-  double bin_width;                       ///< width of bins
-  double min = 0;                         ///< minimum value
-  double max = 1;                         ///< maximum value
+  arma::Mat<uint64_t> grid; ///< histogram counts
+  int bins = BINS;          ///< number of bins in histogram
+  double bin_width;         ///< width of bins
+  double min = 0;           ///< minimum value
+  double max = 1;           ///< maximum value
 } histogram2d;
 
 /**
@@ -120,4 +121,4 @@ void writeHistogram2D(std::string, histogram2d);
 
 void writeLinearModel(std::string, linear_model);
 
-#endif
+#endif // SRC_UTILS_HPP_

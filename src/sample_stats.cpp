@@ -21,6 +21,7 @@
 
 #include <armadillo>
 #include <iostream>
+#include <string>
 
 #include "utils.hpp"
 
@@ -280,7 +281,7 @@ SampleStats2D::computeSampleStatsImportance(void)
     for (int aa = 0; aa < Q; aa++) {
       n1av(aa) += w * n1(aa);
       n1squared(aa) += w * pow(n1(aa), 2);
-      frequency_1p(aa, i) = (double)n1av(aa);
+      frequency_1p(aa, i) = static_cast<double>(n1av(aa));
     }
   }
 
@@ -297,7 +298,7 @@ SampleStats2D::computeSampleStatsImportance(void)
         for (int aa2 = 0; aa2 < Q; aa2++) {
           n2av(aa1, aa2) += w * n2(aa1, aa2);
           n2squared(aa1, aa2) += w * pow(n2(aa1, aa2), 2);
-          frequency_2p(i, j)(aa1, aa2) = (double)n2av(aa1, aa2);
+          frequency_2p(i, j)(aa1, aa2) = static_cast<double>(n2av(aa1, aa2));
         }
       }
     }
@@ -326,18 +327,19 @@ SampleStats2D::computeCorrelations(void)
           id++;
         }
       }
-      d(seq2 - seq1) += (double)id / N;
-      d2(seq2 - seq1) += (double)id * id / (N * N);
+      d(seq2 - seq1) += static_cast<double>(id) / N;
+      d2(seq2 - seq1) += static_cast<double>(id * id) / (N * N);
       count(seq2 - seq1)++;
     }
   }
 
   double dinf = arma::sum(d);
   double dinf2 = arma::sum(d2);
-  overlap_inf = 2.0 * dinf / (double)(M * (M - 1));
-  overlap_inf_sigma = sqrt(2.0 / (M * (M - 1))) *
-                      sqrt(2.0 * dinf2 / (double)((M - 1) * M) -
-                           pow(2.0 * dinf / (double)(M * (M - 1)), 2));
+  overlap_inf = 2.0 * dinf / static_cast<double>((M * (M - 1)));
+  overlap_inf_sigma =
+    sqrt(2.0 / (M * (M - 1))) *
+    sqrt(2.0 * dinf2 / static_cast<double>((M - 1) * M) -
+         pow(2.0 * dinf / static_cast<double>((M * (M - 1))), 2));
 };
 
 /**
@@ -664,8 +666,8 @@ SampleStats3D::computeCorrelations(void)
               id++;
             }
           }
-          d_mat(rep, seq2 - seq1) += (double)id / N;
-          d2_mat(rep, seq2 - seq1) += (double)id * id / (N * N);
+          d_mat(rep, seq2 - seq1) += static_cast<double>(id) / N;
+          d2_mat(rep, seq2 - seq1) += static_cast<double>(id * id) / (N * N);
           count_mat(rep, seq2 - seq1)++;
         }
       }
@@ -692,8 +694,8 @@ SampleStats3D::computeCorrelations(void)
               id++;
             }
           }
-          dinf_col(seq) += (double)id / N;
-          dinf2_col(seq) += (double)(id * id) / (N * N);
+          dinf_col(seq) += static_cast<double>(id) / N;
+          dinf2_col(seq) += static_cast<double>((id * id)) / (N * N);
         }
       }
     }
@@ -705,31 +707,33 @@ SampleStats3D::computeCorrelations(void)
   overlaps = arma::Col<double>(M - 2, arma::fill::zeros);
   overlaps_sigma = arma::Col<double>(M - 2, arma::fill::zeros);
   for (int i = 1; i < M - 1; i++) {
-    overlaps(i - 1) = (double)d(i) / (double)count(i);
+    overlaps(i - 1) = static_cast<double>(d(i)) / static_cast<double>(count(i));
     overlaps_sigma(i - 1) =
       sqrt(1.0 / count(i)) *
-      sqrt(d2(i) / (double)(count(i)) - pow(d(i) / (double)(count(i)), 2));
+      sqrt(d2(i) / (static_cast<double>(count(i)) - pow(d(i) / count(i), 2)));
   }
 
-  overlap_inf = 2.0 * dinf / (double)(reps * (reps - 1) * M);
+  overlap_inf = 2.0 * dinf / static_cast<double>((reps * (reps - 1) * M));
   overlap_inf_sigma =
     sqrt(2.0 / (reps * (reps - 1) * M)) *
-    sqrt(2.0 * dinf2 / (double)(reps * (reps - 1) * M) -
-         pow(2.0 * dinf / (double)(reps * (reps - 1) * M), 2));
+    sqrt(2.0 * dinf2 / static_cast<double>(reps * (reps - 1) * M) -
+         pow(2.0 * dinf / static_cast<double>((reps * (reps - 1) * M)), 2));
 
   int i_auto = 1;
-  int i_check = Max((double)M / 10.0, 1.0);
+  int i_check = Max(static_cast<double>(M) / 10.0, 1.0);
 
-  overlap_cross = (double)2.0 * dinf / (double)(reps * (reps - 1) * M);
-  overlap_auto = d(i_auto) / (double)(count(i_auto));
-  overlap_check = d(i_check) / (double)(count(i_check));
+  overlap_cross = 2.0 * dinf / static_cast<double>(reps * (reps - 1) * M);
+  overlap_auto = d(i_auto) / static_cast<double>(count(i_auto));
+  overlap_check = d(i_check) / static_cast<double>(count(i_check));
 
-  sigma_cross = sqrt(2.0 * dinf2 / (double)(reps * (reps - 1) * M) -
-                     pow(2.0 * dinf / (double)(reps * (reps - 1) * M), 2));
-  sigma_auto = sqrt(d2(i_auto) / (double)(count(i_auto)) -
-                    pow(d(i_auto) / (double)(count(i_auto)), 2));
-  sigma_check = sqrt(d2(i_check) / (double)(count(i_check)) -
-                     pow(d(i_check) / (double)(count(i_check)), 2));
+  sigma_cross =
+    sqrt(2.0 * dinf2 / static_cast<double>(reps * (reps - 1) * M) -
+         pow(2.0 * dinf / static_cast<double>((reps * (reps - 1) * M)), 2));
+  sigma_auto = sqrt(d2(i_auto) / static_cast<double>(count(i_auto)) -
+                    pow(d(i_auto) / static_cast<double>((count(i_auto))), 2));
+  sigma_check =
+    sqrt(d2(i_check) / static_cast<double>(count(i_check)) -
+         pow(d(i_check) / static_cast<double>((count(i_check))), 2));
 
   err_cross_auto = sqrt(pow(sigma_cross, 2) + pow(sigma_auto, 2)) / sqrt(reps);
   err_cross_check =
@@ -894,10 +898,12 @@ SampleStats3D::computeSampleStatsImportance(void)
         n1av(aa) += w(rep) * n1(aa, rep);
         n1squared(aa) += w(rep) * pow(n1(aa, rep), 2);
       }
-      frequency_1p(aa, i) = (double)n1av(aa);
-      frequency_1p_sigma(aa, i) = Max(
-        sqrt(((double)n1squared(aa) - pow((double)n1av(aa), 2)) * sqrt(sumw)),
-        0);
+      frequency_1p(aa, i) = static_cast<double>(n1av(aa));
+      frequency_1p_sigma(aa, i) =
+        Max(sqrt((static_cast<double>(n1squared(aa)) -
+                  pow(static_cast<double>(n1av(aa)), 2)) *
+                 sqrt(sumw)),
+            0);
     }
   }
 
@@ -919,10 +925,10 @@ SampleStats3D::computeSampleStatsImportance(void)
             n2av(aa1, aa2) += w(rep) * n2(rep)(aa1, aa2);
             n2squared(aa1, aa2) += w(rep) * pow(n2(rep)(aa1, aa2), 2);
           }
-          frequency_2p(i, j)(aa1, aa2) = (double)n2av(aa1, aa2);
+          frequency_2p(i, j)(aa1, aa2) = static_cast<double>(n2av(aa1, aa2));
           frequency_2p_sigma(i, j)(aa1, aa2) =
-            Max(sqrt(((double)n2squared(aa1, aa2) -
-                      pow((double)n2av(aa1, aa2), 2)) *
+            Max(sqrt((static_cast<double>(n2squared(aa1, aa2)) -
+                      pow(static_cast<double>(n2av(aa1, aa2)), 2)) *
                      sqrt(sumw)),
                 0);
         }

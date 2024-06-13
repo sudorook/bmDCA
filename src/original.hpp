@@ -17,11 +17,13 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ORIGINAL_HPP
-#define ORIGINAL_HPP
+#ifndef SRC_ORIGINAL_HPP_
+#define SRC_ORIGINAL_HPP_
 
 #include "model.hpp"
 #include "utils.hpp"
+
+#include <string>
 
 /**
  * @brief 'Original' gradient descent algorithm.
@@ -94,4 +96,4 @@ private:
   void writeLearningRatesAscii(std::string);
 };
 
-#endif
+#endif // SRC_ORIGINAL_HPP_

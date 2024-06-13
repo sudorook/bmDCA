@@ -23,6 +23,8 @@
 #include "sampler.hpp"
 #include "utils.hpp"
 
+#include <string>
+
 /**
  * @brief Generator constructor.
  *
@@ -57,7 +59,7 @@ Generator::~Generator(void)
  * sensible are desired in future, this is where they go.
  */
 void
-Generator::checkParameters(void){};
+Generator::checkParameters(void) {};
 
 /**
  * @brief Load sampler hyperparameters from config file.
@@ -250,27 +252,33 @@ Generator::checkErgodicity(void)
   }
 
   if (flag_deltat_up) {
-    burn_between = (int)(round((double)burn_between * adapt_up_time));
+    burn_between = static_cast<int>(
+      round(static_cast<double>(burn_between) * adapt_up_time));
     std::cout << "increasing burn-between time to " << burn_between
               << std::endl;
   } else if (flag_deltat_down) {
-    burn_between = Max((int)(round((double)burn_between * adapt_down_time)), 1);
+    burn_between = Max(static_cast<int>(round(
+                         static_cast<double>(burn_between) * adapt_down_time)),
+                       1);
     std::cout << "decreasing burn-between time to " << burn_between
               << std::endl;
   }
 
   if (flag_twaiting_up) {
-    burn_in = (int)(round((double)burn_in * adapt_up_time));
+    burn_in =
+      static_cast<int>(round(static_cast<double>(burn_in) * adapt_up_time));
     std::cout << "increasing burn-in time to " << burn_in << std::endl;
   } else if (flag_twaiting_down) {
-    burn_in = Max((int)(round((double)burn_in * adapt_down_time)), 1);
+    burn_in = Max(
+      static_cast<int>(round(static_cast<double>(burn_in) * adapt_down_time)),
+      1);
     std::cout << "decreasing burn-in time to " << burn_in << std::endl;
   }
 
   // If burn-in or burn-between times were increased, then the sequences need
   // to be resampled to ensure proper mixing.
   bool flag_mc = true;
-  if (not flag_deltat_up and not flag_twaiting_up) {
+  if (!flag_deltat_up && !flag_twaiting_up) {
     flag_mc = false;
   }
   return flag_mc;
@@ -328,9 +336,12 @@ Generator::estimateBurnTime(void)
     }
 
     if (flag_twaiting_up) {
-      burn_in = (int)(round((double)burn_in * adapt_up_time));
+      burn_in =
+        static_cast<int>(round(static_cast<double>(burn_in) * adapt_up_time));
     } else if (flag_twaiting_down) {
-      burn_in = Max((int)(round((double)burn_in * adapt_down_time)), 1);
+      burn_in = Max(
+        static_cast<int>(round(static_cast<double>(burn_in) * adapt_down_time)),
+        1);
     }
 
     // If burn-in was increased, then keep resample at the longer time.

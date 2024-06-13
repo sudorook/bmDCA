@@ -611,7 +611,8 @@ AdamW::updateParameters(void)
     eta = 1.0;
   } else if (anneal_schedule == "cos") {
     if (step <= anneal_warm) {
-      eta = eta_min + (eta_max - eta_min) * (double)step / anneal_warm;
+      eta =
+        eta_min + (eta_max - eta_min) * static_cast<double>(step) / anneal_warm;
     } else {
       int epoch_length = anneal_period;
       int total_length = anneal_warm;
@@ -619,18 +620,21 @@ AdamW::updateParameters(void)
         total_length = total_length + epoch_length;
         epoch_length = epoch_length * anneal_scale;
       }
-      eta = eta_min + 0.5 * (eta_max - eta_min) *
-                        (1 + cos(3.1415926 * (double)(step - total_length) /
-                                 (double)epoch_length));
+      eta = eta_min +
+            0.5 * (eta_max - eta_min) *
+              (1 + cos(3.1415926 * static_cast<double>(step - total_length) /
+                       static_cast<double>(epoch_length)));
     }
   } else if (anneal_schedule == "trap") {
     if (step <= anneal_warm) {
-      eta = eta_min + (eta_max - eta_min) * (double)step / anneal_warm;
+      eta =
+        eta_min + (eta_max - eta_min) * static_cast<double>(step) / anneal_warm;
     } else if (step <= (anneal_hot + anneal_warm)) {
       eta = eta_max;
     } else if (step <= (anneal_cool + anneal_hot + anneal_warm)) {
       eta = eta_max - (eta_max - eta_min) *
-                        (double)(step - anneal_hot - anneal_warm) / anneal_cool;
+                        static_cast<double>(step - anneal_hot - anneal_warm) /
+                        anneal_cool;
     } else {
       eta = eta_min;
     }

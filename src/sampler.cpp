@@ -25,10 +25,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
-#include <fstream>
-#include <iostream>
+// #include <fstream>
+// #include <iostream>
 #include <random>
-#include <vector>
+// #include <vector>
 
 #include "pcg_random.hpp"
 
@@ -490,7 +490,7 @@ Sampler::sampleSequencesZanellaSqrt(arma::Cube<int>* p,
       }
 
       for (size_t i = 0; i < N; ++i) {
-        (*ptr)(0, i) = (int)conf(i);
+        (*ptr)(0, i) = static_cast<int>(conf(i));
       }
 
       for (size_t s = 1; s < samples_per_walk; ++s) {
@@ -571,7 +571,7 @@ Sampler::sampleSequencesZanellaSqrt(arma::Cube<int>* p,
         }
 
         for (size_t i = 0; i < N; ++i) {
-          (*ptr)(s, i) = (int)conf(i);
+          (*ptr)(s, i) = static_cast<int>(conf(i));
         }
       }
     }
@@ -729,7 +729,7 @@ Sampler::sampleSequencesZanellaSqrt(arma::Mat<int>* ptr,
         }
       }
       for (size_t i = 0; i < N; ++i) {
-        (*ptr)(walker, i) = (int)conf(i);
+        (*ptr)(walker, i) = static_cast<int>(conf(i));
       }
     }
   }
@@ -893,7 +893,7 @@ Sampler::sampleSequencesZanellaBarker(arma::Cube<int>* p,
       }
 
       for (size_t i = 0; i < N; ++i) {
-        (*ptr)(0, i) = (int)conf(i);
+        (*ptr)(0, i) = static_cast<int>(conf(i));
       }
 
       for (size_t s = 1; s < samples_per_walk; ++s) {
@@ -974,7 +974,7 @@ Sampler::sampleSequencesZanellaBarker(arma::Cube<int>* p,
         }
 
         for (size_t i = 0; i < N; ++i) {
-          (*ptr)(s, i) = (int)conf(i);
+          (*ptr)(s, i) = static_cast<int>(conf(i));
         }
       }
     }
@@ -1132,7 +1132,7 @@ Sampler::sampleSequencesZanellaBarker(arma::Mat<int>* ptr,
         }
       }
       for (size_t i = 0; i < N; ++i) {
-        (*ptr)(walker, i) = (int)conf(i);
+        (*ptr)(walker, i) = static_cast<int>(conf(i));
       }
     }
   }

@@ -32,7 +32,7 @@
  * @param h header from FASTA file
  * @param s sequence from FASTA file
  */
-SeqRecord::SeqRecord(std::string h, std::string s)
+SeqRecord::SeqRecord(const std::string h, const std::string s)
   : header(h)
   , sequence(s){};
 
@@ -118,30 +118,34 @@ loadPottsModelAscii(std::string parameters_file)
   int N = 0;
   int Q = 0;
 
+  std::string tmp = "";
+  int n1, n2, aa1, aa2;
+  double value;
+
   // First, run through the file to figure out the number of states and number
   // of positions. Necessary for knowing how much memory to allocate for the
   // potts_model before populating it.
-  int count = 1;
-  int n1, n2, aa1, aa2;
-  double value;
-  std::string tmp = "";
-  std::getline(input_stream, tmp);
-  while (std::getline(input_stream, tmp)) {
-    input_stream >> tmp;
-    input_stream >> n1 >> n2 >> aa1 >> aa2;
-    input_stream >> value;
-    count++;
+  {
+    int count = 1;
+    std::getline(input_stream, tmp);
+    while (std::getline(input_stream, tmp)) {
+      input_stream >> tmp;
+      input_stream >> n1 >> n2 >> aa1 >> aa2;
+      input_stream >> value;
+      count++;
 
-    if ((n1 == 1) & (N == 0)) {
-      N = count;
+      if ((n1 == 1) & (N == 0)) {
+        N = count;
+      }
+      if ((aa2 == 0) & (Q == 0)) {
+        Q = count;
+      }
+      if ((N != 0) & (Q != 0))
+        break;
     }
-    if ((aa2 == 0) & (Q == 0)) {
-      Q = count;
-    }
-    if ((N != 0) & (Q != 0))
-      break;
+    N =
+      static_cast<int>(static_cast<double>(N) / static_cast<double>(Q * Q)) + 1;
   }
-  N = (int)((double)N / (double)Q / double(Q)) + 1;
 
   input_stream.clear();
   input_stream.seekg(0);
@@ -157,7 +161,8 @@ loadPottsModelAscii(std::string parameters_file)
     }
   }
 
-  for (int count = 0; count < (int)N * (N - 1) / 2 * Q * Q; count++) {
+  for (int count = 0; count < static_cast<int>(N * (N - 1.) / 2. * Q * Q);
+       count++) {
     input_stream >> tmp;
     input_stream >> n1 >> n2 >> aa1 >> aa2;
     input_stream >> value;
@@ -254,8 +259,8 @@ convertFrequencyToAscii(std::string stats_file)
       arma::field<arma::Mat<double>> frequency_2p;
       frequency_2p.load(stats_file, arma::arma_binary);
 
-      int N = frequency_2p.n_rows;
-      int Q = frequency_2p(0, 1).n_rows;
+      N = frequency_2p.n_rows;
+      Q = frequency_2p(0, 1).n_rows;
 
       for (int i = 0; i < N; i++) {
         for (int j = i + 1; j < N; j++) {
@@ -305,11 +310,12 @@ convertParametersToAscii(std::string h_file, std::string J_file)
   arma::field<arma::Mat<double>> J(N, N);
   J.load(J_file, arma::arma_binary);
 
-  if ((N != (int)J.n_rows) & (N != (int)J.n_cols)) {
+  if ((N != static_cast<int>(J.n_rows)) & (N != static_cast<int>(J.n_cols))) {
     std::cerr << "ERROR: parameters N dimension mismatch." << std::endl;
     return;
   }
-  if ((Q != (int)J(0, 1).n_cols) & (Q != (int)J(0, 1).n_rows)) {
+  if ((Q != static_cast<int>(J(0, 1).n_cols)) &
+      (Q != static_cast<int>(J(0, 1).n_rows))) {
     std::cerr << "ERROR: parameters Q dimension mismatch." << std::endl;
     std::exit(EXIT_FAILURE);
   }
@@ -323,8 +329,13 @@ convertParametersToAscii(std::string h_file, std::string J_file)
       output_file += h_name[i];
     }
   }
-  if (output_file.back() == '_')
-    output_file.pop_back();
+  if (output_file.size() > 0) {
+    if (output_file.back() == '_')
+      output_file.pop_back();
+  } else {
+    std::cerr << "ERROR: generated output file name empty." << std::endl;
+    return;
+  }
   std::ofstream output_stream(output_file + ".txt");
 
   // Write J
@@ -460,13 +471,14 @@ checkFileExists(std::string filename)
  */
 void
 deleteAllFiles(std::string directory)
+// deleteAllFiles(const std::string *directory)
 {
   DIR* dp;
   struct dirent* dirp;
 
   dp = opendir(".");
-  std::vector<int> steps;
-  while ((dirp = readdir(dp)) != NULL) {
+  // dp = opendir(*directory);
+  while ((dirp = readdir(dp)) != nullptr) {
     std::string fname = dirp->d_name;
     if (fname == ".")
       continue;
@@ -644,12 +656,9 @@ void
 writeLinearModel(std::string file, linear_model model)
 {
   std::ofstream output_stream(file);
-  output_stream << "a"
-                << "\t" << model.a << std::endl;
-  output_stream << "b"
-                << "\t" << model.b << std::endl;
-  output_stream << "R2"
-                << "\t" << model.R2 << std::endl;
+  output_stream << "a" << "\t" << model.a << std::endl;
+  output_stream << "b" << "\t" << model.b << std::endl;
+  output_stream << "R2" << "\t" << model.R2 << std::endl;
   output_stream.close();
   return;
 };

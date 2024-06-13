@@ -47,6 +47,11 @@
  */
 MSA::MSA(std::string msa_file, std::string weight_file, bool is_numeric_msa)
 {
+  if (msa_file.empty()) {
+    std::cerr << "ERROR: no msa file given '" << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+
   if (is_numeric_msa) {
     readInputNumericMSA(msa_file);
   } else {
@@ -71,11 +76,11 @@ MSA::MSA(std::string msa_file, std::string weight_file, bool is_numeric_msa)
  * @param N number of positions
  * @param Q number of states
  */
-MSA::MSA(arma::Mat<int> alignment, int M, int N, int Q)
-  : alignment(alignment)
-  , M(M)
-  , N(N)
-  , Q(Q)
+MSA::MSA(arma::Mat<int> a, int m, int n, int q)
+  : alignment(a)
+  , M(m)
+  , N(n)
+  , Q(q)
 {
   sequence_weights = arma::Col<double>(M, arma::fill::ones);
 };
@@ -120,13 +125,12 @@ MSA::readInputNumericMSA(std::string numeric_msa_file)
   alignment = arma::Mat<int>(M, N);
 
   int counter = 0;
-  int i = 0;
   std::string line;
   std::getline(input_stream, line);
   while (std::getline(input_stream, line)) {
     std::istringstream iss(line);
     int n;
-    i = 0;
+    int i = 0;
 
     while (iss >> n) {
       alignment(counter, i) = n;
@@ -551,7 +555,7 @@ void
 MSA::computeSequenceWeights(double threshold)
 {
   sequence_weights = arma::Col<double>(M, arma::fill::ones);
-  int cutoff = (int)(N * threshold);
+  int cutoff = static_cast<int>(N * threshold);
   arma::Mat<int> alignment_T = alignment.t();
 
   // arma::Mat is stored in column-major format, but sequences are stored in
@@ -588,14 +592,14 @@ MSA::computeSequenceWeights(double threshold)
  * @param threshold similarity threshold
  * @param verbose flag to print which sequences are pruned
  *
- * If two (or more) sequences are too similary, _both_ (or _all_) are removed
+ * If two (or more) sequences are too similar, _both_ (or _all_) are removed
  * from the alignment.
  */
 void
 MSA::filterSimilarSequences(double threshold, bool verbose)
 {
   arma::Col<int> sequence_status = arma::Col<int>(M, arma::fill::zeros);
-  int sim_cutoff = (int)(N * threshold);
+  int sim_cutoff = static_cast<int>(N * threshold);
   arma::Mat<int> alignment_T = alignment.t();
 #pragma omp parallel
   {
@@ -658,7 +662,7 @@ MSA::filterSimilarSequences(double threshold, bool verbose)
  * @param keep vector of indices
  */
 void
-MSA::setKeepPositions(std::vector<size_t> keep)
+MSA::setKeepPositions(const std::vector<size_t> keep)
 {
   pos_to_keep = keep;
 };
@@ -669,7 +673,7 @@ MSA::setKeepPositions(std::vector<size_t> keep)
  * @param keep vector of indices
  */
 void
-MSA::setKeepSequences(std::vector<size_t> keep)
+MSA::setKeepSequences(const std::vector<size_t> keep)
 {
   seq_to_keep = keep;
 };
@@ -685,7 +689,7 @@ MSA::filterSequenceGaps(double seq_threshold, bool verbose)
 {
   arma::Col<int> seq_gap_counts = arma::Col<int>(M, arma::fill::zeros);
 
-  int seq_gap_cutoff = (int)(seq_threshold * N);
+  int seq_gap_cutoff = static_cast<int>(seq_threshold * N);
 
 #pragma omp parallel
   {
@@ -742,7 +746,8 @@ MSA::filterPositionGaps(double pos_threshold, bool verbose)
 {
   arma::Col<int> pos_gap_counts = arma::Col<int>(N, arma::fill::zeros);
 
-  int pos_gap_cutoff = (int)(pos_threshold * arma::sum(sequence_weights));
+  int pos_gap_cutoff =
+    static_cast<int>(pos_threshold * arma::sum(sequence_weights));
 
 #pragma omp parallel
   {
@@ -773,7 +778,7 @@ MSA::filterPositionGaps(double pos_threshold, bool verbose)
     std::cout << std::flush;
   }
   alignment.shed_cols(bad_positions); // drop overly-gapped positions
-  N = (int)alignment.n_cols;          // re-set the number of positions
+  N = alignment.n_cols;               // re-set the number of positions
 
   // Once positions are removed, the indices for positions to keep need to be
   // updated.
@@ -799,8 +804,8 @@ MSA::computeHammingDistances(void)
 
   int* i_ptr = nullptr;
   int* j_ptr = nullptr;
-  int count = 0;
-  double id = 0;
+  int count;
+  double id;
   for (int i = 0; i < M; i++) {
     i_ptr = alignment_T.colptr(i);
     for (int j = i + 1; j < M; j++) {
@@ -811,7 +816,7 @@ MSA::computeHammingDistances(void)
           count++;
         }
       }
-      id = (double)count / N;
+      id = static_cast<double>(count) / static_cast<double>(N);
       if (id > hamming_distances(i)) {
         hamming_distances(i) = id;
       }
@@ -919,12 +924,13 @@ MSA::partitionAlignment(int validation_size, unsigned seed)
   for (int i = 0; i < M; i++) {
     size++;
     accu += sequence_weights(idx(i));
-    if (accu > (double)validation_size)
+    if (accu > static_cast<double>(validation_size))
       break;
   }
 
   // don't use more than half of the MSA for cross-validation
-  size = (int)Min((double)size, (double)M / 2.);
+  size = static_cast<int>(
+    Min(static_cast<double>(size), static_cast<double>(M) / 2.));
 
   arma::Mat<int> sub_alignment_1 =
     arma::Mat<int>(N, M - size, arma::fill::zeros);

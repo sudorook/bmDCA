@@ -20,6 +20,7 @@
 #include "sgdm.hpp"
 
 #include <armadillo>
+#include <string>
 
 #include "utils.hpp"
 
@@ -160,7 +161,7 @@ SGDM::setHyperparameter(std::string key, std::string value)
  * hyperparameters. Empty by default.
  */
 void
-SGDM::checkHyperparameters(void){};
+SGDM::checkHyperparameters(void) {};
 
 /**
  * @brief Write stored hyperparameters to file
@@ -469,7 +470,8 @@ SGDM::updateGradients(void)
         samples->frequency_1p(aa, i) - training->frequency_1p(aa, i) +
         lambda_reg_h *
           (alpha_reg * params.h(aa, i) +
-           (1. - alpha_reg) * (0.5 - (double)std::signbit(params.h(aa, i))));
+           (1. - alpha_reg) *
+             (0.5 - static_cast<double>(std::signbit(params.h(aa, i)))));
       train_error_1p += pow(delta, 2);
       gradient.h(aa, i) = -delta;
     }
@@ -485,8 +487,8 @@ SGDM::updateGradients(void)
               samples->frequency_2p(i, j)(aa1, aa2) -
               lambda_reg_J *
                 (alpha_reg * params.J(i, j)(aa1, aa2) +
-                 (1. - alpha_reg) *
-                   (0.5 - (double)std::signbit(params.J(i, j)(aa1, aa2)))));
+                 (1. - alpha_reg) * (0.5 - static_cast<double>(std::signbit(
+                                             params.J(i, j)(aa1, aa2))))));
           train_error_2p += pow(delta, 2);
           gradient.J(i, j)(aa1, aa2) = -delta;
         }
@@ -502,7 +504,8 @@ SGDM::updateGradients(void)
           samples->frequency_1p(aa, i) - validation->frequency_1p(aa, i) +
           lambda_reg_h *
             (alpha_reg * params.h(aa, i) +
-             (1. - alpha_reg) * (0.5 - (double)std::signbit(params.h(aa, i))));
+             (1. - alpha_reg) *
+               (0.5 - static_cast<double>(std::signbit(params.h(aa, i)))));
         validation_error_1p += pow(delta, 2);
       }
     }
@@ -517,8 +520,8 @@ SGDM::updateGradients(void)
                 samples->frequency_2p(i, j)(aa1, aa2) -
                 lambda_reg_J *
                   (alpha_reg * params.J(i, j)(aa1, aa2) +
-                   (1. - alpha_reg) *
-                     (0.5 - (double)std::signbit(params.J(i, j)(aa1, aa2)))));
+                   (1. - alpha_reg) * (0.5 - static_cast<double>(std::signbit(
+                                               params.J(i, j)(aa1, aa2))))));
             validation_error_2p += pow(delta, 2);
           }
         }

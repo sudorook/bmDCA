@@ -17,10 +17,10 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SAMPLER_HPP
-#define SAMPLER_HPP
+#ifndef SRC_SAMPLER_HPP_
+#define SRC_SAMPLER_HPP_
 
-#include <string>
+// #include <string>
 #include <unistd.h>
 
 #include "utils.hpp"
@@ -88,4 +88,4 @@ private:
   potts_model* model; ///< pointer to Potts parameters
 };
 
-#endif
+#endif // SRC_SAMPLER_HPP_

@@ -20,6 +20,7 @@
 #include "radam.hpp"
 
 #include <armadillo>
+#include <string>
 
 #include "utils.hpp"
 
@@ -156,7 +157,7 @@ RAdam::setHyperparameter(std::string key, std::string value)
  * hyperparameters. Empty by default.
  */
 void
-RAdam::checkHyperparameters(void){};
+RAdam::checkHyperparameters(void) {};
 
 /**
  * @brief Write stored hyperparameters to file
@@ -476,7 +477,8 @@ RAdam::updateGradients(void)
         samples->frequency_1p(aa, i) - training->frequency_1p(aa, i) +
         lambda_reg_h *
           (alpha_reg * params.h(aa, i) +
-           (1. - alpha_reg) * (0.5 - (double)std::signbit(params.h(aa, i))));
+           (1. - alpha_reg) *
+             (0.5 - static_cast<double>(std::signbit(params.h(aa, i)))));
       train_error_1p += pow(delta, 2);
       gradient.h(aa, i) = -delta;
     }
@@ -492,8 +494,8 @@ RAdam::updateGradients(void)
               samples->frequency_2p(i, j)(aa1, aa2) -
               lambda_reg_J *
                 (alpha_reg * params.J(i, j)(aa1, aa2) +
-                 (1. - alpha_reg) *
-                   (0.5 - (double)std::signbit(params.J(i, j)(aa1, aa2)))));
+                 (1. - alpha_reg) * (0.5 - static_cast<double>(std::signbit(
+                                             params.J(i, j)(aa1, aa2))))));
           train_error_2p += pow(delta, 2);
           gradient.J(i, j)(aa1, aa2) = -delta;
         }
@@ -509,7 +511,8 @@ RAdam::updateGradients(void)
           samples->frequency_1p(aa, i) - validation->frequency_1p(aa, i) +
           lambda_reg_h *
             (alpha_reg * params.h(aa, i) +
-             (1. - alpha_reg) * (0.5 - (double)std::signbit(params.h(aa, i))));
+             (1. - alpha_reg) *
+               (0.5 - static_cast<double>(std::signbit(params.h(aa, i)))));
         validation_error_1p += pow(delta, 2);
       }
     }
@@ -524,8 +527,8 @@ RAdam::updateGradients(void)
                 samples->frequency_2p(i, j)(aa1, aa2) -
                 lambda_reg_J *
                   (alpha_reg * params.J(i, j)(aa1, aa2) +
-                   (1. - alpha_reg) *
-                     (0.5 - (double)std::signbit(params.J(i, j)(aa1, aa2)))));
+                   (1. - alpha_reg) * (0.5 - static_cast<double>(std::signbit(
+                                               params.J(i, j)(aa1, aa2))))));
             validation_error_2p += pow(delta, 2);
           }
         }
@@ -581,7 +584,8 @@ RAdam::updateParameters(void)
   double beta2_t = pow(beta2, step);
 
   double rho_inf = 2. / (1. - beta2) - 1.;
-  double rho_t = rho_inf - 2. * (double)step * beta2_t / (1. - beta2_t);
+  double rho_t =
+    rho_inf - 2. * static_cast<double>(step) * beta2_t / (1. - beta2_t);
 
   if (rho_t > 4.) {
     double rectifier = sqrt(((rho_t - 4.) * (rho_t - 2.) * rho_inf) /

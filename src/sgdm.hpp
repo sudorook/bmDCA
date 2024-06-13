@@ -17,11 +17,13 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SGDM_HPP
-#define SGDM_HPP
+#ifndef SRC_SGDM_HPP_
+#define SRC_SGDM_HPP_
 
 #include "model.hpp"
 #include "utils.hpp"
+
+#include <string>
 
 /**
  * @brief Stochastic gradient descent + momentum algorithm.
@@ -85,4 +87,4 @@ private:
   void writeGradientAscii(std::string);
 };
 
-#endif
+#endif // SRC_SGDM_HPP_

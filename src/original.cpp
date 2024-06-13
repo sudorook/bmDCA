@@ -20,6 +20,7 @@
 #include "original.hpp"
 
 #include <armadillo>
+#include <string>
 
 #include "utils.hpp"
 
@@ -174,7 +175,7 @@ Original::setHyperparameter(std::string key, std::string value)
  * hyperparameters. Empty by default.
  */
 void
-Original::checkHyperparameters(void){};
+Original::checkHyperparameters(void) {};
 
 /**
  * @brief Write stored hyperparameters to file
@@ -523,7 +524,8 @@ Original::updateGradients(void)
         samples->frequency_1p(aa, i) - training->frequency_1p(aa, i) +
         lambda_reg_h *
           (alpha_reg * params.h(aa, i) +
-           (1. - alpha_reg) * (0.5 - (double)std::signbit(params.h(aa, i))));
+           (1. - alpha_reg) *
+             (0.5 - static_cast<double>(std::signbit(params.h(aa, i)))));
       train_error_1p += pow(delta, 2);
       gradient.h(aa, i) = -delta;
     }
@@ -539,8 +541,8 @@ Original::updateGradients(void)
               samples->frequency_2p(i, j)(aa1, aa2) -
               lambda_reg_J *
                 (alpha_reg * params.J(i, j)(aa1, aa2) +
-                 (1. - alpha_reg) *
-                   (0.5 - (double)std::signbit(params.J(i, j)(aa1, aa2)))));
+                 (1. - alpha_reg) * (0.5 - static_cast<double>(std::signbit(
+                                             params.J(i, j)(aa1, aa2))))));
           if (use_pos_reg) {
             delta = delta * 1. /
                     (1. + fabs(training->rel_entropy_grad_1p(aa1, i))) /
@@ -561,7 +563,8 @@ Original::updateGradients(void)
           samples->frequency_1p(aa, i) - validation->frequency_1p(aa, i) +
           lambda_reg_h *
             (alpha_reg * params.h(aa, i) +
-             (1. - alpha_reg) * (0.5 - (double)std::signbit(params.h(aa, i))));
+             (1. - alpha_reg) *
+               (0.5 - static_cast<double>(std::signbit(params.h(aa, i)))));
         validation_error_1p += pow(delta, 2);
       }
     }
@@ -576,8 +579,8 @@ Original::updateGradients(void)
                 samples->frequency_2p(i, j)(aa1, aa2) -
                 lambda_reg_J *
                   (alpha_reg * params.J(i, j)(aa1, aa2) +
-                   (1. - alpha_reg) *
-                     (0.5 - (double)std::signbit(params.J(i, j)(aa1, aa2)))));
+                   (1. - alpha_reg) * (0.5 - static_cast<double>(std::signbit(
+                                               params.J(i, j)(aa1, aa2))))));
             if (use_pos_reg) {
               delta = delta * 1. /
                       (1. + fabs(validation->rel_entropy_grad_1p(aa1, i))) /

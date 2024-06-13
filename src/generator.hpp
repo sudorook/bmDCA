@@ -17,13 +17,14 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef GENERATOR_HPP
-#define GENERATOR_HPP
+#ifndef SRC_GENERATOR_HPP_
+#define SRC_GENERATOR_HPP_
 
 #include "pcg_random.hpp"
 #include "sample_stats.hpp"
 #include "sampler.hpp"
 #include "utils.hpp"
+#include <string>
 
 /**
  * @brief Generator class for samplign sequences from given Potts model.
@@ -81,4 +82,4 @@ private:
   void setParameter(std::string, std::string);
 };
 
-#endif
+#endif // SRC_GENERATOR_HPP_

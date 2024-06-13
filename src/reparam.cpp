@@ -20,6 +20,7 @@
 #include "reparam.hpp"
 
 #include <armadillo>
+#include <string>
 
 #include "utils.hpp"
 
@@ -160,7 +161,7 @@ Reparam::setHyperparameter(std::string key, std::string value)
  * hyperparameters. Empty by default.
  */
 void
-Reparam::checkHyperparameters(void){};
+Reparam::checkHyperparameters(void) {};
 
 /**
  * @brief Write stored hyperparameters to file

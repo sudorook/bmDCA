@@ -17,10 +17,11 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SAMPLE_STATS_HPP
-#define SAMPLE_STATS_HPP
+#ifndef SRC_SAMPLE_STATS_HPP_
+#define SRC_SAMPLE_STATS_HPP_
 
 #include <armadillo>
+#include <string>
 
 #include "utils.hpp"
 
@@ -192,4 +193,4 @@ private:
   int M;    ///< number of sampled sequences per trajectory
 };
 
-#endif
+#endif // SRC_SAMPLE_STATS_HPP_

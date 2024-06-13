@@ -17,12 +17,13 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef MODEL_HPP
-#define MODEL_HPP
+#ifndef SRC_MODEL_HPP_
+#define SRC_MODEL_HPP_
 
 #include "msa_stats.hpp"
 #include "sample_stats.hpp"
 #include "utils.hpp"
+#include <string>
 
 /**
  * @brief Abstract Model class.
@@ -36,7 +37,7 @@
 class Model
 {
 public:
-  Model(void);
+  Model();
   virtual ~Model(){};
 
   void setMSAStats(MSAStats*, MSAStats*);
@@ -95,4 +96,4 @@ protected:
   int step = 1; ///< iteration number
 };
 
-#endif
+#endif // SRC_MODEL_HPP_

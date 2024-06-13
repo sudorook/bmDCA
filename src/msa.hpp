@@ -17,8 +17,8 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef MSA_HPP
-#define MSA_HPP
+#ifndef SRC_MSA_HPP_
+#define SRC_MSA_HPP_
 
 #include <armadillo>
 #include <string>
@@ -36,7 +36,7 @@
 class MSA
 {
 public:
-  MSA(std::string, std::string = "", bool = true);
+  explicit MSA(std::string = " ", std::string = " ", bool = true);
   MSA(arma::Mat<int>, arma::Col<double>, int, int, int);
   MSA(arma::Mat<int>, int, int, int);
 
@@ -82,4 +82,4 @@ private:
     pos_to_keep; ///< indices for positions to protect from pruning
 };
 
-#endif
+#endif // SRC_MSA_HPP_

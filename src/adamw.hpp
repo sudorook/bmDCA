@@ -17,11 +17,13 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ADAMW_HPP
-#define ADAMW_HPP
+#ifndef SRC_ADAMW_HPP_
+#define SRC_ADAMW_HPP_
 
 #include "model.hpp"
 #include "utils.hpp"
+
+#include <string>
 
 /**
  * @brief AdamW gradient descent algorithm.
@@ -97,4 +99,4 @@ private:
   void writeGradientAscii(std::string);
 };
 
-#endif
+#endif // SRC_ADAMW_HPP_

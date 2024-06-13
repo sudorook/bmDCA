@@ -17,11 +17,13 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef RADAM_HPP
-#define RADAM_HPP
+#ifndef SRC_RADAM_HPP_
+#define SRC_RADAM_HPP_
 
 #include "model.hpp"
 #include "utils.hpp"
+
+#include <string>
 
 /**
  * @brief RAdam gradient descent algorithm.
@@ -88,4 +90,4 @@ private:
   void writeGradientAscii(std::string);
 };
 
-#endif
+#endif // SRC_RADAM_HPP_

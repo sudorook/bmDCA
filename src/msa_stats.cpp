@@ -19,12 +19,12 @@
 
 #include "msa_stats.hpp"
 
-#include <algorithm>
+// #include <algorithm>
 #include <armadillo>
 #include <cmath>
 #include <fstream>
 #include <iostream>
-#include <numeric>
+// #include <numeric>
 #include <unordered_set>
 #include <vector>
 
@@ -75,7 +75,8 @@ MSAStats::MSAStats(MSA* msa, bool verbose)
                                   0.043, 0.052, 0.040, 0.052, 0.073, 0.056,
                                   0.063, 0.013, 0.033 };
   } else {
-    aa_background_frequencies = aa_background_frequencies / (double)Q;
+    aa_background_frequencies =
+      aa_background_frequencies / static_cast<double>(Q);
   }
 
   computeMSAStats();
@@ -137,7 +138,7 @@ MSAStats::computeMSAStats()
   frequency_1p = frequency_1p / M_effective;
 
   double mean_1p_var =
-    arma::accu(frequency_1p % (1. - frequency_1p)) / (double)(N * Q);
+    arma::accu(frequency_1p % (1. - frequency_1p)) / static_cast<double>(N * Q);
 
   // Compute the 2p statistics
   arma::Col<double> mean_2p_var_vec = arma::Col<double>(N, arma::fill::zeros);
@@ -210,8 +211,8 @@ MSAStats::computeErrorMSA(int reps, unsigned seed)
   msa_rms = arma::Col<double>(reps, arma::fill::zeros);
 
   // partition MSA into equal subsets
-  int M_1 = (int)((M + 1) / 2);
-  int M_2 = (int)(M / 2);
+  int M_1 = (M + 1) / 2;
+  int M_2 = M / 2;
 
   arma::Mat<int> alignment_T = (msa->alignment).t();
 
@@ -222,7 +223,8 @@ MSAStats::computeErrorMSA(int reps, unsigned seed)
     std::unordered_set<int> elems;
 
     for (int r = M - M_1; r < M; ++r) {
-      int v = (int)rng();
+      // int v = static_cast<int>(rng());
+      size_t v = rng();
       if (!elems.insert(v).second) {
         elems.insert(r);
       }
