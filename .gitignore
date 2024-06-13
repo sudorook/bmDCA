@@ -32,6 +32,7 @@ src/numeric2fasta
 *.cab
 *.xar
 *.zst
+*.tzst
 
 # Packing-only formats
 *.iso
