@@ -28,7 +28,7 @@
  * @brief Original constructor.
  */
 Original::Original()
-  : Model(){};
+  : Model() {};
 
 /**
  * @brief Load model hyperparameters from config file.

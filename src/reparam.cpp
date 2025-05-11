@@ -28,7 +28,7 @@
  * @brief Reparam constructor.
  */
 Reparam::Reparam()
-  : Model(){};
+  : Model() {};
 
 /**
  * @brief Load model hyperparameters from config file.
@@ -121,7 +121,7 @@ Reparam::compareHyperparameters(std::string file_name)
  * @param value value at which to set hyperparameter
  */
 void
-Reparam::setHyperparameter(std::string key, std::string value)
+Reparam::setHyperparameter(const std::string& key, const std::string& value)
 {
   // It's not possible to use switch blocks on strings because they are char*
   // arrays, not actual types.

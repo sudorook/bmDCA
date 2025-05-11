@@ -36,7 +36,7 @@
  */
 SeqRecord::SeqRecord(const std::string h, const std::string s)
   : header(h)
-  , sequence(s){};
+  , sequence(s) {};
 
 /**
  * @brief Print SeqRecord header and sequences to std out.

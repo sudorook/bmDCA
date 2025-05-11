@@ -17,17 +17,17 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "adamw.hpp"
+#include "./adamw.hpp"
 
 #include <armadillo>
 
-#include "utils.hpp"
+#include "./utils.hpp"
 
 /**
  * @brief AdamW constructor.
  */
 AdamW::AdamW()
-  : Model(){};
+  : Model() {};
 
 /**
  * @brief Load model hyperparameters from config file.
@@ -35,7 +35,7 @@ AdamW::AdamW()
  * @param file_name config file string
  */
 void
-AdamW::loadHyperparameters(std::string file_name)
+AdamW::loadHyperparameters(const std::string& file_name)
 {
   std::ifstream file(file_name);
   if (file.is_open()) {
@@ -78,7 +78,7 @@ AdamW::loadHyperparameters(std::string file_name)
  * @return (bool) flag that all hyperparameters are equivalent
  */
 bool
-AdamW::compareHyperparameters(std::string file_name)
+AdamW::compareHyperparameters(const std::string& file_name)
 {
   std::ifstream file(file_name);
   bool all_same = true;
@@ -120,7 +120,7 @@ AdamW::compareHyperparameters(std::string file_name)
  * @param value value at which to set hyperparameter
  */
 void
-AdamW::setHyperparameter(std::string key, std::string value)
+AdamW::setHyperparameter(const std::string& key, const std::string& value)
 {
   // It's not possible to use switch blocks on strings because they are char*
   // arrays, not actual types.
@@ -192,7 +192,7 @@ AdamW::checkHyperparameters(void)
  * file or overwrite it
  */
 void
-AdamW::writeHyperparameters(std::string output_file, bool append)
+AdamW::writeHyperparameters(const std::string& output_file, bool append)
 {
   std::ofstream stream;
   if (append) {
@@ -233,7 +233,7 @@ AdamW::writeHyperparameters(std::string output_file, bool append)
  * @return (bool) flag for whether the stored and given values are equal
  */
 bool
-AdamW::compareHyperparameter(std::string key, std::string value)
+AdamW::compareHyperparameter(const std::string& key, const std::string& value)
 {
   bool same = true;
   // It's not possible to use switch blocks on strings because they are char*
@@ -693,7 +693,7 @@ AdamW::updateParameters(void)
  * @param output_binary flag for whether to write text or binary files.
  */
 void
-AdamW::writeData(std::string str, bool output_binary)
+AdamW::writeData(const std::string& str, bool output_binary)
 {
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + str + ".bin";
@@ -840,7 +840,8 @@ AdamW::writeStep(int step, bool output_binary)
     std::string moment1_file = "moment1_" + std::to_string(step) + ".txt";
     writeMoment1Ascii(moment1_file);
 
-    std::string moment2_file = "moment2_" + std::to_string(step) + ".txt";
+    const std::string& moment2_file =
+      "moment2_" + std::to_string(step) + ".txt";
     writeMoment2Ascii(moment2_file);
   }
 };
@@ -852,7 +853,8 @@ AdamW::writeStep(int step, bool output_binary)
  * @param output_file_J file string for couplings
  */
 void
-AdamW::writeParams(std::string output_file_h, std::string output_file_J)
+AdamW::writeParams(const std::string& output_file_h,
+                   const std::string& output_file_J)
 {
   params.h.save(output_file_h, arma::arma_binary);
   params.J.save(output_file_J, arma::arma_binary);
@@ -864,7 +866,7 @@ AdamW::writeParams(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-AdamW::writeParamsAscii(std::string output_file)
+AdamW::writeParamsAscii(const std::string& output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -899,7 +901,8 @@ AdamW::writeParamsAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-AdamW::writeParamsPrevious(std::string output_file_h, std::string output_file_J)
+AdamW::writeParamsPrevious(const std::string& output_file_h,
+                           const std::string& output_file_J)
 {
   params_prev.h.save(output_file_h, arma::arma_binary);
   params_prev.J.save(output_file_J, arma::arma_binary);
@@ -911,7 +914,7 @@ AdamW::writeParamsPrevious(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-AdamW::writeParamsPreviousAscii(std::string output_file)
+AdamW::writeParamsPreviousAscii(const std::string& output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -946,7 +949,8 @@ AdamW::writeParamsPreviousAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-AdamW::writeMoment1(std::string output_file_h, std::string output_file_J)
+AdamW::writeMoment1(const std::string& output_file_h,
+                    const std::string& output_file_J)
 {
   moment1.h.save(output_file_h, arma::arma_binary);
   moment1.J.save(output_file_J, arma::arma_binary);
@@ -959,7 +963,8 @@ AdamW::writeMoment1(std::string output_file_h, std::string output_file_J)
  * @param output_file_J file string for couplings
  */
 void
-AdamW::writeMoment2(std::string output_file_h, std::string output_file_J)
+AdamW::writeMoment2(const std::string& output_file_h,
+                    const std::string& output_file_J)
 {
   moment2.h.save(output_file_h, arma::arma_binary);
   moment2.J.save(output_file_J, arma::arma_binary);
@@ -971,7 +976,7 @@ AdamW::writeMoment2(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-AdamW::writeMoment1Ascii(std::string output_file)
+AdamW::writeMoment1Ascii(const std::string& output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -1005,7 +1010,7 @@ AdamW::writeMoment1Ascii(std::string output_file)
  * @param output_file file string for fields and couplings
  */
 void
-AdamW::writeMoment2Ascii(std::string output_file)
+AdamW::writeMoment2Ascii(const std::string& output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -1040,7 +1045,8 @@ AdamW::writeMoment2Ascii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-AdamW::writeGradient(std::string output_file_h, std::string output_file_J)
+AdamW::writeGradient(const std::string& output_file_h,
+                     const std::string& output_file_J)
 {
   gradient.h.save(output_file_h, arma::arma_binary);
   gradient.J.save(output_file_J, arma::arma_binary);
@@ -1052,7 +1058,7 @@ AdamW::writeGradient(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-AdamW::writeGradientAscii(std::string output_file)
+AdamW::writeGradientAscii(const std::string& output_file)
 {
   std::ofstream output_stream(output_file);
 

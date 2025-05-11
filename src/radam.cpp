@@ -28,7 +28,7 @@
  * @brief RAdam constructor.
  */
 RAdam::RAdam(void)
-  : Model(){};
+  : Model() {};
 
 /**
  * @brief Load model hyperparameters from config file.

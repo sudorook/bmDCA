@@ -37,8 +37,8 @@
 class SampleStats
 {
 public:
-  SampleStats(void){};
-  virtual ~SampleStats(void){};
+  SampleStats(void) {};
+  virtual ~SampleStats(void) {};
 
   virtual void writeStep(int,
                          bool = true) = 0; ///< write all stats for the step

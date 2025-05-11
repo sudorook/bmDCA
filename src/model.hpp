@@ -38,7 +38,7 @@ class Model
 {
 public:
   Model();
-  virtual ~Model(){};
+  virtual ~Model() {};
 
   void setMSAStats(std::shared_ptr<MSAStats>, std::shared_ptr<MSAStats>);
   void setSampleStats(std::shared_ptr<SampleStats>);
@@ -55,7 +55,7 @@ public:
   virtual void reset(void) = 0;        ///< reset the model to initial values
   virtual void restore(int, bool) = 0; ///< re-load parameters from disk
 
-  virtual void writeData(std::string,
+  virtual void writeData(const std::string&,
                          bool = true) = 0; ///< write current model to disk
   virtual void writeStep(
     int,
@@ -66,12 +66,12 @@ public:
     bool = true) = 0; ///< check if data exists to reload a step
 
   virtual void loadHyperparameters(
-    std::string) = 0; ///< read parameters from config file
+    const std::string&) = 0; ///< read parameters from config file
   virtual void checkHyperparameters(
     void) = 0; ///< check config parameters against saved state
   virtual bool compareHyperparameters(
-    std::string) = 0; ///< check that config parameters are valid
-  virtual void writeHyperparameters(std::string,
+    const std::string&) = 0; ///< check that config parameters are valid
+  virtual void writeHyperparameters(const std::string&,
                                     bool = false) = 0; ///< write config file
 
   potts_model params;      ///< current step parameters
@@ -84,12 +84,12 @@ protected:
 
   std::string hyperparameter_file; ///< file string for storing hyperparams
 
-  bool validate; ///< flag for whether to compute validation error
+  bool validate = false; ///< flag for whether to compute validation error
 
   void setZeroGauge(void);
 
-  int N; ///< number of positions
-  int Q; ///< number of states
+  int N = 0; ///< number of positions
+  int Q = 0; ///< number of states
 
   double temperature = 1.0; ///< inference temperature (unused)
 

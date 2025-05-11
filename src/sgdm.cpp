@@ -28,7 +28,7 @@
  * @brief SGDM constructor.
  */
 SGDM::SGDM()
-  : Model(){};
+  : Model() {};
 
 /**
  * @brief Load model hyperparameters from config file.

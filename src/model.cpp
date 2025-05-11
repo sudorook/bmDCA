@@ -26,7 +26,7 @@
 /**
  * @brief Model constructor.
  */
-Model::Model(void){};
+Model::Model(void) {};
 
 /**
  * @brief Store the address of the MSA statstics.

@@ -99,7 +99,7 @@ MSA::MSA(arma::Mat<int> alignment,
   , M(M)
   , N(N)
   , Q(Q)
-  , sequence_weights(weights){};
+  , sequence_weights(weights) {};
 
 /**
  * @brief Read numerical MSA from file.

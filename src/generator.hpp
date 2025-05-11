@@ -37,14 +37,14 @@
 class Generator
 {
 public:
-  Generator(potts_model, int, int, std::string);
-  void run(int, int, std::string);
-  void writeAASequences(std::string);
-  void writeNumericalSequences(std::string);
+  Generator(potts_model, int, int, const std::string&);
+  void run(int, int, const std::string&);
+  void writeAASequences(const std::string&);
+  void writeNumericalSequences(const std::string&);
 
 private:
-  int N;                    ///< number of positions
-  int Q;                    ///< number of amino acids
+  int N = 0;                ///< number of positions
+  int Q = 0;                ///< number of amino acids
   int samples_per_walk = 1; ///< number of independent sampling runs
   int walkers = 1000; ///< number of sequences sampled from independent runs
 
@@ -78,9 +78,9 @@ private:
 
   void estimateBurnTime(void);
   bool checkErgodicity(void);
-  void loadParameters(std::string);
+  void loadParameters(const std::string&);
   void checkParameters(void);
-  void setParameter(std::string, std::string);
+  void setParameter(const std::string&, const std::string&);
 };
 
 #endif // SRC_GENERATOR_HPP_

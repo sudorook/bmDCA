@@ -40,7 +40,7 @@
  */
 Sampler::Sampler(size_t N, size_t Q)
   : N(N)
-  , Q(Q){};
+  , Q(Q) {};
 
 /**
  * @brief Constructor for sampler abstract class.
@@ -52,7 +52,7 @@ Sampler::Sampler(size_t N, size_t Q)
 Sampler::Sampler(size_t N, size_t Q, potts_model* m)
   : N(N)
   , Q(Q)
-  , model(m){};
+  , model(m) {};
 
 /**
  * @brief Set the address of the Potts parameters

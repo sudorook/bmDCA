@@ -33,7 +33,10 @@
  * @param q number of states
  * @param config_file file string for hyperparameter file
  */
-Generator::Generator(potts_model params, int n, int q, std::string config_file)
+Generator::Generator(potts_model params,
+                     int n,
+                     int q,
+                     const std::string& config_file)
   : N(n)
   , Q(q)
   , model(params)
@@ -58,7 +61,7 @@ Generator::checkParameters(void) {};
  * @param file_name config file string
  */
 void
-Generator::loadParameters(std::string file_name)
+Generator::loadParameters(const std::string& file_name)
 {
   std::ifstream file(file_name);
   if (file.is_open()) {
@@ -98,7 +101,7 @@ Generator::loadParameters(std::string file_name)
  * @param value value at which to set hyperparameter
  */
 void
-Generator::setParameter(std::string key, std::string value)
+Generator::setParameter(const std::string& key, const std::string& value)
 {
   if (key == "resample_max") {
     resample_max = std::stoi(value);
@@ -140,7 +143,7 @@ Generator::setParameter(std::string key, std::string value)
  * format.
  */
 void
-Generator::writeAASequences(std::string output_file)
+Generator::writeAASequences(const std::string& output_file)
 {
   // Label each sequence such that each sequence has a unique number in the
   // FASTA header.  If more than 1 sequence was sampled in each trajectory, use
@@ -350,7 +353,7 @@ Generator::estimateBurnTime(void)
  * @param output_file file string for output file
  */
 void
-Generator::writeNumericalSequences(std::string output_file)
+Generator::writeNumericalSequences(const std::string& output_file)
 {
   int idx = output_file.find_last_of(".");
   std::string raw_file = output_file.substr(0, idx);
@@ -367,7 +370,7 @@ Generator::writeNumericalSequences(std::string output_file)
  * @param output_file file string for the output file for the sequences
  */
 void
-Generator::run(int n_indep_runs, int n_per_run, std::string output_file)
+Generator::run(int n_indep_runs, int n_per_run, const std::string& output_file)
 {
   std::cout << "initializing sampler... " << std::flush;
 
