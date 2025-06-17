@@ -120,6 +120,9 @@ flycheck_*.el
 # network security
 /network-security.data
 
+# undo-tree
+*.~undo-tree~
+
 #
 # FROM: https://raw.githubusercontent.com/sudorook/gitignore/tweak/Global/Linux.gitignore
 #
@@ -190,7 +193,8 @@ Temporary Items
 
 # Swap
 [._]*.s[a-v][a-z]
-!*.svg  # comment out if you don't need vector files
+# comment out the next line if you don't need vector files
+!*.svg
 [._]*.sw[a-p]
 [._]s[a-rt-v][a-z]
 [._]ss[a-gi-z]
@@ -254,6 +258,12 @@ $RECYCLE.BIN/
 *.gch
 *.pch
 
+# Linker files
+*.ilk
+
+# Debugger Files
+*.pdb
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
@@ -273,6 +283,9 @@ $RECYCLE.BIN/
 *.exe
 *.out
 *.app
+
+# debug information files
+*.dwo
 
 #
 # FROM: https://raw.githubusercontent.com/sudorook/gitignore/tweak/Autotools.gitignore
@@ -311,7 +324,9 @@ autom4te.cache
 
 # https://www.gnu.org/software/libtool/
 
+/libtool
 /ltmain.sh
+.libs/
 
 # http://www.gnu.org/software/texinfo
 
