@@ -287,7 +287,7 @@ AdamW::compareHyperparameter(const std::string& key, const std::string& value)
  * @brief Check that all the necessary data exists to reload a given step.
  *
  * @param step iteration to check
- * @param output_binary flag for whether to look for binary data (.bin) or text
+ * @param output_binary flag for whether to look for binary data (.dat) or text
  * (.txt)
  *
  * @return (bool) flag for whether the necessary files were found
@@ -297,16 +297,16 @@ AdamW::isValidStep(int step, bool output_binary)
 {
   bool valid = false;
   if (output_binary) {
-    if (checkFileExists("parameters_h_" + std::to_string(step) + ".bin") &
-        checkFileExists("parameters_J_" + std::to_string(step) + ".bin") &
-        checkFileExists("parameters_h_" + std::to_string(step - 1) + ".bin") &
-        checkFileExists("parameters_J_" + std::to_string(step - 1) + ".bin") &
-        checkFileExists("gradients_h_" + std::to_string(step) + ".bin") &
-        checkFileExists("gradients_J_" + std::to_string(step) + ".bin") &
-        checkFileExists("moment1_h_" + std::to_string(step) + ".bin") &
-        checkFileExists("moment1_J_" + std::to_string(step) + ".bin") &
-        checkFileExists("moment2_h_" + std::to_string(step) + ".bin") &
-        checkFileExists("moment2_J_" + std::to_string(step) + ".bin")) {
+    if (checkFileExists("parameters_h_" + std::to_string(step) + ".dat") &
+        checkFileExists("parameters_J_" + std::to_string(step) + ".dat") &
+        checkFileExists("parameters_h_" + std::to_string(step - 1) + ".dat") &
+        checkFileExists("parameters_J_" + std::to_string(step - 1) + ".dat") &
+        checkFileExists("gradients_h_" + std::to_string(step) + ".dat") &
+        checkFileExists("gradients_J_" + std::to_string(step) + ".dat") &
+        checkFileExists("moment1_h_" + std::to_string(step) + ".dat") &
+        checkFileExists("moment1_J_" + std::to_string(step) + ".dat") &
+        checkFileExists("moment2_h_" + std::to_string(step) + ".dat") &
+        checkFileExists("moment2_J_" + std::to_string(step) + ".dat")) {
       valid = true;
     }
   } else {
@@ -441,33 +441,33 @@ AdamW::reset()
  * @brief Re-load the model at a given step.
  *
  * @param step iteration to check
- * @param output_binary flag for whether to look for binary data (.bin) or text
+ * @param output_binary flag for whether to look for binary data (.dat) or text
  * (.txt)
  */
 void
 AdamW::restore(int step, bool output_binary)
 {
   if (output_binary) {
-    std::string param_h_file = "parameters_h_" + std::to_string(step) + ".bin";
-    std::string param_J_file = "parameters_J_" + std::to_string(step) + ".bin";
+    std::string param_h_file = "parameters_h_" + std::to_string(step) + ".dat";
+    std::string param_J_file = "parameters_J_" + std::to_string(step) + ".dat";
     params = loadPottsModel(param_h_file, param_J_file);
 
     std::string param_prev_h_file =
-      "parameters_h_" + std::to_string(step - 1) + ".bin";
+      "parameters_h_" + std::to_string(step - 1) + ".dat";
     std::string param_prev_J_file =
-      "parameters_J_" + std::to_string(step - 1) + ".bin";
+      "parameters_J_" + std::to_string(step - 1) + ".dat";
     params_prev = loadPottsModel(param_prev_h_file, param_prev_J_file);
 
-    std::string grad_h_file = "gradients_h_" + std::to_string(step) + ".bin";
-    std::string grad_J_file = "gradients_J_" + std::to_string(step) + ".bin";
+    std::string grad_h_file = "gradients_h_" + std::to_string(step) + ".dat";
+    std::string grad_J_file = "gradients_J_" + std::to_string(step) + ".dat";
     gradient = loadPottsModel(grad_h_file, grad_J_file);
 
-    std::string moment1_h_file = "moment1_h_" + std::to_string(step) + ".bin";
-    std::string moment1_J_file = "moment1_J_" + std::to_string(step) + ".bin";
+    std::string moment1_h_file = "moment1_h_" + std::to_string(step) + ".dat";
+    std::string moment1_J_file = "moment1_J_" + std::to_string(step) + ".dat";
     moment1 = loadPottsModel(moment1_h_file, moment1_J_file);
 
-    std::string moment2_h_file = "moment2_h_" + std::to_string(step) + ".bin";
-    std::string moment2_J_file = "moment2_J_" + std::to_string(step) + ".bin";
+    std::string moment2_h_file = "moment2_h_" + std::to_string(step) + ".dat";
+    std::string moment2_J_file = "moment2_J_" + std::to_string(step) + ".dat";
     moment2 = loadPottsModel(moment2_h_file, moment2_J_file);
   } else {
     std::string param_file = "parameters_" + std::to_string(step) + ".txt";
@@ -696,20 +696,20 @@ void
 AdamW::writeData(const std::string& str, bool output_binary)
 {
   if (output_binary) {
-    std::string param_h_file = "parameters_h_" + str + ".bin";
-    std::string param_J_file = "parameters_J_" + str + ".bin";
+    std::string param_h_file = "parameters_h_" + str + ".dat";
+    std::string param_J_file = "parameters_J_" + str + ".dat";
     writeParams(param_h_file, param_J_file);
 
-    std::string grad_h_file = "gradients_h_" + str + ".bin";
-    std::string grad_J_file = "gradients_J_" + str + ".bin";
+    std::string grad_h_file = "gradients_h_" + str + ".dat";
+    std::string grad_J_file = "gradients_J_" + str + ".dat";
     writeGradient(grad_h_file, grad_J_file);
 
-    std::string moment1_h_file = "moment1_h_" + str + ".bin";
-    std::string moment1_J_file = "moment1_J_" + str + ".bin";
+    std::string moment1_h_file = "moment1_h_" + str + ".dat";
+    std::string moment1_J_file = "moment1_J_" + str + ".dat";
     writeMoment1(moment1_h_file, moment1_J_file);
 
-    std::string moment2_h_file = "moment2_h_" + str + ".bin";
-    std::string moment2_J_file = "moment2_J_" + str + ".bin";
+    std::string moment2_h_file = "moment2_h_" + str + ".dat";
+    std::string moment2_J_file = "moment2_J_" + str + ".dat";
     writeMoment2(moment2_h_file, moment2_J_file);
   } else {
     std::string param_file = "parameters_" + str + ".txt";
@@ -730,7 +730,7 @@ AdamW::writeData(const std::string& str, bool output_binary)
  * @brief Delete the existing model data files for a given step.
  *
  * @param step iteration to check
- * @param output_binary flag for whether to look for binary data (.bin) or text
+ * @param output_binary flag for whether to look for binary data (.dat) or text
  * (.txt)
  *
  * This function is for clearing out steps with missing or incomplete data,
@@ -741,35 +741,35 @@ AdamW::deleteStep(int step, bool output_binary)
 {
   std::string file;
   if (output_binary) {
-    file = "parameters_h_" + std::to_string(step) + ".bin";
+    file = "parameters_h_" + std::to_string(step) + ".dat";
     if (checkFileExists(file))
       deleteFile(file);
 
-    file = "parameters_J_" + std::to_string(step) + ".bin";
+    file = "parameters_J_" + std::to_string(step) + ".dat";
     if (checkFileExists(file))
       deleteFile(file);
 
-    file = "gradients_h_" + std::to_string(step) + ".bin";
+    file = "gradients_h_" + std::to_string(step) + ".dat";
     if (checkFileExists(file))
       deleteFile(file);
 
-    file = "gradients_J_" + std::to_string(step) + ".bin";
+    file = "gradients_J_" + std::to_string(step) + ".dat";
     if (checkFileExists(file))
       deleteFile(file);
 
-    file = "moment1_h_" + std::to_string(step) + ".bin";
+    file = "moment1_h_" + std::to_string(step) + ".dat";
     if (checkFileExists(file))
       deleteFile(file);
 
-    file = "moment1_J_" + std::to_string(step) + ".bin";
+    file = "moment1_J_" + std::to_string(step) + ".dat";
     if (checkFileExists(file))
       deleteFile(file);
 
-    file = "moment2_h_" + std::to_string(step) + ".bin";
+    file = "moment2_h_" + std::to_string(step) + ".dat";
     if (checkFileExists(file))
       deleteFile(file);
 
-    file = "moment2_J_" + std::to_string(step) + ".bin";
+    file = "moment2_J_" + std::to_string(step) + ".dat";
     if (checkFileExists(file))
       deleteFile(file);
   } else {
@@ -805,26 +805,26 @@ void
 AdamW::writeStep(int step, bool output_binary)
 {
   if (output_binary) {
-    std::string param_h_file = "parameters_h_" + std::to_string(step) + ".bin";
-    std::string param_J_file = "parameters_J_" + std::to_string(step) + ".bin";
+    std::string param_h_file = "parameters_h_" + std::to_string(step) + ".dat";
+    std::string param_J_file = "parameters_J_" + std::to_string(step) + ".dat";
     writeParams(param_h_file, param_J_file);
 
     std::string param_prev_h_file =
-      "parameters_h_" + std::to_string(step - 1) + ".bin";
+      "parameters_h_" + std::to_string(step - 1) + ".dat";
     std::string param_prev_J_file =
-      "parameters_J_" + std::to_string(step - 1) + ".bin";
+      "parameters_J_" + std::to_string(step - 1) + ".dat";
     writeParamsPrevious(param_prev_h_file, param_prev_J_file);
 
-    std::string grad_h_file = "gradients_h_" + std::to_string(step) + ".bin";
-    std::string grad_J_file = "gradients_J_" + std::to_string(step) + ".bin";
+    std::string grad_h_file = "gradients_h_" + std::to_string(step) + ".dat";
+    std::string grad_J_file = "gradients_J_" + std::to_string(step) + ".dat";
     writeGradient(grad_h_file, grad_J_file);
 
-    std::string moment1_h_file = "moment1_h_" + std::to_string(step) + ".bin";
-    std::string moment1_J_file = "moment1_J_" + std::to_string(step) + ".bin";
+    std::string moment1_h_file = "moment1_h_" + std::to_string(step) + ".dat";
+    std::string moment1_J_file = "moment1_J_" + std::to_string(step) + ".dat";
     writeMoment1(moment1_h_file, moment1_J_file);
 
-    std::string moment2_h_file = "moment2_h_" + std::to_string(step) + ".bin";
-    std::string moment2_J_file = "moment2_J_" + std::to_string(step) + ".bin";
+    std::string moment2_h_file = "moment2_h_" + std::to_string(step) + ".dat";
+    std::string moment2_J_file = "moment2_J_" + std::to_string(step) + ".dat";
     writeMoment2(moment2_h_file, moment2_J_file);
   } else {
     std::string param_file = "parameters_" + std::to_string(step) + ".txt";

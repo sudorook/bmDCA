@@ -158,8 +158,8 @@ Sim::initialize(void)
 
   // Compute stats for training MSA
   msa_train_stats = std::make_shared<MSAStats>(msa_train, true);
-  msa_train_stats->writeFrequency1p("msa_stat_1p.bin");
-  msa_train_stats->writeFrequency2p("msa_stat_2p.bin");
+  msa_train_stats->writeFrequency1p("msa_stat_1p.dat");
+  msa_train_stats->writeFrequency2p("msa_stat_2p.dat");
   std::cout << std::endl;
 
   if (msa_validate) {
@@ -170,8 +170,8 @@ Sim::initialize(void)
 
     // Compute stats for validation MSA
     msa_validate_stats = std::make_shared<MSAStats>(msa_validate, true);
-    msa_validate_stats->writeFrequency1p("msa_stat_1p_validate.bin");
-    msa_validate_stats->writeFrequency2p("msa_stat_2p_validate.bin");
+    msa_validate_stats->writeFrequency1p("msa_stat_1p_validate.dat");
+    msa_validate_stats->writeFrequency2p("msa_stat_2p_validate.dat");
     std::cout << std::endl;
 
     if (!cross_validate) {
@@ -529,8 +529,8 @@ Sim::isValidStep(int step)
 {
   bool valid = false;
   if (checkFileExists("samples_" + std::to_string(step) + ".txt") &
-      checkFileExists("samples_stat_1p_" + std::to_string(step) + ".bin") &
-      checkFileExists("samples_stat_2p_" + std::to_string(step) + ".bin") &
+      checkFileExists("samples_stat_1p_" + std::to_string(step) + ".dat") &
+      checkFileExists("samples_stat_2p_" + std::to_string(step) + ".dat") &
       checkFileExists("energies_" + std::to_string(step) + ".txt")) {
     valid = true;
   } else if (checkFileExists("samples_" + std::to_string(step) + ".txt") &
@@ -646,19 +646,19 @@ Sim::deleteStep(int step)
     deleteFile(file);
 
   if (output_binary) {
-    file = "samples_stat_1p_" + std::to_string(step) + ".bin";
+    file = "samples_stat_1p_" + std::to_string(step) + ".dat";
     if (checkFileExists(file))
       deleteFile(file);
 
-    file = "samples_stat_2p_" + std::to_string(step) + ".bin";
+    file = "samples_stat_2p_" + std::to_string(step) + ".dat";
     if (checkFileExists(file))
       deleteFile(file);
 
-    file = "samples_stat_1p_sigma_" + std::to_string(step) + ".bin";
+    file = "samples_stat_1p_sigma_" + std::to_string(step) + ".dat";
     if (checkFileExists(file))
       deleteFile(file);
 
-    file = "samples_stat_2p_sigma_" + std::to_string(step) + ".bin";
+    file = "samples_stat_2p_sigma_" + std::to_string(step) + ".dat";
     if (checkFileExists(file))
       deleteFile(file);
   } else {

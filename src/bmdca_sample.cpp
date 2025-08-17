@@ -41,8 +41,8 @@ print_usage(void)
             << std::endl;
   std::cout << "                   -d <directory> -o <output flle>)"
             << std::endl;
-  std::cout << "  -p: parameters (txt) _or_ fields h (bin)" << std::endl;
-  std::cout << "  -P: couplings J (bin), required if fields h given"
+  std::cout << "  -p: parameters (txt) _or_ fields h (dat)" << std::endl;
+  std::cout << "  -P: couplings J (dat), required if fields h given"
             << std::endl;
   std::cout << "  -d: destination directory" << std::endl;
   std::cout << "  -o: output file name" << std::endl;

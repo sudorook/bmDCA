@@ -15,7 +15,7 @@ rm -f num_msa.txt weights.txt
 "${BMDCA_BIN}" -n num_msa.txt -w weights.txt -c <(sed -e "s/^step_max=.*/step_max=5/g" -e "s/^save_period=.*/save_period=5/g" "${EXAMPLE_BMDCA_CONF}")  -d results_2_steps
 "${BMDCA_BIN}" -n num_msa.txt -w weights.txt -c <(sed -e "s/^step_max=.*/step_max=10/g" -e "s/^save_period=.*/save_period=5/g" "${EXAMPLE_BMDCA_CONF}")  -d results_2_steps
 
-for FILE in results_continuous/*{.bin,.txt}; do
+for FILE in results_continuous/*{.dat,.txt}; do
   if ! cmp -s "${FILE}" "${FILE//continuous/2_steps}"; then
     echo "${FILE@Q} mismatch."
     exit 1
