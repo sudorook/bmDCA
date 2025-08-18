@@ -94,8 +94,8 @@ void
 SampleStats2D::writeStep(int step, bool output_binary)
 {
   if (output_binary) {
-    writeFrequency1p("samples_stat_1p_" + std::to_string(step) + ".dat");
-    writeFrequency2p("samples_stat_2p_" + std::to_string(step) + ".dat");
+    writeFrequency1p("samples_stat_1p_" + std::to_string(step) + ".bin");
+    writeFrequency2p("samples_stat_2p_" + std::to_string(step) + ".bin");
   } else {
     writeFrequency1pAscii("samples_stat_1p_" + std::to_string(step) + ".txt");
     writeFrequency2pAscii("samples_stat_2p_" + std::to_string(step) + ".txt");
@@ -115,8 +115,8 @@ void
 SampleStats2D::writeData(std::string str, bool output_binary)
 {
   if (output_binary) {
-    writeFrequency1p("samples_stat_1p_" + str + ".dat");
-    writeFrequency2p("samples_stat_2p_" + str + ".dat");
+    writeFrequency1p("samples_stat_1p_" + str + ".bin");
+    writeFrequency2p("samples_stat_2p_" + str + ".bin");
   } else {
     writeFrequency1pAscii("samples_stat_1p_" + str + ".txt");
     writeFrequency2pAscii("samples_stat_2p_" + str + ".txt");
@@ -512,10 +512,10 @@ void
 SampleStats3D::writeStep(int step, bool output_binary)
 {
   if (output_binary) {
-    writeFrequency1p("samples_stat_1p_" + std::to_string(step) + ".dat",
-                     "samples_stat_1p_sigma_" + std::to_string(step) + ".dat");
-    writeFrequency2p("samples_stat_2p_" + std::to_string(step) + ".dat",
-                     "samples_stat_2p_sigma_" + std::to_string(step) + ".dat");
+    writeFrequency1p("samples_stat_1p_" + std::to_string(step) + ".bin",
+                     "samples_stat_1p_sigma_" + std::to_string(step) + ".bin");
+    writeFrequency2p("samples_stat_2p_" + std::to_string(step) + ".bin",
+                     "samples_stat_2p_sigma_" + std::to_string(step) + ".bin");
   } else {
     writeFrequency1pAscii("samples_stat_1p_" + std::to_string(step) + ".txt",
                           "samples_stat_1p_sigma_" + std::to_string(step) +
@@ -541,10 +541,10 @@ void
 SampleStats3D::writeData(std::string str, bool output_binary)
 {
   if (output_binary) {
-    writeFrequency1p("samples_stat_1p_" + str + ".dat",
-                     "samples_stat_1p_sigma_" + str + ".dat");
-    writeFrequency2p("samples_stat_2p_" + str + ".dat",
-                     "samples_stat_2p_sigma_" + str + ".dat");
+    writeFrequency1p("samples_stat_1p_" + str + ".bin",
+                     "samples_stat_1p_sigma_" + str + ".bin");
+    writeFrequency2p("samples_stat_2p_" + str + ".bin",
+                     "samples_stat_2p_sigma_" + str + ".bin");
   } else {
     writeFrequency1pAscii("samples_stat_1p_" + str + ".txt",
                           "samples_stat_1p_sigma_" + str + ".txt");

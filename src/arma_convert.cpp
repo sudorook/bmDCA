@@ -36,8 +36,8 @@ print_usage(void)
   std::cout << "(e.g. arma2ascii -p <params h> -P <params J>" << std::endl;
   std::cout << " -OR- arma2ascii -p <params>" << std::endl;
   std::cout << " -OR- arma2ascii -s <stats file>)" << std::endl;
-  std::cout << "  -p: parameters (txt) _or_ fields h (dat)" << std::endl;
-  std::cout << "  -P: couplings J (dat), *required* if fields h given"
+  std::cout << "  -p: parameters (txt) _or_ fields h (bin)" << std::endl;
+  std::cout << "  -P: couplings J (bin), *required* if fields h given"
             << std::endl;
   std::cout << "  -s: sequence sample statistics file" << std::endl;
   std::cout << "  -h: print usage (i.e. this message)" << std::endl;

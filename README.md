@@ -166,7 +166,7 @@ bmdca_sample -p <parameters.txt> -d <output_directory> \
 If instead, you have parameters in binary format, run:
 
 ```sh
-bmdca_sample -p <parameters_h.dat> -P <parameters_J.dat>  \
+bmdca_sample -p <parameters_h.bin> -P <parameters_J.bin>  \
   -d <output_directory> -o <output_file.txt> \
   -n <number_of_sequences> -r <number_of_indep_sampling_runs> \
   -c <config_file.conf>
@@ -185,8 +185,8 @@ The command line flags are:
 - `-r`: number of independent sequencing runs (default: 10)
 
 Note, you only need to specify the `-p` option if the `bmdca` output is stored
-in text files. For binary parameters, which are stored in two `_h_%d.dat` and
-`_J_%d.dat` files, pass the fields (h) file to `-p` and couplings (J) file to
+in text files. For binary parameters, which are stored in two `_h_%d.bin` and
+`_J_%d.bin` files, pass the fields (h) file to `-p` and couplings (J) file to
 `-P`.
 
 ### Conversion from binary to text (`arma2ascii`)
@@ -200,13 +200,13 @@ to convert binary-stored outputs to ASCII.
 To convert parameters:
 
 ```sh
-arma2ascii -p <parameters_h.dat> -P <parameters_J.dat>
+arma2ascii -p <parameters_h.bin> -P <parameters_J.bin>
 ```
 
 To convert stats files:
 
 ```sh
-arma2ascii -s <MC_stat_file.dat>
+arma2ascii -s <MC_stat_file.bin>
 ```
 
 The output fill be stored in a `.txt` file.
@@ -461,42 +461,42 @@ Stochastic gradient descent with momentum.
 - `msa_validate_numerical.txt`: numerical representation on input MSA for
   validation
 - `parameters_%d.txt`: learned Potts model parameters (J and h)
-- `parameters_h_%d.dat` and `parameters_J_%d.dat`: learned Potts model
+- `parameters_h_%d.bin` and `parameters_J_%d.bin`: learned Potts model
   parameters (J and h), stored in arma binary format (see `output_binary=true`
   flag from config file).
 - `gradients_%d.txt`: learned Potts model gradients (J and h)
-- `gradients_h_%d.dat` and `gradients_J_%d.dat`: learned Potts model gradients
+- `gradients_h_%d.bin` and `gradients_J_%d.bin`: learned Potts model gradients
   (J and h), stored in arma binary format (see `output_binary=true` flag from
   config file).
 - `moment1_%d.txt`: first moment (J and h) of the gradients
-- `moment1_h_%d.dat` and `moment1_J_%d.dat`: first moment (J and h) of the
+- `moment1_h_%d.bin` and `moment1_J_%d.bin`: first moment (J and h) of the
   gradients, stored in arma binary format (see `output_binary=true` flag from
   config file).
 - `moment2_%d.txt`: second moment (J and h) of the gradients
-- `moment2_h_%d.dat` and `moment2_J_%d.dat`: second moment (J and h) of the
+- `moment2_h_%d.bin` and `moment2_J_%d.bin`: second moment (J and h) of the
   gradients, stored in arma binary format (see `output_binary=true` flag from
   config file).
 - `learning_rates_%d.txt`: per-parameter learning rates (J and h)
-- `learning_rates_h_%d.dat` and `learning_rates_J_%d.dat`: learning rates stored
+- `learning_rates_h_%d.bin` and `learning_rates_J_%d.bin`: learning rates stored
   in arma binary format (see `output_binary=true` flag from config file).
 - `msa_weights.txt`: weights for each sequence, either a number between 0 and 1
   based on sequence similarity or 1 if re-weighting was not specified
 - `msa_validate_weights.txt`: weights for each validation sequence, either a
   number between 0 and 1 based on sequence similarity or 1 if re-weighting was
   not specified
-- `msa_stat_1p.dat`: table of frequencies for each amino acid at each position
+- `msa_stat_1p.bin`: table of frequencies for each amino acid at each position
   in the MSA
-- `msa_stat_2p.dat`: table of frequencies for pairs of amino acids at each pair
+- `msa_stat_2p.bin`: table of frequencies for pairs of amino acids at each pair
   of positions in the MSA (due to symmetry, only the 'upper triangle' of
   positions is stored)
-- `samples_stat_1p_%d.dat`: table of frequencies for each amino acid at each
+- `samples_stat_1p_%d.bin`: table of frequencies for each amino acid at each
   position of the set of MCMC-sampled sequences.
-- `samples_stat_1p_sigma_%d.dat`: table of standard deviation of frequencies
+- `samples_stat_1p_sigma_%d.bin`: table of standard deviation of frequencies
   over replicates for each amino acid at each position of the set of
   MCMC-sampled sequences.
-- `samples_stat_2p_%d.dat`: table of frequencies for pairs of amino acids at
+- `samples_stat_2p_%d.bin`: table of frequencies for pairs of amino acids at
   each pair of positions from the set of MCMC-sampled sequences
-- `samples_stat_2p_sigma_%d.dat`: table of standard deviation over replicates of
+- `samples_stat_2p_sigma_%d.bin`: table of standard deviation over replicates of
   frequencies for pairs of amino acids at each pair of positions from the set of
   MCMC-sampled sequences
 
@@ -582,7 +582,7 @@ The remaining lines are the sequences themselves.
 #### Armadillo binary
 
 By default, `bmdca` will save learned parameters in Armadillo binary format.
-These files (`parameters_h_%d.dat` and `parameters_J_%d.dat`) cannot be directly
+These files (`parameters_h_%d.bin` and `parameters_J_%d.bin`) cannot be directly
 viewed by a text editor. To view the contents, convert the files to ASCII by
 using the provided `arma2ascii` tool.
 
