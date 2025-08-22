@@ -36,7 +36,7 @@ Reparam::Reparam()
  * @param file_name config file string
  */
 void
-Reparam::loadHyperparameters(std::string file_name)
+Reparam::loadHyperparameters(const std::string file_name)
 {
   std::ifstream file(file_name);
   if (file.is_open()) {
@@ -79,7 +79,7 @@ Reparam::loadHyperparameters(std::string file_name)
  * @return (bool) flag that all hyperparameters are equivalent
  */
 bool
-Reparam::compareHyperparameters(std::string file_name)
+Reparam::compareHyperparameters(const std::string file_name)
 {
   std::ifstream file(file_name);
   bool all_same = true;
@@ -121,7 +121,7 @@ Reparam::compareHyperparameters(std::string file_name)
  * @param value value at which to set hyperparameter
  */
 void
-Reparam::setHyperparameter(const std::string& key, const std::string& value)
+Reparam::setHyperparameter(const std::string key, const std::string value)
 {
   // It's not possible to use switch blocks on strings because they are char*
   // arrays, not actual types.
@@ -176,7 +176,7 @@ Reparam::checkHyperparameters(void) {};
  * file or overwrite it
  */
 void
-Reparam::writeHyperparameters(std::string output_file, bool append)
+Reparam::writeHyperparameters(const std::string output_file, bool append)
 {
   std::ofstream stream;
   if (append) {
@@ -214,7 +214,7 @@ Reparam::writeHyperparameters(std::string output_file, bool append)
  * @return (bool) flag for whether the stored and given values are equal
  */
 bool
-Reparam::compareHyperparameter(std::string key, std::string value)
+Reparam::compareHyperparameter(const std::string key, const std::string value)
 {
   bool same = true;
   // It's not possible to use switch blocks on strings because they are char*
@@ -670,7 +670,7 @@ Reparam::updateParameters(void)
  * @param output_binary flag for whether to write text or binary files.
  */
 void
-Reparam::writeData(std::string str, bool output_binary)
+Reparam::writeData(const std::string str, bool output_binary)
 {
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + str + ".bin";
@@ -817,7 +817,7 @@ Reparam::writeStep(int step, bool output_binary)
  * @param output_file_J file string for couplings
  */
 void
-Reparam::writeParams(std::string output_file_h, std::string output_file_J)
+Reparam::writeParams(const std::string output_file_h, const std::string output_file_J)
 {
   params.h.save(output_file_h, arma::arma_binary);
   params.J.save(output_file_J, arma::arma_binary);
@@ -829,7 +829,7 @@ Reparam::writeParams(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-Reparam::writeParamsAscii(std::string output_file)
+Reparam::writeParamsAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -864,8 +864,8 @@ Reparam::writeParamsAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-Reparam::writeParamsPrevious(std::string output_file_h,
-                             std::string output_file_J)
+Reparam::writeParamsPrevious(const std::string output_file_h,
+                             const std::string output_file_J)
 {
   params_prev.h.save(output_file_h, arma::arma_binary);
   params_prev.J.save(output_file_J, arma::arma_binary);
@@ -877,7 +877,7 @@ Reparam::writeParamsPrevious(std::string output_file_h,
  * @param output_file file string for fields and couplings
  */
 void
-Reparam::writeParamsPreviousAscii(std::string output_file)
+Reparam::writeParamsPreviousAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -912,7 +912,7 @@ Reparam::writeParamsPreviousAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-Reparam::writeGradient(std::string output_file_h, std::string output_file_J)
+Reparam::writeGradient(const std::string output_file_h, const std::string output_file_J)
 {
   gradient.h.save(output_file_h, arma::arma_binary);
   gradient.J.save(output_file_J, arma::arma_binary);
@@ -924,7 +924,7 @@ Reparam::writeGradient(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-Reparam::writeGradientAscii(std::string output_file)
+Reparam::writeGradientAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -959,8 +959,8 @@ Reparam::writeGradientAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-Reparam::writeGradientPrevious(std::string output_file_h,
-                               std::string output_file_J)
+Reparam::writeGradientPrevious(const std::string output_file_h,
+                               const std::string output_file_J)
 {
   gradient_prev.h.save(output_file_h, arma::arma_binary);
   gradient_prev.J.save(output_file_J, arma::arma_binary);
@@ -972,7 +972,7 @@ Reparam::writeGradientPrevious(std::string output_file_h,
  * @param output_file file string for fields and couplings
  */
 void
-Reparam::writeGradientPreviousAscii(std::string output_file)
+Reparam::writeGradientPreviousAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -1007,8 +1007,8 @@ Reparam::writeGradientPreviousAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-Reparam::writeLearningRates(std::string output_file_h,
-                            std::string output_file_J)
+Reparam::writeLearningRates(const std::string output_file_h,
+                            const std::string output_file_J)
 {
   learning_rates.h.save(output_file_h, arma::arma_binary);
   learning_rates.J.save(output_file_J, arma::arma_binary);
@@ -1020,7 +1020,7 @@ Reparam::writeLearningRates(std::string output_file_h,
  * @param output_file file string for fields and couplings
  */
 void
-Reparam::writeLearningRatesAscii(std::string output_file)
+Reparam::writeLearningRatesAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 

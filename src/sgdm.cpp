@@ -36,7 +36,7 @@ SGDM::SGDM()
  * @param file_name config file string
  */
 void
-SGDM::loadHyperparameters(std::string file_name)
+SGDM::loadHyperparameters(const std::string file_name)
 {
   std::ifstream file(file_name);
   if (file.is_open()) {
@@ -79,7 +79,7 @@ SGDM::loadHyperparameters(std::string file_name)
  * @return (bool) flag that all hyperparameters are equivalent
  */
 bool
-SGDM::compareHyperparameters(std::string file_name)
+SGDM::compareHyperparameters(const std::string file_name)
 {
   std::ifstream file(file_name);
   bool all_same = true;
@@ -121,7 +121,7 @@ SGDM::compareHyperparameters(std::string file_name)
  * @param value value at which to set hyperparameter
  */
 void
-SGDM::setHyperparameter(std::string key, std::string value)
+SGDM::setHyperparameter(const std::string key, const std::string value)
 {
   // It's not possible to use switch blocks on strings because they are char*
   // arrays, not actual types.
@@ -176,7 +176,7 @@ SGDM::checkHyperparameters(void) {};
  * file or overwrite it
  */
 void
-SGDM::writeHyperparameters(std::string output_file, bool append)
+SGDM::writeHyperparameters(const std::string output_file, bool append)
 {
   std::ofstream stream;
   if (append) {
@@ -212,7 +212,7 @@ SGDM::writeHyperparameters(std::string output_file, bool append)
  * @return (bool) flag for whether the stored and given values are equal
  */
 bool
-SGDM::compareHyperparameter(std::string key, std::string value)
+SGDM::compareHyperparameter(const std::string key, const std::string value)
 {
   bool same = true;
   // It's not possible to use switch blocks on strings because they are char*
@@ -601,7 +601,7 @@ SGDM::updateParameters(void)
  * @param output_binary flag for whether to write text or binary files.
  */
 void
-SGDM::writeData(std::string str, bool output_binary)
+SGDM::writeData(const std::string str, bool output_binary)
 {
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + str + ".bin";
@@ -734,7 +734,7 @@ SGDM::writeStep(int step, bool output_binary)
  * @param output_file_J file string for couplings
  */
 void
-SGDM::writeParams(std::string output_file_h, std::string output_file_J)
+SGDM::writeParams(const std::string output_file_h, const std::string output_file_J)
 {
   params.h.save(output_file_h, arma::arma_binary);
   params.J.save(output_file_J, arma::arma_binary);
@@ -746,7 +746,7 @@ SGDM::writeParams(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-SGDM::writeParamsAscii(std::string output_file)
+SGDM::writeParamsAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -781,7 +781,7 @@ SGDM::writeParamsAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-SGDM::writeParamsPrevious(std::string output_file_h, std::string output_file_J)
+SGDM::writeParamsPrevious(const std::string output_file_h, const std::string output_file_J)
 {
   params_prev.h.save(output_file_h, arma::arma_binary);
   params_prev.J.save(output_file_J, arma::arma_binary);
@@ -793,7 +793,7 @@ SGDM::writeParamsPrevious(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-SGDM::writeParamsPreviousAscii(std::string output_file)
+SGDM::writeParamsPreviousAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -828,7 +828,7 @@ SGDM::writeParamsPreviousAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-SGDM::writeMoment1(std::string output_file_h, std::string output_file_J)
+SGDM::writeMoment1(const std::string output_file_h, const std::string output_file_J)
 {
   moment1.h.save(output_file_h, arma::arma_binary);
   moment1.J.save(output_file_J, arma::arma_binary);
@@ -840,7 +840,7 @@ SGDM::writeMoment1(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-SGDM::writeMoment1Ascii(std::string output_file)
+SGDM::writeMoment1Ascii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -875,7 +875,7 @@ SGDM::writeMoment1Ascii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-SGDM::writeGradient(std::string output_file_h, std::string output_file_J)
+SGDM::writeGradient(const std::string output_file_h, const std::string output_file_J)
 {
   gradient.h.save(output_file_h, arma::arma_binary);
   gradient.J.save(output_file_J, arma::arma_binary);
@@ -887,7 +887,7 @@ SGDM::writeGradient(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-SGDM::writeGradientAscii(std::string output_file)
+SGDM::writeGradientAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 

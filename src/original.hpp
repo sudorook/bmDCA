@@ -45,12 +45,12 @@ public:
   void reset(void) override;
   void restore(int, bool = true) override;
 
-  void writeData(std::string, bool = true) override;
+  void writeData(const std::string, bool = true) override;
   void writeStep(int, bool = true) override;
   void deleteStep(int, bool = true) override;
 
-  void loadHyperparameters(std::string) override;
-  void writeHyperparameters(std::string, bool = true) override;
+  void loadHyperparameters(const std::string) override;
+  void writeHyperparameters(const std::string, bool = true) override;
   bool isValidStep(int, bool = true) override;
 
 private:
@@ -78,22 +78,22 @@ private:
   void updateLearningRates(void);
   void updateParameters(void);
 
-  bool compareHyperparameters(std::string) override;
-  bool compareHyperparameter(std::string, std::string);
+  bool compareHyperparameters(const std::string) override;
+  bool compareHyperparameter(const std::string, const std::string);
   void checkHyperparameters(void) override;
-  void setHyperparameter(std::string, std::string);
+  void setHyperparameter(const std::string, const std::string);
 
-  void writeParams(std::string, std::string);
-  void writeParamsPrevious(std::string, std::string);
-  void writeGradient(std::string, std::string);
-  void writeGradientPrevious(std::string, std::string);
-  void writeLearningRates(std::string, std::string);
+  void writeParams(const std::string, const std::string);
+  void writeParamsPrevious(const std::string, const std::string);
+  void writeGradient(const std::string, const std::string);
+  void writeGradientPrevious(const std::string, const std::string);
+  void writeLearningRates(const std::string, const std::string);
 
-  void writeParamsAscii(std::string);
-  void writeParamsPreviousAscii(std::string);
-  void writeGradientAscii(std::string);
-  void writeGradientPreviousAscii(std::string);
-  void writeLearningRatesAscii(std::string);
+  void writeParamsAscii(const std::string);
+  void writeParamsPreviousAscii(const std::string);
+  void writeGradientAscii(const std::string);
+  void writeGradientPreviousAscii(const std::string);
+  void writeLearningRatesAscii(const std::string);
 };
 
 #endif // SRC_ORIGINAL_HPP_

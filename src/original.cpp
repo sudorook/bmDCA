@@ -36,7 +36,7 @@ Original::Original()
  * @param file_name config file string
  */
 void
-Original::loadHyperparameters(std::string file_name)
+Original::loadHyperparameters(const std::string file_name)
 {
   std::ifstream file(file_name);
   if (file.is_open()) {
@@ -79,7 +79,7 @@ Original::loadHyperparameters(std::string file_name)
  * @return (bool) flag that all hyperparameters are equivalent
  */
 bool
-Original::compareHyperparameters(std::string file_name)
+Original::compareHyperparameters(const std::string file_name)
 {
   std::ifstream file(file_name);
   bool all_same = true;
@@ -121,7 +121,7 @@ Original::compareHyperparameters(std::string file_name)
  * @param value value at which to set hyperparameter
  */
 void
-Original::setHyperparameter(std::string key, std::string value)
+Original::setHyperparameter(const std::string key, const std::string value)
 {
   // It's not possible to use switch blocks on strings because they are char*
   // arrays, not actual types.
@@ -190,7 +190,7 @@ Original::checkHyperparameters(void) {};
  * file or overwrite it
  */
 void
-Original::writeHyperparameters(std::string output_file, bool append)
+Original::writeHyperparameters(const std::string output_file, bool append)
 {
   std::ofstream stream;
   if (append) {
@@ -231,7 +231,7 @@ Original::writeHyperparameters(std::string output_file, bool append)
  * @return (bool) flag for whether the stored and given values are equal
  */
 bool
-Original::compareHyperparameter(std::string key, std::string value)
+Original::compareHyperparameter(const std::string key, const std::string value)
 {
   bool same = true;
   // It's not possible to use switch blocks on strings because they are char*
@@ -681,7 +681,7 @@ Original::updateParameters(void)
  * @param output_binary flag for whether to write text or binary files.
  */
 void
-Original::writeData(std::string str, bool output_binary)
+Original::writeData(const std::string str, bool output_binary)
 {
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + str + ".bin";
@@ -828,7 +828,7 @@ Original::writeStep(int step, bool output_binary)
  * @param output_file_J file string for couplings
  */
 void
-Original::writeParams(std::string output_file_h, std::string output_file_J)
+Original::writeParams(const std::string output_file_h, const std::string output_file_J)
 {
   params.h.save(output_file_h, arma::arma_binary);
   params.J.save(output_file_J, arma::arma_binary);
@@ -840,7 +840,7 @@ Original::writeParams(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-Original::writeParamsAscii(std::string output_file)
+Original::writeParamsAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -875,8 +875,8 @@ Original::writeParamsAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-Original::writeParamsPrevious(std::string output_file_h,
-                              std::string output_file_J)
+Original::writeParamsPrevious(const std::string output_file_h,
+                              const std::string output_file_J)
 {
   params_prev.h.save(output_file_h, arma::arma_binary);
   params_prev.J.save(output_file_J, arma::arma_binary);
@@ -888,7 +888,7 @@ Original::writeParamsPrevious(std::string output_file_h,
  * @param output_file file string for fields and couplings
  */
 void
-Original::writeParamsPreviousAscii(std::string output_file)
+Original::writeParamsPreviousAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -923,7 +923,7 @@ Original::writeParamsPreviousAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-Original::writeGradient(std::string output_file_h, std::string output_file_J)
+Original::writeGradient(const std::string output_file_h, const std::string output_file_J)
 {
   gradient.h.save(output_file_h, arma::arma_binary);
   gradient.J.save(output_file_J, arma::arma_binary);
@@ -935,7 +935,7 @@ Original::writeGradient(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-Original::writeGradientAscii(std::string output_file)
+Original::writeGradientAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -970,8 +970,8 @@ Original::writeGradientAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-Original::writeGradientPrevious(std::string output_file_h,
-                                std::string output_file_J)
+Original::writeGradientPrevious(const std::string output_file_h,
+                                const std::string output_file_J)
 {
   gradient_prev.h.save(output_file_h, arma::arma_binary);
   gradient_prev.J.save(output_file_J, arma::arma_binary);
@@ -983,7 +983,7 @@ Original::writeGradientPrevious(std::string output_file_h,
  * @param output_file file string for fields and couplings
  */
 void
-Original::writeGradientPreviousAscii(std::string output_file)
+Original::writeGradientPreviousAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -1018,8 +1018,8 @@ Original::writeGradientPreviousAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-Original::writeLearningRates(std::string output_file_h,
-                             std::string output_file_J)
+Original::writeLearningRates(const std::string output_file_h,
+                             const std::string output_file_J)
 {
   learning_rates.h.save(output_file_h, arma::arma_binary);
   learning_rates.J.save(output_file_J, arma::arma_binary);
@@ -1031,7 +1031,7 @@ Original::writeLearningRates(std::string output_file_h,
  * @param output_file file string for fields and couplings
  */
 void
-Original::writeLearningRatesAscii(std::string output_file)
+Original::writeLearningRatesAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 

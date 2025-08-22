@@ -36,7 +36,7 @@ RAdam::RAdam(void)
  * @param file_name config file string
  */
 void
-RAdam::loadHyperparameters(std::string file_name)
+RAdam::loadHyperparameters(const std::string file_name)
 {
   std::ifstream file(file_name);
   if (file.is_open()) {
@@ -79,7 +79,7 @@ RAdam::loadHyperparameters(std::string file_name)
  * @return (bool) flag that all hyperparameters are equivalent
  */
 bool
-RAdam::compareHyperparameters(std::string file_name)
+RAdam::compareHyperparameters(const std::string file_name)
 {
   std::ifstream file(file_name);
   bool all_same = true;
@@ -121,7 +121,7 @@ RAdam::compareHyperparameters(std::string file_name)
  * @param value value at which to set hyperparameter
  */
 void
-RAdam::setHyperparameter(std::string key, std::string value)
+RAdam::setHyperparameter(const std::string key, const std::string value)
 {
   // It's not possible to use switch blocks on strings because they are char*
   // arrays, not actual types.
@@ -172,7 +172,7 @@ RAdam::checkHyperparameters(void) {};
  * file or overwrite it
  */
 void
-RAdam::writeHyperparameters(std::string output_file, bool append)
+RAdam::writeHyperparameters(const std::string output_file, bool append)
 {
   std::ofstream stream;
   if (append) {
@@ -206,7 +206,7 @@ RAdam::writeHyperparameters(std::string output_file, bool append)
  * @return (bool) flag for whether the stored and given values are equal
  */
 bool
-RAdam::compareHyperparameter(std::string key, std::string value)
+RAdam::compareHyperparameter(const std::string key, const std::string value)
 {
   bool same = true;
   // It's not possible to use switch blocks on strings because they are char*
@@ -659,7 +659,7 @@ RAdam::updateParameters(void)
  * @param output_binary flag for whether to write text or binary files.
  */
 void
-RAdam::writeData(std::string str, bool output_binary)
+RAdam::writeData(const std::string str, bool output_binary)
 {
   if (output_binary) {
     std::string param_h_file = "parameters_h_" + str + ".bin";
@@ -818,7 +818,7 @@ RAdam::writeStep(int step, bool output_binary)
  * @param output_file_J file string for couplings
  */
 void
-RAdam::writeParams(std::string output_file_h, std::string output_file_J)
+RAdam::writeParams(const std::string output_file_h, const std::string output_file_J)
 {
   params.h.save(output_file_h, arma::arma_binary);
   params.J.save(output_file_J, arma::arma_binary);
@@ -830,7 +830,7 @@ RAdam::writeParams(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-RAdam::writeParamsAscii(std::string output_file)
+RAdam::writeParamsAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -865,7 +865,7 @@ RAdam::writeParamsAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-RAdam::writeParamsPrevious(std::string output_file_h, std::string output_file_J)
+RAdam::writeParamsPrevious(const std::string output_file_h, const std::string output_file_J)
 {
   params_prev.h.save(output_file_h, arma::arma_binary);
   params_prev.J.save(output_file_J, arma::arma_binary);
@@ -877,7 +877,7 @@ RAdam::writeParamsPrevious(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-RAdam::writeParamsPreviousAscii(std::string output_file)
+RAdam::writeParamsPreviousAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -912,7 +912,7 @@ RAdam::writeParamsPreviousAscii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-RAdam::writeMoment1(std::string output_file_h, std::string output_file_J)
+RAdam::writeMoment1(const std::string output_file_h, const std::string output_file_J)
 {
   moment1.h.save(output_file_h, arma::arma_binary);
   moment1.J.save(output_file_J, arma::arma_binary);
@@ -925,7 +925,7 @@ RAdam::writeMoment1(std::string output_file_h, std::string output_file_J)
  * @param output_file_J file string for couplings
  */
 void
-RAdam::writeMoment2(std::string output_file_h, std::string output_file_J)
+RAdam::writeMoment2(const std::string output_file_h, const std::string output_file_J)
 {
   moment2.h.save(output_file_h, arma::arma_binary);
   moment2.J.save(output_file_J, arma::arma_binary);
@@ -937,7 +937,7 @@ RAdam::writeMoment2(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-RAdam::writeMoment1Ascii(std::string output_file)
+RAdam::writeMoment1Ascii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -971,7 +971,7 @@ RAdam::writeMoment1Ascii(std::string output_file)
  * @param output_file file string for fields and couplings
  */
 void
-RAdam::writeMoment2Ascii(std::string output_file)
+RAdam::writeMoment2Ascii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
@@ -1006,7 +1006,7 @@ RAdam::writeMoment2Ascii(std::string output_file)
  * @param output_file_J file string for couplings
  */
 void
-RAdam::writeGradient(std::string output_file_h, std::string output_file_J)
+RAdam::writeGradient(const std::string output_file_h, const std::string output_file_J)
 {
   gradient.h.save(output_file_h, arma::arma_binary);
   gradient.J.save(output_file_J, arma::arma_binary);
@@ -1018,7 +1018,7 @@ RAdam::writeGradient(std::string output_file_h, std::string output_file_J)
  * @param output_file file string for fields and couplings
  */
 void
-RAdam::writeGradientAscii(std::string output_file)
+RAdam::writeGradientAscii(const std::string output_file)
 {
   std::ofstream output_stream(output_file);
 
