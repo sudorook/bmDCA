@@ -110,7 +110,7 @@ Sim::Sim(std::shared_ptr<MSA> msa_train,
   model->checkHyperparameters();
 
   if (!dest_dir.empty()) {
-    chdir(dest_dir.c_str());
+    int err = chdir(dest_dir.c_str());
   }
 
   if ((!force_restart) & (checkFileExists(hyperparameter_file))) {
