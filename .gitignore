@@ -12,6 +12,79 @@ src/numeric2fasta
 ################################################################################
 
 #
+# FROM: https://raw.githubusercontent.com/sudorook/gitignore/tweak/Global/Agents.gitignore
+#
+
+# AI agents and assistants
+#
+# Some common agent instruction and project configuration files are listed
+# below as commented-out examples. They are often intentionally committed and
+# shared with a team, so only uncomment them if they are local-only in your
+# project.
+
+# GEMINI.md
+# WARP.md
+# CRUSH.md
+# QWEN.md
+
+# OpenAI Codex
+# AGENTS.md
+# .codex/
+
+# Aider
+.aider.input.history
+.aider.chat.history.md
+.aider.llm.history
+.aider.tags.cache.v*
+# .aiderignore
+
+# Claude Code
+.claude/*.local.json
+.claude/**/*.log
+CLAUDE.local.md
+# .claude/
+
+# Gemini CLI
+gemini-debug.log
+.gemini-clipboard/
+# .gemini/
+
+# Cursor AI
+# .cursorrules
+# .cursor/
+# .cursor.json
+# .cursor-settings.yaml
+
+# Continue
+# .continue/
+# .continuerc.json
+
+# Cline
+# .cline/
+# .clinerules
+# cline.json
+
+# Other agent/editor project config
+# .warp/
+# .crush/
+# .codeium/
+# .deepseek/
+# .amazon-codewhisperer/
+# .tabnineignore
+# .tabnine/
+
+# GitHub Copilot
+# .github/copilot-instructions.md
+
+# Windsurf Editor
+# .windsurfrules
+# .windsurf/
+
+# Replit AI Development
+# .replit
+# replit.nix
+
+#
 # FROM: https://raw.githubusercontent.com/sudorook/gitignore/tweak/Global/Archives.gitignore
 #
 
@@ -113,11 +186,23 @@ Makefile
 # FROM: https://raw.githubusercontent.com/sudorook/gitignore/tweak/Global/Backup.gitignore
 #
 
+# Generic backup files
 *.bak
+*.back
+*.backup
+
+# Norton Ghost backup files
 *.gho
+
+# Generic original files
 *.ori
 *.orig
+*.original
+
+# Generic temporary files
 *.tmp
+*.temp
+*.temporary
 
 #
 # FROM: https://raw.githubusercontent.com/sudorook/gitignore/tweak/C++.gitignore
@@ -147,7 +232,6 @@ Makefile
 *.dylib
 *.dll
 *.so.*
-
 
 # Fortran module files
 *.mod
@@ -345,42 +429,6 @@ tmbootpicker.efi
 
 *.orig
 *.rej
-
-#
-# FROM: https://raw.githubusercontent.com/sudorook/gitignore/tweak/Global/SublimeText.gitignore
-#
-
-# Cache files for Sublime Text
-*.tmlanguage.cache
-*.tmPreferences.cache
-*.stTheme.cache
-
-# Workspace files are user-specific
-*.sublime-workspace
-
-# Project files should be checked into the repository, unless a significant
-# proportion of contributors will probably not be using Sublime Text
-# *.sublime-project
-
-# SFTP configuration file
-sftp-config.json
-sftp-config-alt*.json
-
-# Package control specific files
-Package Control.last-run
-Package Control.ca-list
-Package Control.ca-bundle
-Package Control.system-ca-bundle
-Package Control.cache/
-Package Control.ca-certs/
-Package Control.merged-ca-bundle
-Package Control.user-ca-bundle
-oscrypto-ca-bundle.crt
-bh_unicode_properties.cache
-
-# Sublime-github package stores a github token in this file
-# https://packagecontrol.io/packages/sublime-github
-GitHub.sublime-settings
 
 #
 # FROM: https://raw.githubusercontent.com/sudorook/gitignore/tweak/Global/Vim.gitignore
@@ -845,6 +893,7 @@ FodyWeavers.xsd
 # FROM: https://raw.githubusercontent.com/sudorook/gitignore/tweak/Global/VisualStudioCode.gitignore
 #
 
+# Visual Studio Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -884,10 +933,3 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-
-#
-# FROM: https://raw.githubusercontent.com/sudorook/gitignore/tweak/Global/Xcode.gitignore
-#
-
-## User settings
-xcuserdata/
