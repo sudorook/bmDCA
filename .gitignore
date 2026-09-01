@@ -889,6 +889,9 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
+# Official VS Code C# Dev Kit Extension exclusion
+#*.lscache
+
 #
 # FROM: https://raw.githubusercontent.com/sudorook/gitignore/tweak/Global/VisualStudioCode.gitignore
 #
