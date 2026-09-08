@@ -936,3 +936,10 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+#
+# FROM: https://raw.githubusercontent.com/sudorook/gitignore/tweak/Global/Xcode.gitignore
+#
+
+## User settings
+xcuserdata/
